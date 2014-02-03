@@ -26,6 +26,8 @@ var Game = Class.extend({
     }
   },
 
+  config: function() {},
+
   resize: function() {},
 
   render: function() {},
