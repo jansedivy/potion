@@ -36,6 +36,8 @@ var Game = Class.extend({
   keypress: function() {},
   click: function() {},
 
+  mousemove: function() {},
+
   focus: function() {},
   blur: function() {}
 });
