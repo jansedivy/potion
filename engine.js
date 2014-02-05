@@ -38,9 +38,9 @@ var Engine = Class.extend({
     });
 
     this.canvas.addEventListener('mousemove', function(e) {
+      self.game.mousemove(e.offsetX, e.offsetY);
       self.game.mousepos.x = e.offsetX;
       self.game.mousepos.y = e.offsetY;
-      self.game.mousemove(e.offsetX, e.offsetY);
     });
 
     this.canvas.addEventListener('click', function(e) {
