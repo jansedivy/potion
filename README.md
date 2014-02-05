@@ -3,10 +3,10 @@
 HTML5 canvas game engine
 
 ```
-var Engine = require('./engine');
+var Potion = require('potion');
 
-Engine.init(document.querySelector('canvas'), {
-  setupSize: function() {
+Potion.init(document.querySelector('canvas'), {
+  resize: function() {
     this.canvasWidth = this.width = document.body.clientWidth;
     this.canvasHeight = this.height = document.body.clientHeight;
   },
