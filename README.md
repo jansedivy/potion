@@ -2,7 +2,7 @@
 
 HTML5 canvas game engine
 
-```
+```javascript
 var Potion = require('potion');
 
 Potion.init(document.querySelector('canvas'), {
