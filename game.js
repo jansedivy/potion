@@ -16,14 +16,21 @@ var Game = Class.extend({
     this.mousedown = false;
     this.mousepos = { x: null, y: null };
 
-    this._keys = {};
-    this._controllingKeys = true;
-  },
+    this.input = {
+      keys: {},
+      canControlKeys: true,
 
-  isKeyDown: function(code) {
-    if (this._controllingKeys) {
-      return this._keys[keys[code.toUpperCase()]];
-    }
+      mouse: {
+        isDown: false,
+        position: { x: null, y: null }
+      },
+
+      isKeyDown: function(code) {
+        if (this.canControlKeys) {
+          return this.keys[keys[code.toUpperCase()]];
+        }
+      }
+    };
   },
 
   config: function() {},

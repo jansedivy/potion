@@ -32,19 +32,19 @@ var Engine = Class.extend({
     window.addEventListener('resize', this.setupCanvasSize.bind(this));
 
     this.canvas.addEventListener('mousedown', function(e) {
-      self.game.mousepos.x = e.offsetX;
-      self.game.mousepos.y = e.offsetY;
-      self.game.mousedown = true;
+      self.game.input.position.x = e.offsetX;
+      self.game.input.position.y = e.offsetY;
+      self.game.input.mouse.isDown = true;
     });
 
     this.canvas.addEventListener('mouseup', function() {
-      self.game.mousedown = false;
+      self.game.input.mouse.isDown = false;
     });
 
     this.canvas.addEventListener('mousemove', function(e) {
       self.game.mousemove(e.offsetX, e.offsetY);
-      self.game.mousepos.x = e.offsetX;
-      self.game.mousepos.y = e.offsetY;
+      self.game.input.mouse.position.x = e.offsetX;
+      self.game.input.mouse.position.y = e.offsetY;
     });
 
     this.canvas.addEventListener('click', function(e) {
@@ -53,12 +53,12 @@ var Engine = Class.extend({
     });
 
     window.addEventListener('blur', function() {
-      self.game._keys = {};
+      self.game.input.keys = {};
       self.game.blur();
     });
 
     window.addEventListener('focus', function() {
-      self.game._keys = {};
+      self.game.input.keys = {};
       self.game.focus();
     });
 
@@ -67,13 +67,11 @@ var Engine = Class.extend({
     });
 
     document.addEventListener('keydown', function(e) {
-      self.game._keys[e.keyCode] = true;
-      //e.preventDefault();
+      self.game.input.keys[e.keyCode] = true;
     });
 
     document.addEventListener('keyup', function(e) {
-      self.game._keys[e.keyCode] = false;
-      //e.preventDefault();
+      self.game.input.keys[e.keyCode] = false;
     });
   },
 
