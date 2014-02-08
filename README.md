@@ -2,6 +2,14 @@
 
 HTML5 canvas game engine
 
+## Features
+
+- Asset loader
+- Sprites
+- Retina support
+
+## Usage
+
 ```javascript
 var Potion = require('potion');
 
