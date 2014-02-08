@@ -1,6 +1,6 @@
 {
   "name": "potion",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "HTML5 canvas game engine",
   "main": "index.js",
   "author": "Jan Sedivy <jansedivy@abdoc.net>",
