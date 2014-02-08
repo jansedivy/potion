@@ -22,7 +22,6 @@ var Engine = Class.extend({
 
     this.game.config();
 
-
     this.setupCanvasSize();
 
     this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, this.start.bind(this));
