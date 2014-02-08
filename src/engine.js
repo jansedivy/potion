@@ -7,6 +7,8 @@ var Class = require('./class');
 
 var isRetina = require('./retina');
 
+var raf = require('./raf');
+
 var Engine = Class.extend({
   init: function(canvas, methods) {
     this.canvas = canvas;
@@ -102,7 +104,7 @@ var Engine = Class.extend({
   startFrame: function() {
     this._time = Date.now();
     var self = this;
-    window.requestAnimationFrame(function() { self.tick(); });
+    raf(function() { self.tick(); });
   },
 
   tick: function() {
