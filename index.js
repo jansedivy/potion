@@ -1,4 +1,4 @@
-var Engine = require('./engine');
+var Engine = require('./src/engine');
 
 module.exports = {
   init: function(canvas, methods) {
@@ -6,7 +6,5 @@ module.exports = {
     return engine.game;
   },
 
-  Class: require('./class'),
-  Bounds: require('./bounds'),
-  MathUtil: require('./mathUtil')
+  Class: require('./src/class')
 };
