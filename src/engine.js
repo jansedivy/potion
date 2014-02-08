@@ -34,8 +34,8 @@ var Engine = Class.extend({
     window.addEventListener('resize', this.setupCanvasSize.bind(this));
 
     this.canvas.addEventListener('mousedown', function(e) {
-      self.game.input.position.x = e.offsetX;
-      self.game.input.position.y = e.offsetY;
+      self.game.input.mouse.position.x = e.offsetX;
+      self.game.input.mouse.position.y = e.offsetY;
       self.game.input.mouse.isDown = true;
     });
 
