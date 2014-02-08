@@ -2,6 +2,11 @@
 
 HTML5 canvas game engine
 
+## Installation
+
+- `npm install potion`
+- `browserify main.js -o bundle.js`
+
 ## Features
 
 - Asset loader
