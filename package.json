@@ -2,7 +2,14 @@
   "name": "potion",
   "version": "0.0.5",
   "description": "HTML5 canvas game engine",
-  "main": "index.js",
+
   "author": "Jan Sedivy <jansedivy@abdoc.net>",
-  "license": "ISC"
+  "license": "MIT",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jsedivy/potion.git"
+  },
+
+  "main": "index.js"
 }
