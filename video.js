@@ -11,8 +11,15 @@ var Video = Class.extend({
 
     var w = sprite.width;
     var h = sprite.height;
+    var drawWidth = w;
+    var drawHeight = h;
 
-    this.ctx.drawImage(image, sprite.x, sprite.y, w, h, x, y, w, h);
+    if (sprite.source_image.match(/@2x.png$/)) {
+      drawWidth /= 2;
+      drawHeight /= 2;
+    }
+
+    this.ctx.drawImage(image, sprite.x, sprite.y, w, h, x, y, drawWidth, drawHeight);
   }
 });
 

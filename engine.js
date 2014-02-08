@@ -5,6 +5,8 @@ var SpriteSheetManager = require('./spriteSheetManager');
 
 var Class = require('./class');
 
+var isRetina = require('./retina');
+
 var Engine = Class.extend({
   init: function(canvas, methods) {
     this.canvas = canvas;
@@ -14,8 +16,10 @@ var Engine = Class.extend({
     this.game.video = new Video(this.ctx);
     this.game.canvas = canvas;
     this.game.sprite = new SpriteSheetManager();
+    this.game.isRetina = isRetina();
 
     this.game.config();
+
 
     this.setupCanvasSize();
 
@@ -77,6 +81,15 @@ var Engine = Class.extend({
     this.game.resize();
     this.canvas.width = this.game.canvasWidth;
     this.canvas.height = this.game.canvasHeight;
+
+    if (this.game.isRetina) {
+      this.canvas.width *= 2;
+      this.canvas.height *= 2;
+
+      this.canvas.style.width = this.game.canvasWidth + 'px';
+      this.canvas.style.height = this.game.canvasHeight + 'px';
+      this.ctx.scale(2, 2);
+    }
 
     this.gameOffsetX = (this.game.canvasWidth - this.game.width)/2;
     this.gameOffsetY = (this.game.canvasHeight - this.game.height)/2;
