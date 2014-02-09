@@ -29,7 +29,9 @@ var Engine = function(canvas, methods) {
 Engine.prototype.addEvents = function() {
   var self = this;
 
-  window.addEventListener('resize', this.setupCanvasSize.bind(this));
+  window.addEventListener('resize', function() {
+    self.setupCanvasSize();
+  });
 
   window.addEventListener('blur', function() {
     self.game.input.resetKeys();
