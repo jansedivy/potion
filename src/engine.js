@@ -44,15 +44,12 @@ Engine.prototype.addEvents = function() {
 
 Engine.prototype.setupCanvasSize = function() {
   this.game.resize();
-  this.video.canvas.width = this.game.canvasWidth;
-  this.video.canvas.height = this.game.canvasHeight;
+  this.video.canvas.width = this.game.width;
+  this.video.canvas.height = this.game.height;
 
   if (this.game.isRetina) {
     this.video.scale(2);
   }
-
-  this.gameOffsetX = (this.game.canvasWidth - this.game.width)/2;
-  this.gameOffsetY = (this.game.canvasHeight - this.game.height)/2;
 };
 
 Engine.prototype.start = function() {
@@ -83,11 +80,8 @@ Engine.prototype.update = function(time) {
 };
 
 Engine.prototype.render = function() {
-  this.video.ctx.clearRect(0, 0, this.game.canvasWidth, this.game.canvasHeight);
-
-  this.video.ctx.translate(this.gameOffsetX, this.gameOffsetY);
+  this.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
   this.game.render();
-  this.video.ctx.translate(-this.gameOffsetX, -this.gameOffsetY);
 };
 
 module.exports = Engine;

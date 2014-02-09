@@ -3,8 +3,6 @@ var Input = require('./input');
 var Game = function(canvas) {
   this.width = 300;
   this.height = 300;
-  this.canvasWidth = 300;
-  this.canvasHeight = 300;
   this.canvas = canvas;
 
   this.totalTime = 0;
