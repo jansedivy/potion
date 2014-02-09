@@ -5,8 +5,6 @@ var Game = function(canvas) {
   this.height = 300;
   this.canvas = canvas;
 
-  this.totalTime = 0;
-
   this.load = {};
 
   this.input = new Input(this);

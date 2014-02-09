@@ -75,7 +75,6 @@ Engine.prototype.tick = function() {
 };
 
 Engine.prototype.update = function(time) {
-  this.game.totalTime += time;
   this.game.update(time);
 };
 
