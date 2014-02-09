@@ -1,10 +1,33 @@
 var keys = require('./keys');
 
+/**
+ * Input wrapper
+ * @constructor
+ * @param {Game} game - Game object
+ */
 var Input = function(game) {
+  /**
+   * Game object
+   * @type {Game}
+   */
   this.game = game;
+
+  /**
+   * Pressed keys object
+   * @type {object}
+   */
   this.keys = {};
+
+  /**
+   * Controls if you can press keys
+   * @type {boolean}
+   */
   this.canControlKeys = true;
 
+  /**
+   * Mouse object with positions and if is mouse button pressed
+   * @type {object}
+   */
   this.mouse = {
     isDown: false,
     position: { x: null, y: null }
@@ -13,10 +36,28 @@ var Input = function(game) {
   this._addEvents();
 };
 
+/**
+ * Clears the pressed keys object
+ */
 Input.prototype.resetKeys = function() {
   this.keys = {};
 };
 
+/**
+ * Return true or false is key is pressed
+ * @param {string} key
+ * @return {boolean}
+ */
+Input.prototype.isKeyDown = function(key) {
+  if (this.canControlKeys) {
+    return this.keys[keys[key.toUpperCase()]];
+  }
+};
+
+/**
+ * Add canvas event listener
+ * @private
+ */
 Input.prototype._addEvents = function() {
   var self = this;
   var canvas = this.game.canvas;
@@ -52,12 +93,6 @@ Input.prototype._addEvents = function() {
   document.addEventListener('keyup', function(e) {
     self.game.input.keys[e.keyCode] = false;
   });
-};
-
-Input.prototype.isKeyDown = function(code) {
-  if (this.canControlKeys) {
-    return this.keys[keys[code.toUpperCase()]];
-  }
 };
 
 module.exports = Input;

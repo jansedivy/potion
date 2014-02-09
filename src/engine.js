@@ -7,6 +7,10 @@ var isRetina = require('./retina');
 
 var raf = require('./raf');
 
+/**
+ * Main Engine class which calls the game methods
+ * @constructor
+ */
 var Engine = function(canvas, methods) {
   var GameClass = function(canvas) { Game.call(this, canvas); };
   GameClass.prototype = Object.create(Game.prototype);
@@ -14,8 +18,18 @@ var Engine = function(canvas, methods) {
     GameClass.prototype[method] = methods[method];
   }
 
+  /**
+   * Game code instance
+   * @type {Game}
+   */
   this.game = new GameClass(canvas);
+
+  /**
+   * Video instance for rendering into canvas
+   * @type {Video}
+   */
   this.video = this.game.video = new Video(canvas);
+
   this.game.sprite = new SpriteSheetManager();
   this.game.isRetina = isRetina();
 
@@ -26,6 +40,10 @@ var Engine = function(canvas, methods) {
   this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, this.start.bind(this));
 };
 
+/**
+ * Add event listener for window events
+ * @private
+ */
 Engine.prototype.addEvents = function() {
   var self = this;
 
@@ -44,6 +62,10 @@ Engine.prototype.addEvents = function() {
   });
 };
 
+/**
+ * Runs every time on resize event
+ * @private
+ */
 Engine.prototype.setupCanvasSize = function() {
   this.game.resize();
   this.video.canvas.width = this.game.width;
@@ -54,18 +76,30 @@ Engine.prototype.setupCanvasSize = function() {
   }
 };
 
+/**
+ * Starts the game, adds events and run first frame
+ * @private
+ */
 Engine.prototype.start = function() {
   this.game.start();
   this.addEvents();
   this.startFrame();
 };
 
+/**
+ * Starts next frame in game loop
+ * @private
+ */
 Engine.prototype.startFrame = function() {
   this._time = Date.now();
   var self = this;
   raf(function() { self.tick(); });
 };
 
+/**
+ * Main tick function in game loop
+ * @private
+ */
 Engine.prototype.tick = function() {
   var time = (Date.now() - this._time) / 1000;
   if (time > 0.016) { time = 0.016; }
@@ -76,10 +110,19 @@ Engine.prototype.tick = function() {
   this.startFrame();
 };
 
+/**
+ * Updates the game
+ * @param {number} time - time in seconds since last frame
+ * @private
+ */
 Engine.prototype.update = function(time) {
   this.game.update(time);
 };
 
+/**
+ * Renders the game
+ * @private
+ */
 Engine.prototype.render = function() {
   this.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
   this.game.render();
