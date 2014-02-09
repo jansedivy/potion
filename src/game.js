@@ -1,38 +1,35 @@
-var Class = require('./class');
 var Input = require('./input');
 
-var Game = Class.extend({
-  init: function(canvas) {
-    this.width = 300;
-    this.height = 300;
-    this.canvasWidth = 300;
-    this.canvasHeight = 300;
-    this.canvas = canvas;
+var Game = function(canvas) {
+  this.width = 300;
+  this.height = 300;
+  this.canvasWidth = 300;
+  this.canvasHeight = 300;
+  this.canvas = canvas;
 
-    this.totalTime = 0;
+  this.totalTime = 0;
 
-    this.load = {};
+  this.load = {};
 
-    this.mousedown = false;
-    this.mousepos = { x: null, y: null };
+  this.mousedown = false;
+  this.mousepos = { x: null, y: null };
 
-    this.input = new Input(this);
-  },
+  this.input = new Input(this);
+};
 
-  config: function() {},
+Game.prototype.config = function() {};
 
-  resize: function() {},
+Game.prototype.resize = function() {};
 
-  render: function() {},
-  update: function() {},
+Game.prototype.render = function() {};
+Game.prototype.update = function() {};
 
-  keypress: function() {},
-  click: function() {},
+Game.prototype.keypress = function() {};
+Game.prototype.click = function() {};
 
-  mousemove: function() {},
+Game.prototype.mousemove = function() {};
 
-  focus: function() {},
-  blur: function() {}
-});
+Game.prototype.focus = function() {};
+Game.prototype.blur = function() {};
 
 module.exports = Game;
