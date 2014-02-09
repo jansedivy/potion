@@ -39,7 +39,6 @@ Input.prototype.addEvents = function() {
 
   canvas.addEventListener('click', function(e) {
     self.game.click(e.offsetX, e.offsetY);
-    e.preventDefault();
   });
 
   document.addEventListener('keypress', function(e) {
