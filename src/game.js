@@ -21,7 +21,7 @@ var Game = function(canvas) {
   this.width = 300;
 
   /**
-   * Game heighs in pixels
+   * Game highs in pixels
    * @type {number}
    */
   this.height = 300;
