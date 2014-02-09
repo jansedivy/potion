@@ -1,9 +1,10 @@
 var Input = require('./input');
 
 var Game = function(canvas) {
+  this.canvas = canvas;
+
   this.width = 300;
   this.height = 300;
-  this.canvas = canvas;
 
   this.load = {};
 
