@@ -18,9 +18,17 @@ module.exports = function(grunt) {
           'standalone': 'Potion'
         }
       }
+    },
+
+    uglify: {
+      dist: {
+        src: 'build/potion.js',
+        dest: 'build/potion.min.js'
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
 };
