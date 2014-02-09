@@ -12,7 +12,7 @@ var raf = require('./raf');
 var Engine = Class.extend({
   init: function(canvas, methods) {
     this.game = new (Game.extend(methods))(canvas);
-    this.game.video = new Video(canvas);
+    this.video = this.game.video = new Video(canvas);
     this.game.sprite = new SpriteSheetManager();
     this.game.isRetina = isRetina();
 
@@ -41,16 +41,16 @@ var Engine = Class.extend({
 
   setupCanvasSize: function() {
     this.game.resize();
-    this.game.video.canvas.width = this.game.canvasWidth;
-    this.game.video.canvas.height = this.game.canvasHeight;
+    this.video.canvas.width = this.game.canvasWidth;
+    this.video.canvas.height = this.game.canvasHeight;
 
     if (this.game.isRetina) {
-      this.game.video.canvas.width *= 2;
-      this.game.video.canvas.height *= 2;
+      this.video.canvas.width *= 2;
+      this.video.canvas.height *= 2;
 
-      this.game.video.canvas.style.width = this.game.canvasWidth + 'px';
-      this.game.video.canvas.style.height = this.game.canvasHeight + 'px';
-      this.game.video.ctx.scale(2, 2);
+      this.video.canvas.style.width = this.game.canvasWidth + 'px';
+      this.video.canvas.style.height = this.game.canvasHeight + 'px';
+      this.video.ctx.scale(2, 2);
     }
 
     this.gameOffsetX = (this.game.canvasWidth - this.game.width)/2;
@@ -85,11 +85,11 @@ var Engine = Class.extend({
   },
 
   render: function() {
-    this.game.video.ctx.clearRect(0, 0, this.game.canvasWidth, this.game.canvasHeight);
+    this.video.ctx.clearRect(0, 0, this.game.canvasWidth, this.game.canvasHeight);
 
-    this.game.video.ctx.translate(this.gameOffsetX, this.gameOffsetY);
+    this.video.ctx.translate(this.gameOffsetX, this.gameOffsetY);
     this.game.render();
-    this.game.video.ctx.translate(-this.gameOffsetX, -this.gameOffsetY);
+    this.video.ctx.translate(-this.gameOffsetX, -this.gameOffsetY);
   }
 });
 
