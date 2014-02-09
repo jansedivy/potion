@@ -2,7 +2,6 @@ var getJSON = require('./utils').getJSON;
 
 var SpriteSheetManager = function() {
   this.data = [];
-  this.sprite = null;
 };
 
 SpriteSheetManager.prototype.load = function(json, imagePath, callback) {
