@@ -1,8 +1,9 @@
 var Class = require('./class');
 
 var Video = Class.extend({
-  init: function(ctx) {
-    this.ctx = ctx;
+  init: function(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
   },
 
   sprite: function(image, sprite, x, y) {
