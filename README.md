@@ -23,7 +23,7 @@ HTML5 canvas game engine
 ## Usage
 
 ```javascript
-var Potion = require('potion');
+var Potion = require('potion'); // if you use browserify version
 
 Potion.init(document.querySelector('canvas'), {
   resize: function() {
