@@ -10,14 +10,14 @@ var Input = function(game) {
     position: { x: null, y: null }
   };
 
-  this.addEvents();
+  this._addEvents();
 };
 
 Input.prototype.resetKeys = function() {
   this.keys = {};
 };
 
-Input.prototype.addEvents = function() {
+Input.prototype._addEvents = function() {
   var self = this;
   var canvas = this.game.canvas;
 
