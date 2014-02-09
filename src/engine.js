@@ -14,9 +14,8 @@ var Engine = Class.extend({
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
-    this.game = new (Game.extend(methods))();
+    this.game = new (Game.extend(methods))(canvas);
     this.game.video = new Video(this.ctx);
-    this.game.canvas = canvas;
     this.game.sprite = new SpriteSheetManager();
     this.game.isRetina = isRetina();
 
@@ -32,47 +31,14 @@ var Engine = Class.extend({
 
     window.addEventListener('resize', this.setupCanvasSize.bind(this));
 
-    this.canvas.addEventListener('mousedown', function(e) {
-      self.game.input.mouse.position.x = e.offsetX;
-      self.game.input.mouse.position.y = e.offsetY;
-      self.game.input.mouse.isDown = true;
-    });
-
-    this.canvas.addEventListener('mouseup', function() {
-      self.game.input.mouse.isDown = false;
-    });
-
-    this.canvas.addEventListener('mousemove', function(e) {
-      self.game.mousemove(e.offsetX, e.offsetY);
-      self.game.input.mouse.position.x = e.offsetX;
-      self.game.input.mouse.position.y = e.offsetY;
-    });
-
-    this.canvas.addEventListener('click', function(e) {
-      self.game.click(e.offsetX, e.offsetY);
-      e.preventDefault();
-    });
-
     window.addEventListener('blur', function() {
-      self.game.input.keys = {};
+      self.game.input.resetKeys();
       self.game.blur();
     });
 
     window.addEventListener('focus', function() {
-      self.game.input.keys = {};
+      self.game.input.resetKeys();
       self.game.focus();
-    });
-
-    document.addEventListener('keypress', function(e) {
-      self.game.keypress(e.keyCode);
-    });
-
-    document.addEventListener('keydown', function(e) {
-      self.game.input.keys[e.keyCode] = true;
-    });
-
-    document.addEventListener('keyup', function(e) {
-      self.game.input.keys[e.keyCode] = false;
     });
   },
 

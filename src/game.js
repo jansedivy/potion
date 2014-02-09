@@ -1,13 +1,13 @@
 var Class = require('./class');
-
-var keys = require('./keys');
+var Input = require('./input');
 
 var Game = Class.extend({
-  init: function() {
+  init: function(canvas) {
     this.width = 300;
     this.height = 300;
     this.canvasWidth = 300;
     this.canvasHeight = 300;
+    this.canvas = canvas;
 
     this.totalTime = 0;
 
@@ -16,21 +16,7 @@ var Game = Class.extend({
     this.mousedown = false;
     this.mousepos = { x: null, y: null };
 
-    this.input = {
-      keys: {},
-      canControlKeys: true,
-
-      mouse: {
-        isDown: false,
-        position: { x: null, y: null }
-      },
-
-      isKeyDown: function(code) {
-        if (this.canControlKeys) {
-          return this.keys[keys[code.toUpperCase()]];
-        }
-      }
-    };
+    this.input = new Input(this);
   },
 
   config: function() {},
