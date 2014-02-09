@@ -5,7 +5,7 @@ var Video = function(canvas) {
 
 Video.prototype.scale = function(scale) {
   this.canvas.style.width = this.canvas.width + 'px';
-  this.canvas.style.height = this.canvas.heihgt + 'px';
+  this.canvas.style.height = this.canvas.height + 'px';
 
   this.canvas.width *= scale;
   this.canvas.height *= scale;
