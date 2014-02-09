@@ -1,5 +1,19 @@
 module.exports = function(grunt) {
+  var banner = [
+    '/**',
+    ' * <%= pkg.name %> - v<%= pkg.version %>',
+    ' * Copyright (c) 2014, Jan Sedivy',
+    ' *',
+    ' * Compiled: <%= grunt.template.today("yyyy-mm-dd") %>',
+    ' *',
+    ' * <%= pkg.name %> is licensed under the <%= pkg.license %> License.',
+    ' */',
+    ''
+  ].join('\n');
+
   grunt.initConfig({
+    pkg : grunt.file.readJSON('package.json'),
+
     jsdoc : {
       dist : {
         src: ['src/*.js'],
@@ -21,9 +35,22 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      options: {
+        banner: banner
+      },
       dist: {
         src: 'build/potion.js',
         dest: 'build/potion.min.js'
+      }
+    },
+
+    concat: {
+      options: {
+        banner: banner
+      },
+      dist: {
+        src: 'build/potion.js',
+        dest: 'build/potion.js'
       }
     }
   });
@@ -31,6 +58,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-concat');
 
-  grunt.registerTask('build', ['browserify', 'uglify']);
+  grunt.registerTask('build', ['browserify', 'concat', 'uglify']);
 };
