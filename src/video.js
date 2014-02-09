@@ -6,6 +6,16 @@ var Video = Class.extend({
     this.ctx = canvas.getContext('2d');
   },
 
+  scale: function(scale) {
+    this.canvas.style.width = this.canvas.width + 'px';
+    this.canvas.style.height = this.canvas.heihgt + 'px';
+
+    this.canvas.width *= scale;
+    this.canvas.height *= scale;
+
+    this.ctx.scale(scale, scale);
+  },
+
   sprite: function(image, sprite, x, y) {
     x = Math.floor(x);
     y = Math.floor(y);

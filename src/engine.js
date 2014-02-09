@@ -45,12 +45,7 @@ var Engine = Class.extend({
     this.video.canvas.height = this.game.canvasHeight;
 
     if (this.game.isRetina) {
-      this.video.canvas.width *= 2;
-      this.video.canvas.height *= 2;
-
-      this.video.canvas.style.width = this.game.canvasWidth + 'px';
-      this.video.canvas.style.height = this.game.canvasHeight + 'px';
-      this.video.ctx.scale(2, 2);
+      this.video.scale(2);
     }
 
     this.gameOffsetX = (this.game.canvasWidth - this.game.width)/2;
