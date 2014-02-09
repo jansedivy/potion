@@ -11,9 +11,6 @@ var Game = function(canvas) {
 
   this.load = {};
 
-  this.mousedown = false;
-  this.mousepos = { x: null, y: null };
-
   this.input = new Input(this);
 };
 
