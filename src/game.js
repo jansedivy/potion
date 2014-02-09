@@ -1,4 +1,6 @@
 var Input = require('./input');
+var SpriteSheetManager = require('./spriteSheetManager');
+var isRetina = require('./retina');
 
 /**
  * Game class that is subclassed by actual game code
@@ -29,6 +31,18 @@ var Game = function(canvas) {
    * @type {object}
    */
   this.load = {};
+
+  /**
+   * Instance of SpriteSheetManager for managing sprites and images
+   * @type {SpriteSheetManager}
+   */
+  this.sprite = new SpriteSheetManager();
+
+  /**
+   * If you have retina screen will is true
+   * @type {boolean}
+   */
+  this.isRetina = isRetina();
 
   /**
    * Input instance for mouse and keyboard events

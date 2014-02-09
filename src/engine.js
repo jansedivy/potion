@@ -1,10 +1,6 @@
 var Video = require('./video');
 var Game = require('./game');
 
-var SpriteSheetManager = require('./spriteSheetManager');
-
-var isRetina = require('./retina');
-
 var raf = require('./raf');
 
 /**
@@ -29,9 +25,6 @@ var Engine = function(canvas, methods) {
    * @type {Video}
    */
   this.video = this.game.video = new Video(canvas);
-
-  this.game.sprite = new SpriteSheetManager();
-  this.game.isRetina = isRetina();
 
   this.game.config();
 
