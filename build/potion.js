@@ -1,5 +1,5 @@
 /**
- * potion - v0.0.9
+ * potion - v0.0.10
  * Copyright (c) 2014, Jan Sedivy
  *
  * Compiled: 2014-02-10
@@ -17,8 +17,13 @@ module.exports = {
 };
 
 },{"./src/engine":2}],2:[function(_dereq_,module,exports){
-var Video = _dereq_('./video');
+window.DEBUG = true;
+
 var Game = _dereq_('./game');
+if (window.DEBUG) {
+  var Profiler = _dereq_('./profiler');
+  var profiler = null;
+}
 
 var raf = _dereq_('./raf');
 
@@ -39,17 +44,12 @@ var Engine = function(canvas, methods) {
    */
   this.game = new GameClass(canvas);
 
-  /**
-   * Video instance for rendering into canvas
-   * @type {Video}
-   */
-  this.video = this.game.video = new Video(canvas);
-
-  this.game.config();
-
   this.setupCanvasSize();
 
-  this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, this.start.bind(this));
+  var self = this;
+  this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, function() {
+    self.start();
+  });
 };
 
 /**
@@ -80,11 +80,11 @@ Engine.prototype.addEvents = function() {
  */
 Engine.prototype.setupCanvasSize = function() {
   this.game.resize();
-  this.video.canvas.width = this.game.width;
-  this.video.canvas.height = this.game.height;
+  this.game.canvas.width = this.game.width;
+  this.game.canvas.height = this.game.height;
 
   if (this.game.isRetina) {
-    this.video.scale(2);
+    this.game.video.scale(2);
   }
 };
 
@@ -93,7 +93,10 @@ Engine.prototype.setupCanvasSize = function() {
  * @private
  */
 Engine.prototype.start = function() {
+  if (DEBUG) { profiler = new (Profiler(this.game))(); }
+  if (DEBUG) { profiler.startTrace('start'); }
   this.game.start();
+  if (DEBUG) { profiler.endTrace('start'); }
   this.addEvents();
   this.startFrame();
 };
@@ -128,7 +131,9 @@ Engine.prototype.tick = function() {
  * @private
  */
 Engine.prototype.update = function(time) {
+  if (DEBUG) { profiler.startTrace('update'); }
   this.game.update(time);
+  if (DEBUG) { profiler.endTrace('update'); }
 };
 
 /**
@@ -136,13 +141,18 @@ Engine.prototype.update = function(time) {
  * @private
  */
 Engine.prototype.render = function() {
-  this.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
+  this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
+  if (DEBUG) { profiler.startTrace('render'); }
   this.game.render();
+  if (DEBUG) { profiler.endTrace('render'); }
+
+  if (DEBUG) { profiler.renderDebug(); }
 };
 
 module.exports = Engine;
 
-},{"./game":3,"./raf":6,"./video":10}],3:[function(_dereq_,module,exports){
+},{"./game":3,"./profiler":6,"./raf":7}],3:[function(_dereq_,module,exports){
+var Video = _dereq_('./video');
 var Input = _dereq_('./input');
 var SpriteSheetManager = _dereq_('./spriteSheetManager');
 var isRetina = _dereq_('./retina');
@@ -158,6 +168,12 @@ var Game = function(canvas) {
    * @type {HTMLCanvasElement}
    */
   this.canvas = canvas;
+
+  /**
+   * Video instance for rendering into canvas
+   * @type {Video}
+   */
+  this.video = new Video(canvas);
 
   /**
    * Game width in pixels
@@ -194,37 +210,51 @@ var Game = function(canvas) {
    * @type {Input}
    */
   this.input = new Input(this);
+
+  /**
+   * If set to true potion will profile game methods, works only in dev version of potion
+   * @type {boolean}
+   */
+  this.useProfiler = false;
+
+  this.config();
 };
 
 /**
  * Is called when all assets are loaded
+ * @abstract
  */
 Game.prototype.start = function() {};
 
 /**
  * Configure the game
+ * @abstract
  */
 Game.prototype.config = function() {};
 
 /**
  * Window resize event
+ * @abstract
  */
 Game.prototype.resize = function() {};
 
 /**
  * Renders the game
+ * @abstract
  */
 Game.prototype.render = function() {};
 
 /**
  * Updates the game
  * @param {number} time - time in seconds since last frame
+ * @abstract
  */
-Game.prototype.update = function() {};
+Game.prototype.update = function(time) {};
 
 /**
  * Keypress event
  * @param {number} keycode - char code of the pressed key
+ * @abstract
  */
 Game.prototype.keypress = function(keycode) {};
 
@@ -232,6 +262,7 @@ Game.prototype.keypress = function(keycode) {};
  * Click event
  * @param {number} x - x position
  * @param {number} y - y position
+ * @abstract
  */
 Game.prototype.click = function(x, y) {};
 
@@ -239,22 +270,25 @@ Game.prototype.click = function(x, y) {};
  * Mousemove event
  * @param {number} x - x position
  * @param {number} y - y position
+ * @abstract
  */
 Game.prototype.mousemove = function(x, y) {};
 
 /**
  * Window Focus event
+ * @abstract
  */
 Game.prototype.focus = function() {};
 
 /**
  * Window Blur event
+ * @abstract
  */
 Game.prototype.blur = function() {};
 
 module.exports = Game;
 
-},{"./input":4,"./retina":7,"./spriteSheetManager":8}],4:[function(_dereq_,module,exports){
+},{"./input":4,"./retina":8,"./spriteSheetManager":9,"./video":11}],4:[function(_dereq_,module,exports){
 var keys = _dereq_('./keys');
 
 /**
@@ -450,6 +484,120 @@ module.exports = {
 };
 
 },{}],6:[function(_dereq_,module,exports){
+if (DEBUG) {
+  module.exports = function(app) {
+    /**
+     * Profiler class for measuring performance
+     * @constructor
+     */
+    var Profiler = function() {
+      /**
+       * Start time of measured part
+       * @type {number|null}
+       */
+      this.currentProfileStart = null;
+
+      /**
+       * Max records
+       * @type {number}
+       */
+      this.maxRecords = 400;
+
+      /**
+       * Each column width in graph
+       * @type {number}
+       */
+      this.recordWidth = 2;
+
+      /**
+       * Height for 60 fps
+       * @type {number}
+       */
+      this.optimalHeight = 60;
+
+      /**
+       * Sixty frames in seconds
+       * @type {number}
+       */
+      this.sixtyFrameMS = 0.016;
+
+      /**
+       * Measured data
+       * @type {object}
+       */
+      this.data = {};
+    };
+
+    /**
+     * Start profiling
+     * @param {string} name - name of measured code
+     */
+    Profiler.prototype.startTrace = function(name) {
+      if (!app.useProfiler) { return; }
+
+      if (!this.data[name]) { this.data[name] = []; }
+      this.currentProfileStart = window.performance.now();
+    };
+
+    /**
+     * Stop profiling and save result by given name
+     * @param {string} name - name of measured code
+     */
+    Profiler.prototype.endTrace = function(name) {
+      if (!app.useProfiler) { return; }
+
+      var time = window.performance.now() - this.currentProfileStart;
+      time = time / 1000;
+      var data = this.data[name];
+      if (data) {
+        if (data.length > this.maxRecords) {
+          data.shift();
+        }
+        data.push(time);
+      }
+    };
+
+    /**
+     * Render data into canvas
+     */
+    Profiler.prototype.renderDebug = function() {
+      if (!app.useProfiler) { return; }
+
+      var updateData = this.data['update'];
+      var renderData = this.data['render'];
+
+      var sixtyFramesHeight = this.sixtyFrameMS*-this.optimalHeight/this.sixtyFrameMS;
+      app.video.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      app.video.ctx.fillRect(0, app.height - this.optimalHeight - 20, this.recordWidth * this.maxRecords, this.optimalHeight + 20);
+
+      var updateText = 'update: ' + (updateData[updateData.length-1] * 1000).toFixed(2) + 'ms';
+      var renderText = 'render: ' + (renderData[renderData.length-1] * 1000).toFixed(2) + 'ms';
+      app.video.ctx.fillStyle = 'white';
+      app.video.ctx.fillText(updateText + ' -- ' + renderText, 0, app.height - 5);
+
+      for (var i=0, len=updateData.length; i<len; i++) {
+        var update = updateData[i];
+        var render = renderData[i];
+
+        var updateHeight = update*-this.optimalHeight/this.sixtyFrameMS;
+        var renderHeight = render*-this.optimalHeight/this.sixtyFrameMS;
+
+        app.video.ctx.fillStyle = 'cyan';
+        app.video.ctx.fillRect(i * this.recordWidth, app.height - 20, this.recordWidth, updateHeight);
+
+        app.video.ctx.fillStyle = 'orange';
+        app.video.ctx.fillRect(i * this.recordWidth, app.height + updateHeight - 20, this.recordWidth, renderHeight);
+      }
+
+      app.video.ctx.fillStyle = 'red';
+      app.video.ctx.fillRect(0, app.height + sixtyFramesHeight - 20, this.recordWidth * this.maxRecords, 1);
+    };
+
+    return Profiler;
+  };
+}
+
+},{}],7:[function(_dereq_,module,exports){
 module.exports = (function(){
   return  window.requestAnimationFrame       ||
           window.webkitRequestAnimationFrame ||
@@ -459,7 +607,7 @@ module.exports = (function(){
           };
 })();
 
-},{}],7:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 var isRetina = function() {
   var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),\
   (min--moz-device-pixel-ratio: 1.5),\
@@ -477,7 +625,7 @@ var isRetina = function() {
 
 module.exports = isRetina;
 
-},{}],8:[function(_dereq_,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 var getJSON = _dereq_('./utils').getJSON;
 
 /**
@@ -532,7 +680,7 @@ SpriteSheetManager.prototype.get = function(name) {
 
 module.exports = SpriteSheetManager;
 
-},{"./utils":9}],9:[function(_dereq_,module,exports){
+},{"./utils":10}],10:[function(_dereq_,module,exports){
 exports.getJSON = function(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -545,7 +693,7 @@ exports.getJSON = function(url, callback) {
   request.send();
 };
 
-},{}],10:[function(_dereq_,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 /**
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
