@@ -75,7 +75,7 @@ Game.prototype.render = function() {};
  * Updates the game
  * @param {number} time - time in seconds since last frame
  */
-Game.prototype.update = function() {};
+Game.prototype.update = function(time) {};
 
 /**
  * Keypress event
