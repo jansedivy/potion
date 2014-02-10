@@ -30,7 +30,10 @@ var Engine = function(canvas, methods) {
 
   this.setupCanvasSize();
 
-  this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, this.start.bind(this));
+  var self = this;
+  this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, function() {
+    self.start();
+  });
 };
 
 /**
