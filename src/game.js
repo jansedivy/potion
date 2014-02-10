@@ -52,6 +52,11 @@ var Game = function(canvas) {
 };
 
 /**
+ * Is called when all assets are loaded
+ */
+Game.prototype.start = function() {};
+
+/**
  * Configure the game
  */
 Game.prototype.config = function() {};
