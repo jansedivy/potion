@@ -36,7 +36,13 @@ module.exports = function(grunt) {
 
     uglify: {
       options: {
-        banner: banner
+        banner: banner,
+        compress: {
+          global_defs: {
+            "DEBUG": false
+          },
+          dead_code: true
+        }
       },
       dist: {
         src: 'build/potion.js',

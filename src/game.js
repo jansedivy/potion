@@ -57,6 +57,12 @@ var Game = function(canvas) {
    */
   this.input = new Input(this);
 
+  /**
+   * If set to true potion will profile game methods, works only in dev version of potion
+   * @type {boolean}
+   */
+  this.useProfiler = false;
+
   this.config();
 };
 
