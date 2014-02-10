@@ -1,8 +1,8 @@
 /**
- * potion - v0.0.8
+ * potion - v0.0.9
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-02-09
+ * Compiled: 2014-02-10
  *
  * potion is licensed under the MIT License.
  */
@@ -195,6 +195,11 @@ var Game = function(canvas) {
    */
   this.input = new Input(this);
 };
+
+/**
+ * Is called when all assets are loaded
+ */
+Game.prototype.start = function() {};
 
 /**
  * Configure the game
