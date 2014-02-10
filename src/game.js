@@ -62,33 +62,39 @@ var Game = function(canvas) {
 
 /**
  * Is called when all assets are loaded
+ * @abstract
  */
 Game.prototype.start = function() {};
 
 /**
  * Configure the game
+ * @abstract
  */
 Game.prototype.config = function() {};
 
 /**
  * Window resize event
+ * @abstract
  */
 Game.prototype.resize = function() {};
 
 /**
  * Renders the game
+ * @abstract
  */
 Game.prototype.render = function() {};
 
 /**
  * Updates the game
  * @param {number} time - time in seconds since last frame
+ * @abstract
  */
 Game.prototype.update = function(time) {};
 
 /**
  * Keypress event
  * @param {number} keycode - char code of the pressed key
+ * @abstract
  */
 Game.prototype.keypress = function(keycode) {};
 
@@ -96,6 +102,7 @@ Game.prototype.keypress = function(keycode) {};
  * Click event
  * @param {number} x - x position
  * @param {number} y - y position
+ * @abstract
  */
 Game.prototype.click = function(x, y) {};
 
@@ -103,16 +110,19 @@ Game.prototype.click = function(x, y) {};
  * Mousemove event
  * @param {number} x - x position
  * @param {number} y - y position
+ * @abstract
  */
 Game.prototype.mousemove = function(x, y) {};
 
 /**
  * Window Focus event
+ * @abstract
  */
 Game.prototype.focus = function() {};
 
 /**
  * Window Blur event
+ * @abstract
  */
 Game.prototype.blur = function() {};
 
