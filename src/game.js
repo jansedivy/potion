@@ -1,3 +1,4 @@
+var Video = require('./video');
 var Input = require('./input');
 var SpriteSheetManager = require('./spriteSheetManager');
 var isRetina = require('./retina');
@@ -13,6 +14,12 @@ var Game = function(canvas) {
    * @type {HTMLCanvasElement}
    */
   this.canvas = canvas;
+
+  /**
+   * Video instance for rendering into canvas
+   * @type {Video}
+   */
+  this.video = new Video(canvas);
 
   /**
    * Game width in pixels
@@ -49,6 +56,8 @@ var Game = function(canvas) {
    * @type {Input}
    */
   this.input = new Input(this);
+
+  this.config();
 };
 
 /**

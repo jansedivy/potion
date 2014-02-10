@@ -1,4 +1,3 @@
-var Video = require('./video');
 var Game = require('./game');
 
 var raf = require('./raf');
@@ -19,14 +18,6 @@ var Engine = function(canvas, methods) {
    * @type {Game}
    */
   this.game = new GameClass(canvas);
-
-  /**
-   * Video instance for rendering into canvas
-   * @type {Video}
-   */
-  this.video = this.game.video = new Video(canvas);
-
-  this.game.config();
 
   this.setupCanvasSize();
 
@@ -64,11 +55,11 @@ Engine.prototype.addEvents = function() {
  */
 Engine.prototype.setupCanvasSize = function() {
   this.game.resize();
-  this.video.canvas.width = this.game.width;
-  this.video.canvas.height = this.game.height;
+  this.game.canvas.width = this.game.width;
+  this.game.canvas.height = this.game.height;
 
   if (this.game.isRetina) {
-    this.video.scale(2);
+    this.game.video.scale(2);
   }
 };
 
@@ -120,7 +111,7 @@ Engine.prototype.update = function(time) {
  * @private
  */
 Engine.prototype.render = function() {
-  this.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
+  this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
   this.game.render();
 };
 
