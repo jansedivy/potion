@@ -17,6 +17,16 @@ var Video = function(canvas) {
 };
 
 /**
+ * Includes mixins into Video library
+ * @param {object} methods - object of methods that will included in Video
+ */
+Video.prototype.include = function(methods) {
+  for (var method in methods) {
+    this[method] = methods[method];
+  }
+};
+
+/**
  * Scale canvas buffer, used for retina screens
  * @param {number} scale
  */
