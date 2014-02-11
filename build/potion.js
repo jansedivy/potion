@@ -1,8 +1,8 @@
 /**
- * potion - v0.0.10
+ * potion - v0.0.11
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-02-10
+ * Compiled: 2014-02-11
  *
  * potion is licensed under the MIT License.
  */
@@ -653,7 +653,7 @@ var SpriteSheetManager = function() {
  * @param {function} callback - function that is called after everything is loaded
  */
 SpriteSheetManager.prototype.load = function(json, imagePath, callback) {
-  if (!json) { return callback(); }
+  if (!json) { return setTimeout(callback, 0); }
 
   var self = this;
 
