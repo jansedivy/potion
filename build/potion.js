@@ -1,5 +1,5 @@
 /**
- * potion - v0.0.11
+ * potion - v0.0.12
  * Copyright (c) 2014, Jan Sedivy
  *
  * Compiled: 2014-02-11
@@ -710,6 +710,16 @@ var Video = function(canvas) {
    * @type {CanvasRenderingContext2D}
    */
   this.ctx = canvas.getContext('2d');
+};
+
+/**
+ * Includes mixins into Video library
+ * @param {object} methods - object of methods that will included in Video
+ */
+Video.prototype.include = function(methods) {
+  for (var method in methods) {
+    this[method] = methods[method];
+  }
 };
 
 /**
