@@ -25,7 +25,7 @@ var SpriteSheetManager = function() {
  * @param {function} callback - function that is called after everything is loaded
  */
 SpriteSheetManager.prototype.load = function(json, imagePath, callback) {
-  if (!json) { return callback(); }
+  if (!json) { return setTimeout(callback, 0); }
 
   var self = this;
 
