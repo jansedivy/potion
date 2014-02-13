@@ -5,7 +5,7 @@ var Player = function() {
   this.x = 50;
   this.y = 20;
 
-  this.animation = new app.sprite.animation(app.sprite.get('test'), 130, 150, 27, 7);
+  this.animation = new app.sprite.animation(app.sprite.get('test'), 130, 150, 7);
   this.animationTime = 0;
 };
 
@@ -14,7 +14,7 @@ Player.prototype.update = function(time) {
 
   if (this.animationTime > 0.036) {
     this.animationTime = 0;
-    this.animation.setState((this.animation.state + 1) % this.animation.count);
+    this.animation.setState((this.animation.state + 1) % 27);
   }
 };
 
