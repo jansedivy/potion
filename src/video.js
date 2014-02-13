@@ -42,17 +42,24 @@ Video.prototype.scale = function(scale) {
 
 /**
  * Draws image sprite into x a y position
- * @param {HTMLImageElement} image - image with sprites
  * @param {object} sprite - sprite data
  * @param {number} x - x position
  * @param {number} y - y position
+ * @param {number} [offsetX] - image position offset x
+ * @param {number} [offsetY] - image position offset y
+ * @param {number} [w] - final rendering width
+ * @param {number} [h] - final rendering height
  */
-Video.prototype.sprite = function(image, sprite, x, y) {
+Video.prototype.sprite = function(sprite, x, y, offsetX, offsetY, w, h) {
+  offsetX = offsetX || 0;
+  offsetY = offsetY || 0;
+
+  w = w || sprite.width;
+  h = h || sprite.height;
+
   x = Math.floor(x);
   y = Math.floor(y);
 
-  var w = sprite.width;
-  var h = sprite.height;
   var drawWidth = w;
   var drawHeight = h;
 
@@ -61,7 +68,17 @@ Video.prototype.sprite = function(image, sprite, x, y) {
     drawHeight /= 2;
   }
 
-  this.ctx.drawImage(image, sprite.x, sprite.y, w, h, x, y, drawWidth, drawHeight);
+  this.ctx.drawImage(sprite.image, sprite.x + offsetX, sprite.y + offsetY, w, h, x, y, drawWidth, drawHeight);
+};
+
+/**
+ * Draw animatino at given location
+ * @param {Animation} animation - Animation object
+ * @param {number} x - x position
+ * @param {number} y - y position
+ */
+Video.prototype.animation = function(animation, x, y) {
+  this.sprite(animation.sprite, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
 };
 
 module.exports = Video;

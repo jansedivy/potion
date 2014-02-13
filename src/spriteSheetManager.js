@@ -1,5 +1,7 @@
 var getJSON = require('./utils').getJSON;
 
+var animation = require('./animation');
+
 /**
  * Class for loading images
  * @constructor
@@ -10,6 +12,12 @@ var SpriteSheetManager = function() {
    * @type {object}
    */
   this.data = {};
+
+  /**
+   * animation class
+   * @type {Animation}
+   */
+  this.animation = animation;
 
   /**
    * sprite image
@@ -31,6 +39,11 @@ SpriteSheetManager.prototype.load = function(json, imagePath, callback) {
 
   var image = new Image();
   image.onload = function() {
+    for (var name in self.data) {
+      var item = self.data[name];
+      item.image = image;
+    }
+
     self.image = image;
     callback();
   };
