@@ -1,8 +1,8 @@
 /**
- * potion - v0.0.13
+ * potion - v0.0.14
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-02-13
+ * Compiled: 2014-02-14
  *
  * potion is licensed under the MIT License.
  */
@@ -23,10 +23,9 @@ module.exports = {
  * @param {object} sprite - sprite object
  * @param {number} width - width of individual images in animation
  * @param {number} height - height of individual images in animation
- * @param {number} count - number of images in animation
- * @param {number} [columns=count] - optional number of columns in animation
+ * @param {number} [columns=null] - optional number of columns in animation
  */
-var Animation = function(sprite, width, height, count, columns) {
+var Animation = function(sprite, width, height, columns) {
   /**
    * @type object
    */
@@ -45,16 +44,10 @@ var Animation = function(sprite, width, height, count, columns) {
   this.height = height;
 
   /**
-   * number of images in animation
-   * @type {number}
-   */
-  this.count = count;
-
-  /**
    * number of columns in animation
    * @type {number}
    */
-  this.columns = columns || count;
+  this.columns = columns;
 
   /**
    * Current index of image
@@ -120,16 +113,18 @@ Animation.prototype.setIndexY = function(y) {
  * @param {number} state - image index
  */
 Animation.prototype.setState = function(state) {
-  if (state < 0) {
-    state = 0;
-  } else if (state >= this.count) {
-    state = this.count - 1;
-  }
-
   this.state = state;
 
-  this.setIndexX(this.state % this.columns);
-  this.setIndexY(Math.floor(this.state/this.columns));
+  var x = this.state;
+  var y = 0;
+
+  if (this.columns) {
+    x = this.state % this.columns;
+    y = Math.floor(this.state/this.columns);
+  }
+
+  this.setIndexX(x);
+  this.setIndexY(y);
 };
 
 module.exports = Animation;
@@ -318,7 +313,7 @@ var Game = function(canvas) {
   this.sprite = new SpriteSheetManager();
 
   /**
-   * If you have retina screen will is true
+   * True if you are using retina screen
    * @type {boolean}
    */
   this.isRetina = isRetina();
