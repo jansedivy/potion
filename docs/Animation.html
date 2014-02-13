@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Game</title>
+    <title>JSDoc: Class: Animation</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Class: Game</h1>
+    <h1 class="page-title">Class: Animation</h1>
     
     
 
@@ -27,7 +27,7 @@
     
 <header>
     <h2>
-    Game
+    Animation
     </h2>
     
 </header>  
@@ -39,7 +39,7 @@
     
         
 <dt>
-    <h4 class="name" id="Game"><span class="type-signature"></span>new Game<span class="signature">(canvas)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Animation"><span class="type-signature"></span>new Animation<span class="signature">(sprite, width, height, count, <span class="optional">columns</span>)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -47,7 +47,7 @@
     
     
     <div class="description">
-        Game class that is subclassed by actual game code
+        Animation class for rendering sprites in grid
     </div>
     
 
@@ -69,7 +69,11 @@
 		<th>Type</th>
 		
 		
+		<th>Argument</th>
 		
+		
+		
+		<th>Default</th>
 		
 		
 		<th class="last">Description</th>
@@ -81,23 +85,179 @@
 	
         <tr>
             
-                <td class="name"><code>canvas</code></td>
+                <td class="name"><code>sprite</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">HTMLCanvasElement</span>
+<span class="param-type">object</span>
 
 
             
             </td>
             
             
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
             
             
             
-            <td class="description last">canvas DOM element</td>
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">sprite object</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>width</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">width of individual images in animation</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>height</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">height of individual images in animation</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>count</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">number of images in animation</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>columns</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                    count
+                
+                </td>
+            
+            
+            <td class="description last">optional number of columns in animation</td>
         </tr>
 	
 	
@@ -128,7 +288,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line11">line 11</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line10">line 10</a>
     </li></ul></dd>
     
     
@@ -172,78 +332,14 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="canvas"><span class="type-signature"></span>canvas<span class="type-signature"> :HTMLCanvasElement</span></h4>
+    <h4 class="name" id="columns"><span class="type-signature"></span>columns<span class="type-signature"> :number</span></h4>
     
     
 </dt>
 <dd>
     
     <div class="description">
-        Canvas DOM element
-    </div>
-    
-    
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">HTMLCanvasElement</span>
-
-
-            </li>
-        </ul>
-    
-
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line16">line 16</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="height"><span class="type-signature"></span>height<span class="type-signature"> :number</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Game highs in pixels
+        number of columns in animation
     </div>
     
     
@@ -282,7 +378,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line34">line 34</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line38">line 38</a>
     </li></ul></dd>
     
     
@@ -300,14 +396,14 @@
         
             
 <dt>
-    <h4 class="name" id="input"><span class="type-signature"></span>input<span class="type-signature"> :<a href="Input.html">Input</a></span></h4>
+    <h4 class="name" id="count"><span class="type-signature"></span>count<span class="type-signature"> :number</span></h4>
     
     
 </dt>
 <dd>
     
     <div class="description">
-        Input instance for mouse and keyboard events
+        number of images in animation
     </div>
     
     
@@ -316,7 +412,7 @@
         <ul>
             <li>
                 
-<span class="param-type"><a href="Input.html">Input</a></span>
+<span class="param-type">number</span>
 
 
             </li>
@@ -346,7 +442,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line58">line 58</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line32">line 32</a>
     </li></ul></dd>
     
     
@@ -364,14 +460,14 @@
         
             
 <dt>
-    <h4 class="name" id="isRetina"><span class="type-signature"></span>isRetina<span class="type-signature"> :boolean</span></h4>
+    <h4 class="name" id="height"><span class="type-signature"></span>height<span class="type-signature"> :number</span></h4>
     
     
 </dt>
 <dd>
     
     <div class="description">
-        If you have retina screen will is true
+        height of individual images in animation
     </div>
     
     
@@ -380,7 +476,7 @@
         <ul>
             <li>
                 
-<span class="param-type">boolean</span>
+<span class="param-type">number</span>
 
 
             </li>
@@ -410,7 +506,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line52">line 52</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line26">line 26</a>
     </li></ul></dd>
     
     
@@ -428,15 +524,267 @@
         
             
 <dt>
-    <h4 class="name" id="load"><span class="type-signature"></span>load<span class="type-signature"> :object</span></h4>
+    <h4 class="name" id="indexX"><span class="type-signature"></span>indexX<span class="type-signature"> :number</span></h4>
     
     
 </dt>
 <dd>
     
     <div class="description">
-        Sprites to load
+        Current X index
     </div>
+    
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">number</span>
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="indexY"><span class="type-signature"></span>indexY<span class="type-signature"> :number</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        Current Y index
+    </div>
+    
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">number</span>
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="offsetX"><span class="type-signature"></span>offsetX<span class="type-signature"> :number</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        Image offset X
+    </div>
+    
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">number</span>
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line62">line 62</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="offsetY"><span class="type-signature"></span>offsetY<span class="type-signature"> :number</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        Image offset Y
+    </div>
+    
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">number</span>
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line68">line 68</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="sprite"><span class="type-signature"></span>sprite<span class="type-signature"> :object</span></h4>
+    
+    
+</dt>
+<dd>
     
     
     
@@ -474,7 +822,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line40">line 40</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line14">line 14</a>
     </li></ul></dd>
     
     
@@ -492,14 +840,14 @@
         
             
 <dt>
-    <h4 class="name" id="sprite"><span class="type-signature"></span>sprite<span class="type-signature"> :<a href="SpriteSheetManager.html">SpriteSheetManager</a></span></h4>
+    <h4 class="name" id="state"><span class="type-signature"></span>state<span class="type-signature"> :number</span></h4>
     
     
 </dt>
 <dd>
     
     <div class="description">
-        Instance of SpriteSheetManager for managing sprites and images
+        Current index of image
     </div>
     
     
@@ -508,7 +856,7 @@
         <ul>
             <li>
                 
-<span class="param-type"><a href="SpriteSheetManager.html">SpriteSheetManager</a></span>
+<span class="param-type">number</span>
 
 
             </li>
@@ -538,135 +886,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line46">line 46</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="useProfiler"><span class="type-signature"></span>useProfiler<span class="type-signature"> :boolean</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        If set to true potion will profile game methods, works only in dev version of potion
-    </div>
-    
-    
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">boolean</span>
-
-
-            </li>
-        </ul>
-    
-
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line64">line 64</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="video"><span class="type-signature"></span>video<span class="type-signature"> :<a href="Video.html">Video</a></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Video instance for rendering into canvas
-    </div>
-    
-    
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type"><a href="Video.html">Video</a></span>
-
-
-            </li>
-        </ul>
-    
-
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line22">line 22</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line44">line 44</a>
     </li></ul></dd>
     
     
@@ -691,7 +911,7 @@
 <dd>
     
     <div class="description">
-        Game width in pixels
+        width of individual images in animation
     </div>
     
     
@@ -730,7 +950,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line28">line 28</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line20">line 20</a>
     </li></ul></dd>
     
     
@@ -754,7 +974,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="blur"><span class="type-signature">&lt;abstract> </span>blur<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="setIndexes"><span class="type-signature"></span>setIndexes<span class="signature">(x, y)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -762,76 +982,7 @@
     
     
     <div class="description">
-        Window Blur event
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line133">line 133</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="click"><span class="type-signature">&lt;abstract> </span>click<span class="signature">(x, y)</span><span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Click event
+        Set x and y index
     </div>
     
 
@@ -881,7 +1032,7 @@
             
             
             
-            <td class="description last">x position</td>
+            <td class="description last">x index</td>
         </tr>
 	
 	
@@ -904,7 +1055,7 @@
             
             
             
-            <td class="description last">y position</td>
+            <td class="description last">y index</td>
         </tr>
 	
 	
@@ -935,7 +1086,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line113">line 113</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line76">line 76</a>
     </li></ul></dd>
     
     
@@ -963,7 +1114,7 @@
         
             
 <dt>
-    <h4 class="name" id="config"><span class="type-signature">&lt;abstract> </span>config<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="setIndexX"><span class="type-signature"></span>setIndexX<span class="signature">(x)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -971,262 +1122,7 @@
     
     
     <div class="description">
-        Configure the game
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line79">line 79</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="focus"><span class="type-signature">&lt;abstract> </span>focus<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Window Focus event
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line127">line 127</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="keypress"><span class="type-signature">&lt;abstract> </span>keypress<span class="signature">(keycode)</span><span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Keypress event
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>keycode</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-            
-            
-            
-            
-            
-            <td class="description last">char code of the pressed key</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line105">line 105</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="mousemove"><span class="type-signature">&lt;abstract> </span>mousemove<span class="signature">(x, y)</span><span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Mousemove event
+        Set x index
     </div>
     
 
@@ -1276,30 +1172,7 @@
             
             
             
-            <td class="description last">x position</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>y</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-            
-            
-            
-            
-            
-            <td class="description last">y position</td>
+            <td class="description last">x index</td>
         </tr>
 	
 	
@@ -1330,7 +1203,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line121">line 121</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line85">line 85</a>
     </li></ul></dd>
     
     
@@ -1358,7 +1231,7 @@
         
             
 <dt>
-    <h4 class="name" id="render"><span class="type-signature">&lt;abstract> </span>render<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="setIndexY"><span class="type-signature"></span>setIndexY<span class="signature">(y)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -1366,214 +1239,7 @@
     
     
     <div class="description">
-        Renders the game
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line91">line 91</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="resize"><span class="type-signature">&lt;abstract> </span>resize<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Window resize event
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line85">line 85</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="start"><span class="type-signature">&lt;abstract> </span>start<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Is called when all assets are loaded
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line73">line 73</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="update"><span class="type-signature">&lt;abstract> </span>update<span class="signature">(time)</span><span class="type-signature"></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Updates the game
+        Set y index
     </div>
     
 
@@ -1607,7 +1273,7 @@
 	
         <tr>
             
-                <td class="name"><code>time</code></td>
+                <td class="name"><code>y</code></td>
             
             
             <td class="type">
@@ -1623,7 +1289,7 @@
             
             
             
-            <td class="description last">time in seconds since last frame</td>
+            <td class="description last">y index</td>
         </tr>
 	
 	
@@ -1654,7 +1320,124 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="game.js.html">game.js</a>, <a href="game.js.html#line98">line 98</a>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line94">line 94</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="setState"><span class="type-signature"></span>setState<span class="signature">(state)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Set image index
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>state</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">image index</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="animation.js.html">animation.js</a>, <a href="animation.js.html#line103">line 103</a>
     </li></ul></dd>
     
     

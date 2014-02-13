@@ -302,6 +302,169 @@
         <dl>
             
 <dt>
+    <h4 class="name" id="animation"><span class="type-signature"></span>animation<span class="signature">(animation, x, y)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Draw animatino at given location
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>animation</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Animation.html">Animation</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Animation object</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>x</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">x position</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>y</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">y position</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="video.js.html">video.js</a>, <a href="video.js.html#line80">line 80</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="include"><span class="type-signature"></span>include<span class="signature">(methods)</span><span class="type-signature"></span></h4>
     
     
@@ -536,7 +699,7 @@
         
             
 <dt>
-    <h4 class="name" id="sprite"><span class="type-signature"></span>sprite<span class="signature">(image, sprite, x, y)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="sprite"><span class="type-signature"></span>sprite<span class="signature">(sprite, x, y, <span class="optional">offsetX</span>, <span class="optional">offsetY</span>, <span class="optional">w</span>, <span class="optional">h</span>)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -566,6 +729,8 @@
 		<th>Type</th>
 		
 		
+		<th>Argument</th>
+		
 		
 		
 		
@@ -574,29 +739,6 @@
 	</thead>
 	
 	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>image</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">HTMLImageElement</span>
-
-
-            
-            </td>
-            
-            
-            
-            
-            
-            <td class="description last">image with sprites</td>
-        </tr>
-	
 	
 	
         <tr>
@@ -613,6 +755,14 @@
             
             </td>
             
+            
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
             
             
             
@@ -637,6 +787,14 @@
             </td>
             
             
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
+            
             
             
             
@@ -660,10 +818,150 @@
             </td>
             
             
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
+            
             
             
             
             <td class="description last">y position</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>offsetX</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">image position offset x</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>offsetY</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">image position offset y</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>w</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">final rendering width</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>h</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">final rendering height</td>
         </tr>
 	
 	
@@ -694,7 +992,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="video.js.html">video.js</a>, <a href="video.js.html#line50">line 50</a>
+        <a href="video.js.html">video.js</a>, <a href="video.js.html#line53">line 53</a>
     </li></ul></dd>
     
     
@@ -735,13 +1033,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Engine.html">Engine</a></li><li><a href="Game.html">Game</a></li><li><a href="Input.html">Input</a></li><li><a href="module.exports-Profiler.html">Profiler</a></li><li><a href="SpriteSheetManager.html">SpriteSheetManager</a></li><li><a href="Video.html">Video</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Animation.html">Animation</a></li><li><a href="Engine.html">Engine</a></li><li><a href="Game.html">Game</a></li><li><a href="Input.html">Input</a></li><li><a href="module.exports-Profiler.html">Profiler</a></li><li><a href="SpriteSheetManager.html">SpriteSheetManager</a></li><li><a href="Video.html">Video</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Feb 11 2014 14:17:09 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Feb 13 2014 18:31:08 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
