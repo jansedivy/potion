@@ -1,8 +1,8 @@
 /**
- * potion - v0.0.12
+ * potion - v0.0.13
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-02-11
+ * Compiled: 2014-02-13
  *
  * potion is licensed under the MIT License.
  */
@@ -16,7 +16,125 @@ module.exports = {
   }
 };
 
-},{"./src/engine":2}],2:[function(_dereq_,module,exports){
+},{"./src/engine":3}],2:[function(_dereq_,module,exports){
+/**
+ * Animation class for rendering sprites in grid
+ * @constructor
+ * @param {object} sprite - sprite object
+ * @param {number} width - width of individual images in animation
+ * @param {number} height - height of individual images in animation
+ * @param {number} count - number of images in animation
+ * @param {number} [columns=count] - optional number of columns in animation
+ */
+var Animation = function(sprite, width, height, count, columns) {
+  /**
+   * @type object
+   */
+  this.sprite = sprite;
+
+  /**
+   * width of individual images in animation
+   * @type {number}
+   */
+  this.width = width;
+
+  /**
+   * height of individual images in animation
+   * @type {number}
+   */
+  this.height = height;
+
+  /**
+   * number of images in animation
+   * @type {number}
+   */
+  this.count = count;
+
+  /**
+   * number of columns in animation
+   * @type {number}
+   */
+  this.columns = columns || count;
+
+  /**
+   * Current index of image
+   * @type {number}
+   */
+  this.state = 0;
+
+  /**
+   * Current X index
+   * @type {number}
+   */
+  this.indexX = 0;
+
+  /**
+   * Current Y index
+   * @type {number}
+   */
+  this.indexY = 0;
+
+  /**
+   * Image offset X
+   * @type {number}
+   */
+  this.offsetX = 0;
+
+  /**
+   * Image offset Y
+   * @type {number}
+   */
+  this.offsetY = 0;
+};
+
+/**
+ * Set x and y index
+ * @param {number} x - x index
+ * @param {number} y - y index
+ */
+Animation.prototype.setIndexes = function(x, y) {
+  this.setIndexX(x);
+  this.setIndexY(y);
+};
+
+/**
+ * Set x index
+ * @param {number} x - x index
+ */
+Animation.prototype.setIndexX = function(x) {
+  this.indexX = x;
+  this.offsetX = this.width * this.indexX;
+};
+
+/**
+ * Set y index
+ * @param {number} y - y index
+ */
+Animation.prototype.setIndexY = function(y) {
+  this.indexY = y;
+  this.offsetY = this.height * this.indexY;
+};
+
+/**
+ * Set image index
+ * @param {number} state - image index
+ */
+Animation.prototype.setState = function(state) {
+  if (state < 0) {
+    state = 0;
+  } else if (state >= this.count) {
+    state = this.count - 1;
+  }
+
+  this.state = state;
+
+  this.setIndexX(this.state % this.columns);
+  this.setIndexY(Math.floor(this.state/this.columns));
+};
+
+module.exports = Animation;
+
+},{}],3:[function(_dereq_,module,exports){
 window.DEBUG = true;
 
 var Game = _dereq_('./game');
@@ -151,7 +269,7 @@ Engine.prototype.render = function() {
 
 module.exports = Engine;
 
-},{"./game":3,"./profiler":6,"./raf":7}],3:[function(_dereq_,module,exports){
+},{"./game":4,"./profiler":7,"./raf":8}],4:[function(_dereq_,module,exports){
 var Video = _dereq_('./video');
 var Input = _dereq_('./input');
 var SpriteSheetManager = _dereq_('./spriteSheetManager');
@@ -288,7 +406,7 @@ Game.prototype.blur = function() {};
 
 module.exports = Game;
 
-},{"./input":4,"./retina":8,"./spriteSheetManager":9,"./video":11}],4:[function(_dereq_,module,exports){
+},{"./input":5,"./retina":9,"./spriteSheetManager":10,"./video":12}],5:[function(_dereq_,module,exports){
 var keys = _dereq_('./keys');
 
 /**
@@ -388,7 +506,7 @@ Input.prototype._addEvents = function() {
 
 module.exports = Input;
 
-},{"./keys":5}],5:[function(_dereq_,module,exports){
+},{"./keys":6}],6:[function(_dereq_,module,exports){
 module.exports = {
   'MOUSE1':-1,
   'MOUSE2':-3,
@@ -483,7 +601,7 @@ module.exports = {
   'PERIOD':190
 };
 
-},{}],6:[function(_dereq_,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 if (DEBUG) {
   module.exports = function(app) {
     /**
@@ -597,7 +715,7 @@ if (DEBUG) {
   };
 }
 
-},{}],7:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 module.exports = (function(){
   return  window.requestAnimationFrame       ||
           window.webkitRequestAnimationFrame ||
@@ -607,7 +725,7 @@ module.exports = (function(){
           };
 })();
 
-},{}],8:[function(_dereq_,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 var isRetina = function() {
   var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),\
   (min--moz-device-pixel-ratio: 1.5),\
@@ -625,8 +743,10 @@ var isRetina = function() {
 
 module.exports = isRetina;
 
-},{}],9:[function(_dereq_,module,exports){
+},{}],10:[function(_dereq_,module,exports){
 var getJSON = _dereq_('./utils').getJSON;
+
+var animation = _dereq_('./animation');
 
 /**
  * Class for loading images
@@ -638,6 +758,12 @@ var SpriteSheetManager = function() {
    * @type {object}
    */
   this.data = {};
+
+  /**
+   * animation class
+   * @type {Animation}
+   */
+  this.animation = animation;
 
   /**
    * sprite image
@@ -659,6 +785,11 @@ SpriteSheetManager.prototype.load = function(json, imagePath, callback) {
 
   var image = new Image();
   image.onload = function() {
+    for (var name in self.data) {
+      var item = self.data[name];
+      item.image = image;
+    }
+
     self.image = image;
     callback();
   };
@@ -680,7 +811,7 @@ SpriteSheetManager.prototype.get = function(name) {
 
 module.exports = SpriteSheetManager;
 
-},{"./utils":10}],10:[function(_dereq_,module,exports){
+},{"./animation":2,"./utils":11}],11:[function(_dereq_,module,exports){
 exports.getJSON = function(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -693,7 +824,7 @@ exports.getJSON = function(url, callback) {
   request.send();
 };
 
-},{}],11:[function(_dereq_,module,exports){
+},{}],12:[function(_dereq_,module,exports){
 /**
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
@@ -738,17 +869,24 @@ Video.prototype.scale = function(scale) {
 
 /**
  * Draws image sprite into x a y position
- * @param {HTMLImageElement} image - image with sprites
  * @param {object} sprite - sprite data
  * @param {number} x - x position
  * @param {number} y - y position
+ * @param {number} [offsetX] - image position offset x
+ * @param {number} [offsetY] - image position offset y
+ * @param {number} [w] - final rendering width
+ * @param {number} [h] - final rendering height
  */
-Video.prototype.sprite = function(image, sprite, x, y) {
+Video.prototype.sprite = function(sprite, x, y, offsetX, offsetY, w, h) {
+  offsetX = offsetX || 0;
+  offsetY = offsetY || 0;
+
+  w = w || sprite.width;
+  h = h || sprite.height;
+
   x = Math.floor(x);
   y = Math.floor(y);
 
-  var w = sprite.width;
-  var h = sprite.height;
   var drawWidth = w;
   var drawHeight = h;
 
@@ -757,7 +895,17 @@ Video.prototype.sprite = function(image, sprite, x, y) {
     drawHeight /= 2;
   }
 
-  this.ctx.drawImage(image, sprite.x, sprite.y, w, h, x, y, drawWidth, drawHeight);
+  this.ctx.drawImage(sprite.image, sprite.x + offsetX, sprite.y + offsetY, w, h, x, y, drawWidth, drawHeight);
+};
+
+/**
+ * Draw animatino at given location
+ * @param {Animation} animation - Animation object
+ * @param {number} x - x position
+ * @param {number} y - y position
+ */
+Video.prototype.animation = function(animation, x, y) {
+  this.sprite(animation.sprite, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
 };
 
 module.exports = Video;
