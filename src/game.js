@@ -46,7 +46,7 @@ var Game = function(canvas) {
   this.sprite = new SpriteSheetManager();
 
   /**
-   * If you have retina screen will is true
+   * True if you are using retina screen
    * @type {boolean}
    */
   this.isRetina = isRetina();
