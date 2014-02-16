@@ -1,8 +1,4 @@
 var app = Potion.init(document.querySelector('.game'), {
-  config: function() {
-    this.useProfiler = true;
-  },
-
   start: function() {
     this.particles = [];
     this.lastPosition = { x: null, y: null };
