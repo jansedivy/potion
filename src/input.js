@@ -7,12 +7,6 @@ var keys = require('./keys');
  */
 var Input = function(game) {
   /**
-   * Game object
-   * @type {Game}
-   */
-  this.game = game;
-
-  /**
    * Pressed keys object
    * @type {object}
    */
@@ -33,7 +27,7 @@ var Input = function(game) {
     position: { x: null, y: null }
   };
 
-  this._addEvents();
+  this._addEvents(game);
 };
 
 /**
@@ -58,12 +52,12 @@ Input.prototype.isKeyDown = function(key) {
  * Add canvas event listener
  * @private
  */
-Input.prototype._addEvents = function() {
+Input.prototype._addEvents = function(game) {
   var self = this;
-  var canvas = this.game.canvas;
+  var canvas = game.canvas;
 
   canvas.addEventListener('mousemove', function(e) {
-    self.game.mousemove(e.offsetX, e.offsetY);
+    game.mousemove(e.offsetX, e.offsetY);
     self.mouse.position.x = e.offsetX;
     self.mouse.position.y = e.offsetY;
   });
@@ -79,19 +73,19 @@ Input.prototype._addEvents = function() {
   });
 
   canvas.addEventListener('click', function(e) {
-    self.game.click(e.offsetX, e.offsetY);
+    game.click(e.offsetX, e.offsetY);
   });
 
   document.addEventListener('keypress', function(e) {
-    self.game.keypress(e.keyCode);
+    game.keypress(e.keyCode);
   });
 
   document.addEventListener('keydown', function(e) {
-    self.game.input.keys[e.keyCode] = true;
+    game.input.keys[e.keyCode] = true;
   });
 
   document.addEventListener('keyup', function(e) {
-    self.game.input.keys[e.keyCode] = false;
+    game.input.keys[e.keyCode] = false;
   });
 };
 
