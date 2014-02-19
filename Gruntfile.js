@@ -38,9 +38,6 @@ module.exports = function(grunt) {
       options: {
         banner: banner,
         compress: {
-          global_defs: {
-            "DEBUG": false
-          },
           dead_code: true
         }
       },
