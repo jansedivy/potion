@@ -1,10 +1,4 @@
-window.DEBUG = true;
-
 var Game = require('./game');
-if (window.DEBUG) {
-  var Profiler = require('./profiler');
-  var profiler = null;
-}
 
 var raf = require('./raf');
 
@@ -74,10 +68,7 @@ Engine.prototype.setupCanvasSize = function() {
  * @private
  */
 Engine.prototype.start = function() {
-  if (DEBUG) { profiler = new (Profiler(this.game))(); }
-  if (DEBUG) { profiler.startTrace('start'); }
   this.game.start();
-  if (DEBUG) { profiler.endTrace('start'); }
   this.addEvents();
   this.startFrame();
 };
@@ -112,9 +103,7 @@ Engine.prototype.tick = function() {
  * @private
  */
 Engine.prototype.update = function(time) {
-  if (DEBUG) { profiler.startTrace('update'); }
   this.game.update(time);
-  if (DEBUG) { profiler.endTrace('update'); }
 };
 
 /**
@@ -123,11 +112,7 @@ Engine.prototype.update = function(time) {
  */
 Engine.prototype.render = function() {
   this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
-  if (DEBUG) { profiler.startTrace('render'); }
   this.game.render();
-  if (DEBUG) { profiler.endTrace('render'); }
-
-  if (DEBUG) { profiler.renderDebug(); }
 };
 
 module.exports = Engine;
