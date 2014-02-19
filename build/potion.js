@@ -1,8 +1,8 @@
 /**
- * potion - v0.0.14
+ * potion - v0.1.0
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-02-14
+ * Compiled: 2014-02-19
  *
  * potion is licensed under the MIT License.
  */
@@ -130,13 +130,7 @@ Animation.prototype.setState = function(state) {
 module.exports = Animation;
 
 },{}],3:[function(_dereq_,module,exports){
-window.DEBUG = true;
-
 var Game = _dereq_('./game');
-if (window.DEBUG) {
-  var Profiler = _dereq_('./profiler');
-  var profiler = null;
-}
 
 var raf = _dereq_('./raf');
 
@@ -161,7 +155,7 @@ var Engine = function(canvas, methods) {
 
   var self = this;
   this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, function() {
-    self.start();
+    self.init();
   });
 };
 
@@ -206,10 +200,7 @@ Engine.prototype.setupCanvasSize = function() {
  * @private
  */
 Engine.prototype.start = function() {
-  if (DEBUG) { profiler = new (Profiler(this.game))(); }
-  if (DEBUG) { profiler.startTrace('start'); }
   this.game.start();
-  if (DEBUG) { profiler.endTrace('start'); }
   this.addEvents();
   this.startFrame();
 };
@@ -244,9 +235,7 @@ Engine.prototype.tick = function() {
  * @private
  */
 Engine.prototype.update = function(time) {
-  if (DEBUG) { profiler.startTrace('update'); }
   this.game.update(time);
-  if (DEBUG) { profiler.endTrace('update'); }
 };
 
 /**
@@ -255,16 +244,12 @@ Engine.prototype.update = function(time) {
  */
 Engine.prototype.render = function() {
   this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
-  if (DEBUG) { profiler.startTrace('render'); }
   this.game.render();
-  if (DEBUG) { profiler.endTrace('render'); }
-
-  if (DEBUG) { profiler.renderDebug(); }
 };
 
 module.exports = Engine;
 
-},{"./game":4,"./profiler":7,"./raf":8}],4:[function(_dereq_,module,exports){
+},{"./game":4,"./raf":7}],4:[function(_dereq_,module,exports){
 var Video = _dereq_('./video');
 var Input = _dereq_('./input');
 var SpriteSheetManager = _dereq_('./spriteSheetManager');
@@ -324,12 +309,6 @@ var Game = function(canvas) {
    */
   this.input = new Input(this);
 
-  /**
-   * If set to true potion will profile game methods, works only in dev version of potion
-   * @type {boolean}
-   */
-  this.useProfiler = false;
-
   this.config();
 };
 
@@ -337,7 +316,7 @@ var Game = function(canvas) {
  * Is called when all assets are loaded
  * @abstract
  */
-Game.prototype.start = function() {};
+Game.prototype.init = function() {};
 
 /**
  * Configure the game
@@ -401,7 +380,7 @@ Game.prototype.blur = function() {};
 
 module.exports = Game;
 
-},{"./input":5,"./retina":9,"./spriteSheetManager":10,"./video":12}],5:[function(_dereq_,module,exports){
+},{"./input":5,"./retina":8,"./spriteSheetManager":9,"./video":11}],5:[function(_dereq_,module,exports){
 var keys = _dereq_('./keys');
 
 /**
@@ -410,12 +389,6 @@ var keys = _dereq_('./keys');
  * @param {Game} game - Game object
  */
 var Input = function(game) {
-  /**
-   * Game object
-   * @type {Game}
-   */
-  this.game = game;
-
   /**
    * Pressed keys object
    * @type {object}
@@ -437,7 +410,7 @@ var Input = function(game) {
     position: { x: null, y: null }
   };
 
-  this._addEvents();
+  this._addEvents(game);
 };
 
 /**
@@ -462,12 +435,12 @@ Input.prototype.isKeyDown = function(key) {
  * Add canvas event listener
  * @private
  */
-Input.prototype._addEvents = function() {
+Input.prototype._addEvents = function(game) {
   var self = this;
-  var canvas = this.game.canvas;
+  var canvas = game.canvas;
 
   canvas.addEventListener('mousemove', function(e) {
-    self.game.mousemove(e.offsetX, e.offsetY);
+    game.mousemove(e.offsetX, e.offsetY);
     self.mouse.position.x = e.offsetX;
     self.mouse.position.y = e.offsetY;
   });
@@ -483,19 +456,19 @@ Input.prototype._addEvents = function() {
   });
 
   canvas.addEventListener('click', function(e) {
-    self.game.click(e.offsetX, e.offsetY);
+    game.click(e.offsetX, e.offsetY);
   });
 
   document.addEventListener('keypress', function(e) {
-    self.game.keypress(e.keyCode);
+    game.keypress(e.keyCode);
   });
 
   document.addEventListener('keydown', function(e) {
-    self.game.input.keys[e.keyCode] = true;
+    game.input.keys[e.keyCode] = true;
   });
 
   document.addEventListener('keyup', function(e) {
-    self.game.input.keys[e.keyCode] = false;
+    game.input.keys[e.keyCode] = false;
   });
 };
 
@@ -597,120 +570,6 @@ module.exports = {
 };
 
 },{}],7:[function(_dereq_,module,exports){
-if (DEBUG) {
-  module.exports = function(app) {
-    /**
-     * Profiler class for measuring performance
-     * @constructor
-     */
-    var Profiler = function() {
-      /**
-       * Start time of measured part
-       * @type {number|null}
-       */
-      this.currentProfileStart = null;
-
-      /**
-       * Max records
-       * @type {number}
-       */
-      this.maxRecords = 400;
-
-      /**
-       * Each column width in graph
-       * @type {number}
-       */
-      this.recordWidth = 2;
-
-      /**
-       * Height for 60 fps
-       * @type {number}
-       */
-      this.optimalHeight = 60;
-
-      /**
-       * Sixty frames in seconds
-       * @type {number}
-       */
-      this.sixtyFrameMS = 0.016;
-
-      /**
-       * Measured data
-       * @type {object}
-       */
-      this.data = {};
-    };
-
-    /**
-     * Start profiling
-     * @param {string} name - name of measured code
-     */
-    Profiler.prototype.startTrace = function(name) {
-      if (!app.useProfiler) { return; }
-
-      if (!this.data[name]) { this.data[name] = []; }
-      this.currentProfileStart = window.performance.now();
-    };
-
-    /**
-     * Stop profiling and save result by given name
-     * @param {string} name - name of measured code
-     */
-    Profiler.prototype.endTrace = function(name) {
-      if (!app.useProfiler) { return; }
-
-      var time = window.performance.now() - this.currentProfileStart;
-      time = time / 1000;
-      var data = this.data[name];
-      if (data) {
-        if (data.length > this.maxRecords) {
-          data.shift();
-        }
-        data.push(time);
-      }
-    };
-
-    /**
-     * Render data into canvas
-     */
-    Profiler.prototype.renderDebug = function() {
-      if (!app.useProfiler) { return; }
-
-      var updateData = this.data['update'];
-      var renderData = this.data['render'];
-
-      var sixtyFramesHeight = this.sixtyFrameMS*-this.optimalHeight/this.sixtyFrameMS;
-      app.video.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-      app.video.ctx.fillRect(0, app.height - this.optimalHeight - 20, this.recordWidth * this.maxRecords, this.optimalHeight + 20);
-
-      var updateText = 'update: ' + (updateData[updateData.length-1] * 1000).toFixed(2) + 'ms';
-      var renderText = 'render: ' + (renderData[renderData.length-1] * 1000).toFixed(2) + 'ms';
-      app.video.ctx.fillStyle = 'white';
-      app.video.ctx.fillText(updateText + ' -- ' + renderText, 0, app.height - 5);
-
-      for (var i=0, len=updateData.length; i<len; i++) {
-        var update = updateData[i];
-        var render = renderData[i];
-
-        var updateHeight = update*-this.optimalHeight/this.sixtyFrameMS;
-        var renderHeight = render*-this.optimalHeight/this.sixtyFrameMS;
-
-        app.video.ctx.fillStyle = 'cyan';
-        app.video.ctx.fillRect(i * this.recordWidth, app.height - 20, this.recordWidth, updateHeight);
-
-        app.video.ctx.fillStyle = 'orange';
-        app.video.ctx.fillRect(i * this.recordWidth, app.height + updateHeight - 20, this.recordWidth, renderHeight);
-      }
-
-      app.video.ctx.fillStyle = 'red';
-      app.video.ctx.fillRect(0, app.height + sixtyFramesHeight - 20, this.recordWidth * this.maxRecords, 1);
-    };
-
-    return Profiler;
-  };
-}
-
-},{}],8:[function(_dereq_,module,exports){
 module.exports = (function(){
   return  window.requestAnimationFrame       ||
           window.webkitRequestAnimationFrame ||
@@ -720,7 +579,7 @@ module.exports = (function(){
           };
 })();
 
-},{}],9:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 var isRetina = function() {
   var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),\
   (min--moz-device-pixel-ratio: 1.5),\
@@ -738,7 +597,7 @@ var isRetina = function() {
 
 module.exports = isRetina;
 
-},{}],10:[function(_dereq_,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 var getJSON = _dereq_('./utils').getJSON;
 
 var animation = _dereq_('./animation');
@@ -806,7 +665,7 @@ SpriteSheetManager.prototype.get = function(name) {
 
 module.exports = SpriteSheetManager;
 
-},{"./animation":2,"./utils":11}],11:[function(_dereq_,module,exports){
+},{"./animation":2,"./utils":10}],10:[function(_dereq_,module,exports){
 exports.getJSON = function(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -819,7 +678,7 @@ exports.getJSON = function(url, callback) {
   request.send();
 };
 
-},{}],12:[function(_dereq_,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 /**
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
