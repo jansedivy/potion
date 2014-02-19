@@ -29,7 +29,7 @@ var Engine = function(canvas, methods) {
 
   var self = this;
   this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, function() {
-    self.start();
+    self.init();
   });
 };
 

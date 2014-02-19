@@ -70,7 +70,7 @@ var Game = function(canvas) {
  * Is called when all assets are loaded
  * @abstract
  */
-Game.prototype.start = function() {};
+Game.prototype.init = function() {};
 
 /**
  * Configure the game

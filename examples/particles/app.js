@@ -1,5 +1,5 @@
 var app = Potion.init(document.querySelector('.game'), {
-  start: function() {
+  init: function() {
     this.particles = [];
     this.lastPosition = { x: null, y: null };
   },

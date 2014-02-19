@@ -37,7 +37,7 @@ Potion.init(document.querySelector('.game'), {
     this.height = document.body.clientHeight;
   },
 
-  start: function() {
+  init: function() {
     this.particles = [];
 
     this.Particle = Particle(this);

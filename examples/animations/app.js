@@ -34,7 +34,7 @@ app = Potion.init(document.querySelector('canvas'), {
     };
   },
 
-  start: function() {
+  init: function() {
     this.player = new Player();
   },
 

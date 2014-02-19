@@ -7,7 +7,7 @@ var VideoMixins = {
 };
 
 Potion.init(document.querySelector('.game'), {
-  start: function() {
+  init: function() {
     this.video.include(VideoMixins);
   },
 
