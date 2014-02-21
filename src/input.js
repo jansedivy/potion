@@ -38,7 +38,7 @@ Input.prototype.resetKeys = function() {
 };
 
 /**
- * Return true or false is key is pressed
+ * Return true or false if key is pressed
  * @param {string} key
  * @return {boolean}
  */
