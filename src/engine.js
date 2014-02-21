@@ -23,7 +23,7 @@ var Engine = function(canvas, methods) {
 
   var self = this;
   this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, function() {
-    self.init();
+    self.start();
   });
 };
 
@@ -68,7 +68,7 @@ Engine.prototype.setupCanvasSize = function() {
  * @private
  */
 Engine.prototype.start = function() {
-  this.game.start();
+  this.game.init();
   this.addEvents();
   this.startFrame();
 };

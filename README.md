@@ -31,7 +31,7 @@ Potion.init(document.querySelector('canvas'), {
     this.height = document.body.clientHeight;
   },
 
-  start: function() {
+  init: function() {
     this.x = 0;
     this.y = 0;
     this.dx = 0;
