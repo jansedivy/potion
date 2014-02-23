@@ -1,6 +1,7 @@
 var Video = require('./video');
 var Input = require('./input');
 var SpriteSheetManager = require('./spriteSheetManager');
+var Assets = require('./assets');
 var isRetina = require('./retina');
 
 /**
@@ -44,6 +45,12 @@ var Game = function(canvas) {
    * @type {SpriteSheetManager}
    */
   this.sprite = new SpriteSheetManager();
+
+  /**
+   * Instance of Assets for loading assets for the game
+   * @type {Assets}
+   */
+  this.assets = new Assets();
 
   /**
    * True if you are using retina screen

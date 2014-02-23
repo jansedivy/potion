@@ -21,9 +21,16 @@ var Engine = function(canvas, methods) {
 
   this.setupCanvasSize();
 
+  var start = false;
   var self = this;
+  this.game.assets.load(this.game.load, function() {
+    if (start) { self.start(); }
+    start = true;
+  });
+
   this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, function() {
-    self.start();
+    if (start) { self.start(); }
+    start = true;
   });
 };
 
