@@ -51,21 +51,26 @@ Assets.prototype.createSound = function(path, callback) {
  * @param {function} callback - function that is called when everything is loaded
  */
 Assets.prototype.load = function(data, callback) {
-  this.soundsPath = data.soundsPath || this.soundsPath;
   this.assetsPath = data.assetsPath || this.assetsPath;
 
-  var soundsToLoad = data.sounds.length;
+  if (!data.sounds) {
+    callback();
+  } else {
+    this.soundsPath = data.soundsPath || this.soundsPath;
 
-  var soundLoaded = function() {
-    soundsToLoad -= 1;
-    if (soundsToLoad <= 0) {
-      callback();
+    var soundsToLoad = data.sounds.length;
+
+    var soundLoaded = function() {
+      soundsToLoad -= 1;
+      if (soundsToLoad <= 0) {
+        callback();
+      }
+    };
+
+    for (var i=0, len=data.sounds.length; i<len; i++) {
+      var path = data.sounds[i];
+      this.createSound(path, soundLoaded);
     }
-  };
-
-  for (var i=0, len=data.sounds.length; i<len; i++) {
-    var path = data.sounds[i];
-    this.createSound(path, soundLoaded);
   }
 };
 
