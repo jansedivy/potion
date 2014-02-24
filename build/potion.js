@@ -1,8 +1,8 @@
 /**
- * potion - v0.1.3
+ * potion - v0.1.4
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-02-23
+ * Compiled: 2014-02-24
  *
  * potion is licensed under the MIT License.
  */
@@ -164,17 +164,13 @@ var Assets = function() {
  * @param {function} callback - callback function that is called when sound is loaded
  */
 Assets.prototype.createSound = function(path, callback) {
-  var self = this;
+  var sound = soundManager.createSound({
+    autoLoad: true,
+    autoPlay: false,
+    url: this.basePath + this.soundsPath + path
+  }).load({ onload: callback });
 
-  soundManager.onload = function() {
-    var sound = soundManager.createSound({
-      autoLoad: true,
-      autoPlay: false,
-      url: self.basePath + self.soundsPath + path
-    }).load({ onload: callback });
-
-    self.sounds[path] = sound;
-  };
+  this.sounds[path] = sound;
 };
 
 /**
@@ -199,10 +195,13 @@ Assets.prototype.load = function(data, callback) {
       }
     };
 
-    for (var i=0, len=data.sounds.length; i<len; i++) {
-      var path = data.sounds[i];
-      this.createSound(path, soundLoaded);
-    }
+    var self = this;
+    soundManager.onload = function() {
+      for (var i=0, len=data.sounds.length; i<len; i++) {
+        var path = data.sounds[i];
+        self.createSound(path, soundLoaded);
+      }
+    };
   }
 };
 
@@ -282,11 +281,11 @@ Engine.prototype.addEvents = function() {
  */
 Engine.prototype.setupCanvasSize = function() {
   this.game.resize();
-  this.game.canvas.width = this.game.width;
-  this.game.canvas.height = this.game.height;
+  this.game.video.width = this.game.canvas.width = this.game.width;
+  this.game.video.height = this.game.canvas.height = this.game.height;
 
   if (this.game.isRetina) {
-    this.game.video.scale(2);
+    this.game.video.scaleCanvas(2);
   }
 };
 
@@ -338,8 +337,9 @@ Engine.prototype.update = function(time) {
  * @private
  */
 Engine.prototype.render = function() {
-  this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
+  this.game.video.beginFrame();
   this.game.render();
+  this.game.video.endFrame();
 };
 
 module.exports = Engine;
@@ -875,6 +875,18 @@ var Video = function(canvas) {
   this.canvas = canvas;
 
   /**
+   * Game width in pixels
+   * @type {number}
+   */
+  this.width = null;
+
+  /**
+   * Game height in pixels
+   * @type {number}
+   */
+  this.height = null;
+
+  /**
    * canvas context
    * @type {CanvasRenderingContext2D}
    */
@@ -891,17 +903,31 @@ Video.prototype.include = function(methods) {
   }
 };
 
+Video.prototype.beginFrame = function() {
+  this.ctx.clearRect(0, 0, this.width, this.height);
+};
+
+Video.prototype.endFrame = function() {};
+
 /**
  * Scale canvas buffer, used for retina screens
  * @param {number} scale
  */
-Video.prototype.scale = function(scale) {
+Video.prototype.scaleCanvas = function(scale) {
   this.canvas.style.width = this.canvas.width + 'px';
   this.canvas.style.height = this.canvas.height + 'px';
 
   this.canvas.width *= scale;
   this.canvas.height *= scale;
 
+  this.scale(scale);
+};
+
+/**
+ * Canvas helper for scaling
+ * @param {number} scale
+ */
+Video.prototype.scale = function(scale) {
   this.ctx.scale(scale, scale);
 };
 
