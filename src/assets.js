@@ -32,17 +32,13 @@ var Assets = function() {
  * @param {function} callback - callback function that is called when sound is loaded
  */
 Assets.prototype.createSound = function(path, callback) {
-  var self = this;
+  var sound = soundManager.createSound({
+    autoLoad: true,
+    autoPlay: false,
+    url: this.basePath + this.soundsPath + path
+  }).load({ onload: callback });
 
-  soundManager.onload = function() {
-    var sound = soundManager.createSound({
-      autoLoad: true,
-      autoPlay: false,
-      url: self.basePath + self.soundsPath + path
-    }).load({ onload: callback });
-
-    self.sounds[path] = sound;
-  };
+  this.sounds[path] = sound;
 };
 
 /**
@@ -67,10 +63,13 @@ Assets.prototype.load = function(data, callback) {
       }
     };
 
-    for (var i=0, len=data.sounds.length; i<len; i++) {
-      var path = data.sounds[i];
-      this.createSound(path, soundLoaded);
-    }
+    var self = this;
+    soundManager.onload = function() {
+      for (var i=0, len=data.sounds.length; i<len; i++) {
+        var path = data.sounds[i];
+        self.createSound(path, soundLoaded);
+      }
+    };
   }
 };
 
