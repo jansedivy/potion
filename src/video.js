@@ -38,17 +38,31 @@ Video.prototype.include = function(methods) {
   }
 };
 
+Video.prototype.beginFrame = function() {
+  this.ctx.clearRect(0, 0, this.width, this.height);
+};
+
+Video.prototype.endFrame = function() {};
+
 /**
  * Scale canvas buffer, used for retina screens
  * @param {number} scale
  */
-Video.prototype.scale = function(scale) {
+Video.prototype.scaleCanvas = function(scale) {
   this.canvas.style.width = this.canvas.width + 'px';
   this.canvas.style.height = this.canvas.height + 'px';
 
   this.canvas.width *= scale;
   this.canvas.height *= scale;
 
+  this.scale(scale);
+};
+
+/**
+ * Canvas helper for scaling
+ * @param {number} scale
+ */
+Video.prototype.scale = function(scale) {
   this.ctx.scale(scale, scale);
 };
 

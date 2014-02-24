@@ -66,7 +66,7 @@ Engine.prototype.setupCanvasSize = function() {
   this.game.video.height = this.game.canvas.height = this.game.height;
 
   if (this.game.isRetina) {
-    this.game.video.scale(2);
+    this.game.video.scaleCanvas(2);
   }
 };
 
