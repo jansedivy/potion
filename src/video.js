@@ -10,6 +10,18 @@ var Video = function(canvas) {
   this.canvas = canvas;
 
   /**
+   * Game width in pixels
+   * @type {number}
+   */
+  this.width = null;
+
+  /**
+   * Game height in pixels
+   * @type {number}
+   */
+  this.height = null;
+
+  /**
    * canvas context
    * @type {CanvasRenderingContext2D}
    */
