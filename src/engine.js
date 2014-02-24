@@ -118,8 +118,9 @@ Engine.prototype.update = function(time) {
  * @private
  */
 Engine.prototype.render = function() {
-  this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
+  this.game.video.beginFrame();
   this.game.render();
+  this.game.video.endFrame();
 };
 
 module.exports = Engine;
