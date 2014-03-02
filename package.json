@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jsedivy/potion.git"
+    "url": "https://github.com/jansedivy/potion.git"
   },
   "main": "index.js",
   "devDependencies": {
