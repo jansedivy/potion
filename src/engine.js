@@ -21,17 +21,9 @@ var Engine = function(canvas, methods) {
 
   this.setupCanvasSize();
 
-  var start = false;
-  var self = this;
-  this.game.assets.load(this.game.load, function() {
-    if (start) { self.start(); }
-    start = true;
-  });
-
-  this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, function() {
-    if (start) { self.start(); }
-    start = true;
-  });
+  this.game.assets.onload(function() {
+    this.start();
+  }.bind(this));
 };
 
 /**
@@ -75,6 +67,7 @@ Engine.prototype.setupCanvasSize = function() {
  * @private
  */
 Engine.prototype.start = function() {
+  this.start = true;
   this.game.init();
   this.addEvents();
   this.startFrame();

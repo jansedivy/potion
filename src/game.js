@@ -1,6 +1,5 @@
 var Video = require('./video');
 var Input = require('./input');
-var SpriteSheetManager = require('./spriteSheetManager');
 var Assets = require('./assets');
 var isRetina = require('./retina');
 
@@ -33,18 +32,6 @@ var Game = function(canvas) {
    * @type {number}
    */
   this.height = 300;
-
-  /**
-   * Sprites to load
-   * @type {object}
-   */
-  this.load = {};
-
-  /**
-   * Instance of SpriteSheetManager for managing sprites and images
-   * @type {SpriteSheetManager}
-   */
-  this.sprite = new SpriteSheetManager();
 
   /**
    * Instance of Assets for loading assets for the game
