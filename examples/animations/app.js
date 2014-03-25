@@ -1,4 +1,3 @@
-var Potion = require('../../');
 var app;
 
 var Player = function() {
