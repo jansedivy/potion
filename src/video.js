@@ -76,12 +76,12 @@ Video.prototype.scale = function(scale) {
  * @param {number} [w] - final rendering width
  * @param {number} [h] - final rendering height
  */
-Video.prototype.sprite = function(sprite, x, y, offsetX, offsetY, w, h) {
+Video.prototype.sprite = function(image, x, y, offsetX, offsetY, w, h) {
   offsetX = offsetX || 0;
   offsetY = offsetY || 0;
 
-  w = w || sprite.width;
-  h = h || sprite.height;
+  w = w || image.width;
+  h = h || image.height;
 
   x = Math.floor(x);
   y = Math.floor(y);
@@ -89,12 +89,12 @@ Video.prototype.sprite = function(sprite, x, y, offsetX, offsetY, w, h) {
   var drawWidth = w;
   var drawHeight = h;
 
-  if (sprite.source_image.match(/@2x.png$/)) {
+  if (image.src.match(/@2x.png$/)) {
     drawWidth /= 2;
     drawHeight /= 2;
   }
 
-  this.ctx.drawImage(sprite.image, sprite.x + offsetX, sprite.y + offsetY, w, h, x, y, drawWidth, drawHeight);
+  this.ctx.drawImage(image, image.x + offsetX, image.y + offsetY, w, h, x, y, drawWidth, drawHeight);
 };
 
 /**
