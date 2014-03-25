@@ -1,5 +1,5 @@
 /**
- * potion - v0.2.1
+ * potion - v0.2.2
  * Copyright (c) 2014, Jan Sedivy
  *
  * Compiled: 2014-03-25
@@ -16,7 +16,120 @@ module.exports = {
   }
 };
 
-},{"./src/engine":3}],2:[function(_dereq_,module,exports){
+},{"./src/engine":4}],2:[function(_dereq_,module,exports){
+/**
+ * Animation class for rendering sprites in grid
+ * @constructor
+ * @param {object} sprite - sprite object
+ * @param {number} width - width of individual images in animation
+ * @param {number} height - height of individual images in animation
+ * @param {number} [columns=null] - optional number of columns in animation
+ */
+var Animation = function(sprite, width, height, columns) {
+  /**
+   * @type object
+   */
+  this.sprite = sprite;
+
+  /**
+   * width of individual images in animation
+   * @type {number}
+   */
+  this.width = width;
+
+  /**
+   * height of individual images in animation
+   * @type {number}
+   */
+  this.height = height;
+
+  /**
+   * number of columns in animation
+   * @type {number}
+   */
+  this.columns = columns;
+
+  /**
+   * Current index of image
+   * @type {number}
+   */
+  this.state = 0;
+
+  /**
+   * Current X index
+   * @type {number}
+   */
+  this.indexX = 0;
+
+  /**
+   * Current Y index
+   * @type {number}
+   */
+  this.indexY = 0;
+
+  /**
+   * Image offset X
+   * @type {number}
+   */
+  this.offsetX = 0;
+
+  /**
+   * Image offset Y
+   * @type {number}
+   */
+  this.offsetY = 0;
+};
+
+/**
+ * Set x and y index
+ * @param {number} x - x index
+ * @param {number} y - y index
+ */
+Animation.prototype.setIndexes = function(x, y) {
+  this.setIndexX(x);
+  this.setIndexY(y);
+};
+
+/**
+ * Set x index
+ * @param {number} x - x index
+ */
+Animation.prototype.setIndexX = function(x) {
+  this.indexX = x;
+  this.offsetX = this.width * this.indexX;
+};
+
+/**
+ * Set y index
+ * @param {number} y - y index
+ */
+Animation.prototype.setIndexY = function(y) {
+  this.indexY = y;
+  this.offsetY = this.height * this.indexY;
+};
+
+/**
+ * Set image index
+ * @param {number} state - image index
+ */
+Animation.prototype.setState = function(state) {
+  this.state = state;
+
+  var x = this.state;
+  var y = 0;
+
+  if (this.columns) {
+    x = this.state % this.columns;
+    y = Math.floor(this.state/this.columns);
+  }
+
+  this.setIndexX(x);
+  this.setIndexY(y);
+};
+
+module.exports = Animation;
+
+},{}],3:[function(_dereq_,module,exports){
 /* global soundManager */
 
 _dereq_('./lib/soundmanager2');
@@ -109,7 +222,7 @@ Assets.prototype.finishedOneFile = function() {
 
 module.exports = Assets;
 
-},{"./lib/soundmanager2":7,"./utils":10}],3:[function(_dereq_,module,exports){
+},{"./lib/soundmanager2":8,"./utils":11}],4:[function(_dereq_,module,exports){
 var Game = _dereq_('./game');
 
 var raf = _dereq_('./raf');
@@ -230,11 +343,12 @@ Engine.prototype.render = function() {
 
 module.exports = Engine;
 
-},{"./game":4,"./raf":8}],4:[function(_dereq_,module,exports){
+},{"./game":5,"./raf":9}],5:[function(_dereq_,module,exports){
 var Video = _dereq_('./video');
 var Input = _dereq_('./input');
 var Assets = _dereq_('./assets');
 var isRetina = _dereq_('./retina');
+var Animation = _dereq_('./animation');
 
 /**
  * Game class that is subclassed by actual game code
@@ -271,6 +385,8 @@ var Game = function(canvas) {
    * @type {Assets}
    */
   this.assets = new Assets();
+
+  this.animation = Animation;
 
   /**
    * True if you are using retina screen
@@ -355,7 +471,7 @@ Game.prototype.blur = function() {};
 
 module.exports = Game;
 
-},{"./assets":2,"./input":5,"./retina":9,"./video":11}],5:[function(_dereq_,module,exports){
+},{"./animation":2,"./assets":3,"./input":6,"./retina":10,"./video":12}],6:[function(_dereq_,module,exports){
 var keys = _dereq_('./keys');
 
 /**
@@ -449,7 +565,7 @@ Input.prototype._addEvents = function(game) {
 
 module.exports = Input;
 
-},{"./keys":6}],6:[function(_dereq_,module,exports){
+},{"./keys":7}],7:[function(_dereq_,module,exports){
 module.exports = {
   'MOUSE1':-1,
   'MOUSE2':-3,
@@ -544,7 +660,7 @@ module.exports = {
   'PERIOD':190
 };
 
-},{}],7:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 /** @license
  *
  * SoundManager 2: JavaScript Sound for the Web
@@ -626,7 +742,7 @@ Y),!0;Ga=ab=!0;Q=!1;F();t.remove(g,"focus",Y);return!0};M=function(b){if(p)retur
 for(b in e)e.hasOwnProperty(b)&&(c[b]===k?c[b]=e[b]:c[b]!==e[b]&&(c.setupOptions[b]=c[b]))};ma=function(){if(p)return!1;if(c.html5Only)return p||(t.remove(g,"load",c.beginDelayedInit),c.enabled=!0,M()),!0;Z();try{l._externalInterfaceTest(!1),Oa(!0,c.flashPollingInterval||(c.useHighPerformance?10:50)),c.debugMode||l._disableDebug(),c.enabled=!0,c.html5Only||t.add(g,"unload",la)}catch(b){return H({type:"JS_TO_FLASH_EXCEPTION",fatal:!0}),xa(!0),M(),!1}M();t.remove(g,"load",c.beginDelayedInit);return!0};
 G=function(){if(N)return!1;N=!0;Ma();wa();!v&&c.hasHTML5&&c.setup({useHTML5Audio:!0,preferFlash:!1});Wa();!v&&u&&(Ua.push(sa.needFlash),c.setup({flashLoadTimeout:1}));n.removeEventListener&&n.removeEventListener("DOMContentLoaded",G,!1);Z();return!0};Ba=function(){"complete"===n.readyState&&(G(),n.detachEvent("onreadystatechange",Ba));return!0};ua=function(){na=!0;t.remove(g,"load",ua)};ta=function(){if(Fa&&(c.setupOptions.useHTML5Audio=!0,c.setupOptions.preferFlash=!1,ha||Za&&!s.match(/android\s2\.3/i)))ha&&
 (c.ignoreFlash=!0),A=!0};ta();Da();t.add(g,"focus",Y);t.add(g,"load",F);t.add(g,"load",ua);n.addEventListener?n.addEventListener("DOMContentLoaded",G,!1):n.attachEvent?n.attachEvent("onreadystatechange",Ba):H({type:"NO_DOM2_EVENTS",fatal:!0})}var ka=null;if(void 0===g.SM2_DEFER||!SM2_DEFER)ka=new U;g.SoundManager=U;g.soundManager=ka})(window);
-},{}],8:[function(_dereq_,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 module.exports = (function(){
   return  window.requestAnimationFrame       ||
           window.webkitRequestAnimationFrame ||
@@ -636,7 +752,7 @@ module.exports = (function(){
           };
 })();
 
-},{}],9:[function(_dereq_,module,exports){
+},{}],10:[function(_dereq_,module,exports){
 var isRetina = function() {
   var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),\
   (min--moz-device-pixel-ratio: 1.5),\
@@ -654,7 +770,7 @@ var isRetina = function() {
 
 module.exports = isRetina;
 
-},{}],10:[function(_dereq_,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 var get = exports.get = function(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -677,7 +793,7 @@ exports.isFunction = function(obj) {
 };
 
 
-},{}],11:[function(_dereq_,module,exports){
+},{}],12:[function(_dereq_,module,exports){
 /**
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
@@ -756,12 +872,12 @@ Video.prototype.scale = function(scale) {
  * @param {number} [w] - final rendering width
  * @param {number} [h] - final rendering height
  */
-Video.prototype.sprite = function(sprite, x, y, offsetX, offsetY, w, h) {
+Video.prototype.sprite = function(image, x, y, offsetX, offsetY, w, h) {
   offsetX = offsetX || 0;
   offsetY = offsetY || 0;
 
-  w = w || sprite.width;
-  h = h || sprite.height;
+  w = w || image.width;
+  h = h || image.height;
 
   x = Math.floor(x);
   y = Math.floor(y);
@@ -769,12 +885,12 @@ Video.prototype.sprite = function(sprite, x, y, offsetX, offsetY, w, h) {
   var drawWidth = w;
   var drawHeight = h;
 
-  if (sprite.source_image.match(/@2x.png$/)) {
+  if (image.src.match(/@2x.png$/)) {
     drawWidth /= 2;
     drawHeight /= 2;
   }
 
-  this.ctx.drawImage(sprite.image, sprite.x + offsetX, sprite.y + offsetY, w, h, x, y, drawWidth, drawHeight);
+  this.ctx.drawImage(image, image.x + offsetX, image.y + offsetY, w, h, x, y, drawWidth, drawHeight);
 };
 
 /**
