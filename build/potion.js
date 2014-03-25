@@ -1,8 +1,8 @@
 /**
- * potion - v0.1.4
+ * potion - v0.2.0
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-02-24
+ * Compiled: 2014-03-25
  *
  * potion is licensed under the MIT License.
  */
@@ -16,207 +16,100 @@ module.exports = {
   }
 };
 
-},{"./src/engine":4}],2:[function(_dereq_,module,exports){
-/**
- * Animation class for rendering sprites in grid
- * @constructor
- * @param {object} sprite - sprite object
- * @param {number} width - width of individual images in animation
- * @param {number} height - height of individual images in animation
- * @param {number} [columns=null] - optional number of columns in animation
- */
-var Animation = function(sprite, width, height, columns) {
-  /**
-   * @type object
-   */
-  this.sprite = sprite;
-
-  /**
-   * width of individual images in animation
-   * @type {number}
-   */
-  this.width = width;
-
-  /**
-   * height of individual images in animation
-   * @type {number}
-   */
-  this.height = height;
-
-  /**
-   * number of columns in animation
-   * @type {number}
-   */
-  this.columns = columns;
-
-  /**
-   * Current index of image
-   * @type {number}
-   */
-  this.state = 0;
-
-  /**
-   * Current X index
-   * @type {number}
-   */
-  this.indexX = 0;
-
-  /**
-   * Current Y index
-   * @type {number}
-   */
-  this.indexY = 0;
-
-  /**
-   * Image offset X
-   * @type {number}
-   */
-  this.offsetX = 0;
-
-  /**
-   * Image offset Y
-   * @type {number}
-   */
-  this.offsetY = 0;
-};
-
-/**
- * Set x and y index
- * @param {number} x - x index
- * @param {number} y - y index
- */
-Animation.prototype.setIndexes = function(x, y) {
-  this.setIndexX(x);
-  this.setIndexY(y);
-};
-
-/**
- * Set x index
- * @param {number} x - x index
- */
-Animation.prototype.setIndexX = function(x) {
-  this.indexX = x;
-  this.offsetX = this.width * this.indexX;
-};
-
-/**
- * Set y index
- * @param {number} y - y index
- */
-Animation.prototype.setIndexY = function(y) {
-  this.indexY = y;
-  this.offsetY = this.height * this.indexY;
-};
-
-/**
- * Set image index
- * @param {number} state - image index
- */
-Animation.prototype.setState = function(state) {
-  this.state = state;
-
-  var x = this.state;
-  var y = 0;
-
-  if (this.columns) {
-    x = this.state % this.columns;
-    y = Math.floor(this.state/this.columns);
-  }
-
-  this.setIndexX(x);
-  this.setIndexY(y);
-};
-
-module.exports = Animation;
-
-},{}],3:[function(_dereq_,module,exports){
+},{"./src/engine":3}],2:[function(_dereq_,module,exports){
 /* global soundManager */
 
 _dereq_('./lib/soundmanager2');
+var utils = _dereq_('./utils');
 
 /**
- * Class for loading music
+ * Class for assets loading
  * @constructor
  */
 var Assets = function() {
-  /**
-   * Loaded sounds
-   * @type {object}
-   */
-  this.sounds = {};
-
-  /**
-   * default path for assets
-   * @type {string}
-   */
-  this.basePath = 'assets/';
-
-  /**
-   * Default path for sound
-   * @type {string}
-   */
-  this.soundsPath = 'sounds/';
+  this.thingsToLoad = 0;
+  this._data = {};
 };
 
-/**
- * Method that creates sound object
- * @param {string} path - sound path (without base path)
- * @param {function} callback - callback function that is called when sound is loaded
- */
-Assets.prototype.createSound = function(path, callback) {
-  var sound = soundManager.createSound({
-    autoLoad: true,
-    autoPlay: false,
-    url: this.basePath + this.soundsPath + path
-  }).load({ onload: callback });
-
-  this.sounds[path] = sound;
-};
-
-/**
- * Load specified data
- * @param {object} data - data to load
- * @param {function} callback - function that is called when everything is loaded
- */
-Assets.prototype.load = function(data, callback) {
-  this.assetsPath = data.assetsPath || this.assetsPath;
-
-  if (!data.sounds) {
-    callback();
-  } else {
-    this.soundsPath = data.soundsPath || this.soundsPath;
-
-    var soundsToLoad = data.sounds.length;
-
-    var soundLoaded = function() {
-      soundsToLoad -= 1;
-      if (soundsToLoad <= 0) {
-        callback();
-      }
-    };
-
-    var self = this;
-    soundManager.onload = function() {
-      for (var i=0, len=data.sounds.length; i<len; i++) {
-        var path = data.sounds[i];
-        self.createSound(path, soundLoaded);
-      }
-    };
+Assets.prototype.onload = function(callback) {
+  this.callback = callback;
+  if (this.thingsToLoad === 0) {
+    this.onload();
   }
 };
 
-/**
- * Get sound with specified name
- * @param {string} name - sound name
- * @return {object} sound object
- */
-Assets.prototype.getSound = function(name) {
-  return this.sounds[name];
+Assets.prototype.get = function(name) {
+  return this._data[name];
+};
+
+Assets.prototype._handleCustomLoading = function(loading) {
+  var self = this;
+  var done = function(name, value) {
+    self._save(name, value);
+  };
+  loading(done);
+};
+
+Assets.prototype.load = function(type, url, callback) {
+  var self = this;
+  this.thingsToLoad += 1;
+
+  if (utils.isFunction(type)) {
+    this._handleCustomLoading(type);
+    return;
+  }
+
+  type = type.toLowerCase();
+
+  var request = new XMLHttpRequest();
+
+  switch (type) {
+    case 'json':
+      request.open('GET', url, true);
+      request.responseType = 'text';
+      request.onload = function() {
+        var data = JSON.parse(this.response);
+        self._save(url, data, callback);
+      };
+      request.send();
+      break;
+    case 'image':
+    case 'texture':
+    case 'sprite':
+      var image = new Image();
+      image.onload = function() {
+        self._save(url, image, callback);
+      };
+      image.src = url;
+      break;
+    default: // text files
+      request.open('GET', url, true);
+      request.responseType = 'text';
+      request.onload = function() {
+        var data = this.response;
+        self._save(url, data, callback);
+      };
+      request.send();
+      break;
+  }
+};
+
+Assets.prototype._save = function(url, data, callback) {
+  this._data[url] = data;
+  if (callback) { callback(data); }
+  this.finishedOneFile();
+};
+
+Assets.prototype.finishedOneFile = function() {
+  this.thingsToLoad -= 1;
+  if (this.thingsToLoad === 0) {
+    this.callback();
+  }
 };
 
 module.exports = Assets;
 
-},{"./lib/soundmanager2":8}],4:[function(_dereq_,module,exports){
+},{"./lib/soundmanager2":7,"./utils":10}],3:[function(_dereq_,module,exports){
 var Game = _dereq_('./game');
 
 var raf = _dereq_('./raf');
@@ -240,17 +133,9 @@ var Engine = function(canvas, methods) {
 
   this.setupCanvasSize();
 
-  var start = false;
-  var self = this;
-  this.game.assets.load(this.game.load, function() {
-    if (start) { self.start(); }
-    start = true;
-  });
-
-  this.game.sprite.load(this.game.load.sprite, this.game.load.spriteImage, function() {
-    if (start) { self.start(); }
-    start = true;
-  });
+  this.game.assets.onload(function() {
+    this.start();
+  }.bind(this));
 };
 
 /**
@@ -294,6 +179,7 @@ Engine.prototype.setupCanvasSize = function() {
  * @private
  */
 Engine.prototype.start = function() {
+  this.start = true;
   this.game.init();
   this.addEvents();
   this.startFrame();
@@ -344,10 +230,9 @@ Engine.prototype.render = function() {
 
 module.exports = Engine;
 
-},{"./game":5,"./raf":9}],5:[function(_dereq_,module,exports){
+},{"./game":4,"./raf":8}],4:[function(_dereq_,module,exports){
 var Video = _dereq_('./video');
 var Input = _dereq_('./input');
-var SpriteSheetManager = _dereq_('./spriteSheetManager');
 var Assets = _dereq_('./assets');
 var isRetina = _dereq_('./retina');
 
@@ -380,18 +265,6 @@ var Game = function(canvas) {
    * @type {number}
    */
   this.height = 300;
-
-  /**
-   * Sprites to load
-   * @type {object}
-   */
-  this.load = {};
-
-  /**
-   * Instance of SpriteSheetManager for managing sprites and images
-   * @type {SpriteSheetManager}
-   */
-  this.sprite = new SpriteSheetManager();
 
   /**
    * Instance of Assets for loading assets for the game
@@ -482,7 +355,7 @@ Game.prototype.blur = function() {};
 
 module.exports = Game;
 
-},{"./assets":3,"./input":6,"./retina":10,"./spriteSheetManager":11,"./video":13}],6:[function(_dereq_,module,exports){
+},{"./assets":2,"./input":5,"./retina":9,"./video":11}],5:[function(_dereq_,module,exports){
 var keys = _dereq_('./keys');
 
 /**
@@ -576,7 +449,7 @@ Input.prototype._addEvents = function(game) {
 
 module.exports = Input;
 
-},{"./keys":7}],7:[function(_dereq_,module,exports){
+},{"./keys":6}],6:[function(_dereq_,module,exports){
 module.exports = {
   'MOUSE1':-1,
   'MOUSE2':-3,
@@ -671,7 +544,7 @@ module.exports = {
   'PERIOD':190
 };
 
-},{}],8:[function(_dereq_,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 /** @license
  *
  * SoundManager 2: JavaScript Sound for the Web
@@ -753,7 +626,7 @@ Y),!0;Ga=ab=!0;Q=!1;F();t.remove(g,"focus",Y);return!0};M=function(b){if(p)retur
 for(b in e)e.hasOwnProperty(b)&&(c[b]===k?c[b]=e[b]:c[b]!==e[b]&&(c.setupOptions[b]=c[b]))};ma=function(){if(p)return!1;if(c.html5Only)return p||(t.remove(g,"load",c.beginDelayedInit),c.enabled=!0,M()),!0;Z();try{l._externalInterfaceTest(!1),Oa(!0,c.flashPollingInterval||(c.useHighPerformance?10:50)),c.debugMode||l._disableDebug(),c.enabled=!0,c.html5Only||t.add(g,"unload",la)}catch(b){return H({type:"JS_TO_FLASH_EXCEPTION",fatal:!0}),xa(!0),M(),!1}M();t.remove(g,"load",c.beginDelayedInit);return!0};
 G=function(){if(N)return!1;N=!0;Ma();wa();!v&&c.hasHTML5&&c.setup({useHTML5Audio:!0,preferFlash:!1});Wa();!v&&u&&(Ua.push(sa.needFlash),c.setup({flashLoadTimeout:1}));n.removeEventListener&&n.removeEventListener("DOMContentLoaded",G,!1);Z();return!0};Ba=function(){"complete"===n.readyState&&(G(),n.detachEvent("onreadystatechange",Ba));return!0};ua=function(){na=!0;t.remove(g,"load",ua)};ta=function(){if(Fa&&(c.setupOptions.useHTML5Audio=!0,c.setupOptions.preferFlash=!1,ha||Za&&!s.match(/android\s2\.3/i)))ha&&
 (c.ignoreFlash=!0),A=!0};ta();Da();t.add(g,"focus",Y);t.add(g,"load",F);t.add(g,"load",ua);n.addEventListener?n.addEventListener("DOMContentLoaded",G,!1):n.attachEvent?n.attachEvent("onreadystatechange",Ba):H({type:"NO_DOM2_EVENTS",fatal:!0})}var ka=null;if(void 0===g.SM2_DEFER||!SM2_DEFER)ka=new U;g.SoundManager=U;g.soundManager=ka})(window);
-},{}],9:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 module.exports = (function(){
   return  window.requestAnimationFrame       ||
           window.webkitRequestAnimationFrame ||
@@ -763,7 +636,7 @@ module.exports = (function(){
           };
 })();
 
-},{}],10:[function(_dereq_,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 var isRetina = function() {
   var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),\
   (min--moz-device-pixel-ratio: 1.5),\
@@ -781,88 +654,30 @@ var isRetina = function() {
 
 module.exports = isRetina;
 
-},{}],11:[function(_dereq_,module,exports){
-var getJSON = _dereq_('./utils').getJSON;
-
-var animation = _dereq_('./animation');
-
-/**
- * Class for loading images
- * @constructor
- */
-var SpriteSheetManager = function() {
-  /**
-   * Sprite data
-   * @type {object}
-   */
-  this.data = {};
-
-  /**
-   * animation class
-   * @type {Animation}
-   */
-  this.animation = animation;
-
-  /**
-   * sprite image
-   * @type {HTMLImageElement|null}
-   */
-  this.image = null;
-};
-
-/**
- * Load json file and actual sprite image
- * @param {string} json - path to the json file
- * @param {string} imagePath - path to the image
- * @param {function} callback - function that is called after everything is loaded
- */
-SpriteSheetManager.prototype.load = function(json, imagePath, callback) {
-  if (!json) { return setTimeout(callback, 0); }
-
-  var self = this;
-
-  var image = new Image();
-  image.onload = function() {
-    for (var name in self.data) {
-      var item = self.data[name];
-      item.image = image;
-    }
-
-    self.image = image;
-    callback();
-  };
-
-  getJSON(json, function(data) {
-    self.data = data;
-    image.src = imagePath;
-  });
-};
-
-/**
- * Get data about specific image
- * @param {string} name - image name
- * @return {object}
- */
-SpriteSheetManager.prototype.get = function(name) {
-  return this.data[name];
-};
-
-module.exports = SpriteSheetManager;
-
-},{"./animation":2,"./utils":12}],12:[function(_dereq_,module,exports){
-exports.getJSON = function(url, callback) {
+},{}],10:[function(_dereq_,module,exports){
+var get = exports.get = function(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
 
   request.onload = function() {
-    var data = JSON.parse(this.response);
-    callback(data);
+    callback(this.response);
   };
 
   request.send();
 };
 
-},{}],13:[function(_dereq_,module,exports){
+var getJSON = exports.getJSON = function(url, callback) {
+  get(url, function(text) {
+    callback(JSON.parse(text));
+  });
+};
+
+exports.isFunction = function(obj) {
+  return !!(obj && obj.constructor && obj.call && obj.apply);
+};
+
+
+},{}],11:[function(_dereq_,module,exports){
 /**
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
