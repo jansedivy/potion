@@ -1,6 +1,3 @@
-/* global soundManager */
-
-require('./lib/soundmanager2');
 var utils = require('./utils');
 
 /**
