@@ -1,5 +1,5 @@
 /**
- * potion - v0.2.0
+ * potion - v0.2.1
  * Copyright (c) 2014, Jan Sedivy
  *
  * Compiled: 2014-03-25
@@ -34,7 +34,7 @@ var Assets = function() {
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
   if (this.thingsToLoad === 0) {
-    this.onload();
+    this.callback();
   }
 };
 
