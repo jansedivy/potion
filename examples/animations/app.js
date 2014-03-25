@@ -5,7 +5,7 @@ var Player = function() {
   this.x = 50;
   this.y = 20;
 
-  this.animation = new app.sprite.animation(app.sprite.get('test'), 130, 150, 7);
+  this.animation = new app.animation(app.assets.get('test.png'), 130, 150, 7);
   this.animationTime = 0;
 };
 
@@ -28,10 +28,7 @@ Player.prototype.render = function() {
 
 app = Potion.init(document.querySelector('canvas'), {
   config: function() {
-    this.load = {
-      sprite: 'sprite.json',
-      spriteImage: 'sprite.png'
-    };
+    this.assets.load('image', 'test.png');
   },
 
   init: function() {
