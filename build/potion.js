@@ -1,8 +1,8 @@
 /**
- * potion - v0.2.3
+ * potion - v0.2.4
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-03-25
+ * Compiled: 2014-04-21
  *
  * potion is licensed under the MIT License.
  */
@@ -144,7 +144,7 @@ var Assets = function() {
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
   if (this.thingsToLoad === 0) {
-    this.callback();
+    setTimeout(callback, 0);
   }
 };
 
