@@ -72,17 +72,9 @@ Engine.prototype.setupCanvasSize = function() {
  * @private
  */
 Engine.prototype.start = function() {
-  this.start = true;
   this.game.init();
   this.addEvents();
-  this.startFrame();
-};
 
-/**
- * Starts next frame in game loop
- * @private
- */
-Engine.prototype.startFrame = function() {
   this._time = Time.now();
   raf(this.tickFunc);
 };
@@ -92,13 +84,14 @@ Engine.prototype.startFrame = function() {
  * @private
  */
 Engine.prototype.tick = function() {
+  raf(this.tickFunc);
+
   var time = (Time.now() - this._time) / 1000;
   if (time > 0.016) { time = 0.016; }
+  this._time = Time.now();
 
   this.update(time);
   this.render();
-
-  this.startFrame();
 };
 
 /**
