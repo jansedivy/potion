@@ -87,7 +87,7 @@ Engine.prototype.tick = function() {
   raf(this.tickFunc);
 
   var time = (Time.now() - this._time) / 1000;
-  if (time > 0.016) { time = 0.016; }
+  if (time > 0.01666) { time = 0.01666; }
   this._time = Time.now();
 
   this.update(time);
