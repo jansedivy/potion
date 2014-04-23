@@ -86,9 +86,10 @@ Engine.prototype.start = function() {
 Engine.prototype.tick = function() {
   raf(this.tickFunc);
 
-  var time = (Time.now() - this._time) / 1000;
+  var now = Time.now();
+  var time = (now - this._time) / 1000;
   if (time > 0.01666) { time = 0.01666; }
-  this._time = Time.now();
+  this._time = now;
 
   this.update(time);
   this.render();
