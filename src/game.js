@@ -54,7 +54,7 @@ var Game = function(canvas) {
    */
   this.input = new Input(this);
 
-  this.config();
+  this.configure();
 };
 
 /**
@@ -67,7 +67,7 @@ Game.prototype.init = function() {};
  * Configure the game
  * @abstract
  */
-Game.prototype.config = function() {};
+Game.prototype.configure = function() {};
 
 /**
  * Window resize event
