@@ -19,6 +19,10 @@ var Engine = function(canvas, methods) {
    */
   this.game = new GameClass(canvas);
 
+  this.tickFunc = (function (self) {
+    return function() { self.tick(); };
+  })(this);
+
   this.setupCanvasSize();
 
   this.game.assets.onload(function() {
@@ -79,8 +83,7 @@ Engine.prototype.start = function() {
  */
 Engine.prototype.startFrame = function() {
   this._time = Date.now();
-  var self = this;
-  raf(function() { self.tick(); });
+  raf(this.tickFunc);
 };
 
 /**
