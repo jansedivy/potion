@@ -1,4 +1,8 @@
+/* global Howl */
+
 var utils = require('./utils');
+
+require('../lib/howler.min.js');
 
 /**
  * Class for assets loading
@@ -50,6 +54,16 @@ Assets.prototype.load = function(type, url, callback) {
         self._save(url, data, callback);
       };
       request.send();
+      break;
+    case 'mp3':
+    case 'music':
+    case 'sound':
+      var sound = new Howl({
+        urls: [url],
+        onload: function() {
+          self._save(url, sound, callback);
+        }
+      });
       break;
     case 'image':
     case 'texture':
