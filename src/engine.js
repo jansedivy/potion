@@ -1,6 +1,7 @@
 var Game = require('./game');
 
 var raf = require('./raf');
+var Time = require('./time');
 
 /**
  * Main Engine class which calls the game methods
@@ -82,7 +83,7 @@ Engine.prototype.start = function() {
  * @private
  */
 Engine.prototype.startFrame = function() {
-  this._time = Date.now();
+  this._time = Time.now();
   raf(this.tickFunc);
 };
 
@@ -91,7 +92,7 @@ Engine.prototype.startFrame = function() {
  * @private
  */
 Engine.prototype.tick = function() {
-  var time = (Date.now() - this._time) / 1000;
+  var time = (Time.now() - this._time) / 1000;
   if (time > 0.016) { time = 0.016; }
 
   this.update(time);
