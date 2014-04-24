@@ -89,21 +89,6 @@ Game.prototype.render = function() {};
 Game.prototype.update = function(time) {};
 
 /**
- * Keypress event
- * @param {number} keycode - char code of the pressed key
- * @abstract
- */
-Game.prototype.keypress = function(keycode) {};
-
-/**
- * Click event
- * @param {number} x - x position
- * @param {number} y - y position
- * @abstract
- */
-Game.prototype.click = function(x, y) {};
-
-/**
  * Mousemove event
  * @param {number} x - x position
  * @param {number} y - y position

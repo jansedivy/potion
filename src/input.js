@@ -72,14 +72,6 @@ Input.prototype._addEvents = function(game) {
     self.mouse.isDown = true;
   });
 
-  canvas.addEventListener('click', function(e) {
-    game.click(e.offsetX, e.offsetY);
-  });
-
-  document.addEventListener('keypress', function(e) {
-    game.keypress(e.keyCode);
-  });
-
   document.addEventListener('keydown', function(e) {
     game.input.keys[e.keyCode] = true;
   });
@@ -87,6 +79,18 @@ Input.prototype._addEvents = function(game) {
   document.addEventListener('keyup', function(e) {
     game.input.keys[e.keyCode] = false;
   });
+
+  if (game.keypress) {
+    document.addEventListener('keypress', function(e) {
+      game.keypress(e.keyCode);
+    });
+  }
+
+  if (game.click) {
+    canvas.addEventListener('click', function(e) {
+      game.click(e.offsetX, e.offsetY);
+    });
+  }
 };
 
 module.exports = Input;
