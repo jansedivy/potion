@@ -96,6 +96,8 @@ Game.prototype.update = function(time) {};
  */
 Game.prototype.mousemove = function(x, y) {};
 
+Game.prototype.mouseup = function(x, y) {};
+
 /**
  * Window Focus event
  * @abstract

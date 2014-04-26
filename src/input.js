@@ -62,14 +62,24 @@ Input.prototype._addEvents = function(game) {
     self.mouse.position.y = e.offsetY;
   });
 
-  canvas.addEventListener('mouseup', function() {
+  canvas.addEventListener('mouseup', function(e) {
     self.mouse.isDown = false;
-  });
+    e.preventDefault();
+    game.mouseup(e.x, e.y);
+  }, false);
 
   canvas.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+
     self.mouse.position.x = e.offsetX;
     self.mouse.position.y = e.offsetY;
     self.mouse.isDown = true;
+
+    game.click(e.offsetX, e.offsetY, e.button);
+  }, false);
+
+  canvas.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
   });
 
   document.addEventListener('keydown', function(e) {
@@ -83,12 +93,6 @@ Input.prototype._addEvents = function(game) {
   if (game.keypress) {
     document.addEventListener('keypress', function(e) {
       game.keypress(e.keyCode);
-    });
-  }
-
-  if (game.click) {
-    canvas.addEventListener('click', function(e) {
-      game.click(e.offsetX, e.offsetY);
     });
   }
 };
