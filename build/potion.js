@@ -1,8 +1,8 @@
 /**
- * potion - v0.2.5
+ * potion - v0.2.6
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-04-26
+ * Compiled: 2014-05-01
  *
  * potion is licensed under the MIT License.
  */
@@ -538,9 +538,12 @@ Input.prototype._addEvents = function(game) {
   var canvas = game.canvas;
 
   canvas.addEventListener('mousemove', function(e) {
-    game.mousemove(e.offsetX, e.offsetY);
-    self.mouse.position.x = e.offsetX;
-    self.mouse.position.y = e.offsetY;
+    var x = e.offsetX || e.layerX;
+    var y = e.offsetY || e.layerY;
+
+    game.mousemove(x, y);
+    self.mouse.position.x = x;
+    self.mouse.position.y = y;
   });
 
   canvas.addEventListener('mouseup', function(e) {
@@ -552,11 +555,14 @@ Input.prototype._addEvents = function(game) {
   canvas.addEventListener('mousedown', function(e) {
     e.preventDefault();
 
-    self.mouse.position.x = e.offsetX;
-    self.mouse.position.y = e.offsetY;
+    var x = e.offsetX || e.layerX;
+    var y = e.offsetY || e.layerY;
+
+    self.mouse.position.x = x;
+    self.mouse.position.y = y;
     self.mouse.isDown = true;
 
-    game.click(e.offsetX, e.offsetY, e.button);
+    game.click(x, y, e.button);
   }, false);
 
   canvas.addEventListener('contextmenu', function(e) {
