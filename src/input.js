@@ -85,6 +85,60 @@ Input.prototype._addEvents = function(game) {
     game.click(x, y, e.button);
   }, false);
 
+  var touchX = null;
+  var touchY = null;
+
+  canvas.addEventListener('touchstart', function(e) {
+    var x = e.layerX;
+    var y = e.layerY;
+
+    touchX = x;
+    touchY = y;
+
+    self.mouse.x = x;
+    self.mouse.y = y;
+    self.mouse.isDown = true;
+  });
+
+  canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+
+    var x = e.layerX;
+    var y = e.layerY;
+
+    game.mousemove(x, y);
+
+    self.mouse.x = x;
+    self.mouse.y = y;
+  });
+
+  canvas.addEventListener('touchend', function(e) {
+    e.preventDefault();
+
+    self.mouse.isDown = false;
+
+    for (var i=0, len=e.changedTouches.length; i<len; i++) {
+      var touch = e.changedTouches[i];
+
+      var x = touch.pageX - canvas.offsetLeft;
+      var y = touch.pageY - canvas.offsetTop;
+      var button = 0;
+
+      var dx = Math.abs(touchX - x);
+      var dy = Math.abs(touchY - y);
+
+      var threshold = 5;
+
+      if (dx < threshold && dy < threshold) {
+        self.mouse.x = x;
+        self.mouse.y = y;
+
+        game.click(x, y, button);
+      }
+    }
+
+  });
+
   canvas.addEventListener('contextmenu', function(e) {
     e.preventDefault();
   });
