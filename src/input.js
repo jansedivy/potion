@@ -99,7 +99,7 @@ Input.prototype._addEvents = function(game) {
 
   if (game.keypress) {
     document.addEventListener('keypress', function(e) {
-      game.keypress(e.keyCode);
+      game.keypress(e.which);
     });
   }
 };
