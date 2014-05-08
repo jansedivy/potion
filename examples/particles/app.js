@@ -16,8 +16,8 @@ var app = Potion.init(document.querySelector('.game'), {
       this.particles.push(new Particle(x, y, dx, dy));
     }
 
-    this.lastPosition.x = this.input.mouse.position.x;
-    this.lastPosition.y = this.input.mouse.position.y;
+    this.lastPosition.x = this.input.mouse.x;
+    this.lastPosition.y = this.input.mouse.y;
   },
 
   update: function(time) {
