@@ -1,8 +1,8 @@
 /**
- * potion - v0.2.6
+ * potion - v0.3.0
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-05-01
+ * Compiled: 2014-05-08
  *
  * potion is licensed under the MIT License.
  */
@@ -505,7 +505,8 @@ var Input = function(game) {
    */
   this.mouse = {
     isDown: false,
-    position: { x: null, y: null }
+    x: null,
+    y: null
   };
 
   this._addEvents(game);
@@ -538,12 +539,12 @@ Input.prototype._addEvents = function(game) {
   var canvas = game.canvas;
 
   canvas.addEventListener('mousemove', function(e) {
-    var x = e.offsetX || e.layerX;
-    var y = e.offsetY || e.layerY;
+    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
 
     game.mousemove(x, y);
-    self.mouse.position.x = x;
-    self.mouse.position.y = y;
+    self.mouse.x = x;
+    self.mouse.y = y;
   });
 
   canvas.addEventListener('mouseup', function(e) {
@@ -555,15 +556,69 @@ Input.prototype._addEvents = function(game) {
   canvas.addEventListener('mousedown', function(e) {
     e.preventDefault();
 
-    var x = e.offsetX || e.layerX;
-    var y = e.offsetY || e.layerY;
+    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
 
-    self.mouse.position.x = x;
-    self.mouse.position.y = y;
+    self.mouse.x = x;
+    self.mouse.y = y;
     self.mouse.isDown = true;
 
     game.click(x, y, e.button);
   }, false);
+
+  var touchX = null;
+  var touchY = null;
+
+  canvas.addEventListener('touchstart', function(e) {
+    var x = e.layerX;
+    var y = e.layerY;
+
+    touchX = x;
+    touchY = y;
+
+    self.mouse.x = x;
+    self.mouse.y = y;
+    self.mouse.isDown = true;
+  });
+
+  canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+
+    var x = e.layerX;
+    var y = e.layerY;
+
+    game.mousemove(x, y);
+
+    self.mouse.x = x;
+    self.mouse.y = y;
+  });
+
+  canvas.addEventListener('touchend', function(e) {
+    e.preventDefault();
+
+    self.mouse.isDown = false;
+
+    for (var i=0, len=e.changedTouches.length; i<len; i++) {
+      var touch = e.changedTouches[i];
+
+      var x = touch.pageX - canvas.offsetLeft;
+      var y = touch.pageY - canvas.offsetTop;
+      var button = 0;
+
+      var dx = Math.abs(touchX - x);
+      var dy = Math.abs(touchY - y);
+
+      var threshold = 5;
+
+      if (dx < threshold && dy < threshold) {
+        self.mouse.x = x;
+        self.mouse.y = y;
+
+        game.click(x, y, button);
+      }
+    }
+
+  });
 
   canvas.addEventListener('contextmenu', function(e) {
     e.preventDefault();
@@ -579,7 +634,7 @@ Input.prototype._addEvents = function(game) {
 
   if (game.keypress) {
     document.addEventListener('keypress', function(e) {
-      game.keypress(e.keyCode);
+      game.keypress(e.which);
     });
   }
 };
