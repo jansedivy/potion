@@ -24,7 +24,8 @@ var Input = function(game) {
    */
   this.mouse = {
     isDown: false,
-    position: { x: null, y: null }
+    x: null,
+    y: null
   };
 
   this._addEvents(game);
@@ -61,8 +62,8 @@ Input.prototype._addEvents = function(game) {
     var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
 
     game.mousemove(x, y);
-    self.mouse.position.x = x;
-    self.mouse.position.y = y;
+    self.mouse.x = x;
+    self.mouse.y = y;
   });
 
   canvas.addEventListener('mouseup', function(e) {
@@ -77,8 +78,8 @@ Input.prototype._addEvents = function(game) {
     var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
     var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
 
-    self.mouse.position.x = x;
-    self.mouse.position.y = y;
+    self.mouse.x = x;
+    self.mouse.y = y;
     self.mouse.isDown = true;
 
     game.click(x, y, e.button);
