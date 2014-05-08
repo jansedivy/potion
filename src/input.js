@@ -67,9 +67,14 @@ Input.prototype._addEvents = function(game) {
   });
 
   canvas.addEventListener('mouseup', function(e) {
-    self.mouse.isDown = false;
     e.preventDefault();
-    game.mouseup(e.x, e.y);
+
+    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
+
+    self.mouse.isDown = false;
+
+    game.mouseup(x, y, e.button);
   }, false);
 
   canvas.addEventListener('mousedown', function(e) {
