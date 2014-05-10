@@ -1,8 +1,8 @@
 /**
- * potion - v0.3.0
+ * potion - v0.3.1
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-05-08
+ * Compiled: 2014-05-10
  *
  * potion is licensed under the MIT License.
  */
@@ -470,6 +470,8 @@ Game.prototype.mouseup = function(x, y) {};
  */
 Game.prototype.focus = function() {};
 
+Game.prototype.click = function() {};
+
 /**
  * Window Blur event
  * @abstract
@@ -548,9 +550,14 @@ Input.prototype._addEvents = function(game) {
   });
 
   canvas.addEventListener('mouseup', function(e) {
-    self.mouse.isDown = false;
     e.preventDefault();
-    game.mouseup(e.x, e.y);
+
+    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
+
+    self.mouse.isDown = false;
+
+    game.mouseup(x, y, e.button);
   }, false);
 
   canvas.addEventListener('mousedown', function(e) {
