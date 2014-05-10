@@ -104,6 +104,8 @@ Game.prototype.mouseup = function(x, y) {};
  */
 Game.prototype.focus = function() {};
 
+Game.prototype.click = function() {};
+
 /**
  * Window Blur event
  * @abstract
