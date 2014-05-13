@@ -1,8 +1,8 @@
 /**
- * potion - v0.3.1
+ * potion - v0.4.0
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-05-10
+ * Compiled: 2014-05-13
  *
  * potion is licensed under the MIT License.
  */
@@ -13,10 +13,12 @@ module.exports = {
   init: function(canvas, methods) {
     var engine = new Engine(canvas, methods);
     return engine.game;
-  }
+  },
+
+  Animation: _dereq_('./src/animation')
 };
 
-},{"./src/engine":5}],2:[function(_dereq_,module,exports){
+},{"./src/animation":3,"./src/engine":5}],2:[function(_dereq_,module,exports){
 /*!
  *  howler.js v1.1.20
  *  howlerjs.com
@@ -31,16 +33,16 @@ module.exports = {
 /**
  * Animation class for rendering sprites in grid
  * @constructor
- * @param {object} sprite - sprite object
+ * @param {object} image
  * @param {number} width - width of individual images in animation
  * @param {number} height - height of individual images in animation
  * @param {number} [columns=null] - optional number of columns in animation
  */
-var Animation = function(sprite, width, height, columns) {
+var Animation = function(image, width, height, columns) {
   /**
    * @type object
    */
-  this.sprite = sprite;
+  this.image = image;
 
   /**
    * width of individual images in animation
@@ -152,13 +154,18 @@ _dereq_('../lib/howler.min.js');
  * @constructor
  */
 var Assets = function() {
-  this.thingsToLoad = 0;
+  this.isLoading = true;
+
+  this.itemsCount = 0;
+  this.loadedItemsCount = 0;
+
+  this._thingsToLoad = 0;
   this._data = {};
 };
 
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
-  if (this.thingsToLoad === 0) {
+  if (this._thingsToLoad === 0) {
     setTimeout(callback, 0);
   }
 };
@@ -177,7 +184,8 @@ Assets.prototype._handleCustomLoading = function(loading) {
 
 Assets.prototype.load = function(type, url, callback) {
   var self = this;
-  this.thingsToLoad += 1;
+  this._thingsToLoad += 1;
+  this.itemsCount += 1;
 
   if (utils.isFunction(type)) {
     this._handleCustomLoading(type);
@@ -236,8 +244,10 @@ Assets.prototype._save = function(url, data, callback) {
 };
 
 Assets.prototype.finishedOneFile = function() {
-  this.thingsToLoad -= 1;
-  if (this.thingsToLoad === 0) {
+  this._thingsToLoad -= 1;
+  this.loadedItemsCount += 1;
+  if (this._thingsToLoad === 0) {
+    this.isLoading = false;
     this.callback();
   }
 };
@@ -276,6 +286,9 @@ var Engine = function(canvas, methods) {
   this.game.assets.onload(function() {
     this.start();
   }.bind(this));
+
+  this._time = Time.now();
+  raf(this.tickFunc);
 };
 
 /**
@@ -321,9 +334,6 @@ Engine.prototype.setupCanvasSize = function() {
 Engine.prototype.start = function() {
   this.game.init();
   this.addEvents();
-
-  this._time = Time.now();
-  raf(this.tickFunc);
 };
 
 /**
@@ -338,8 +348,12 @@ Engine.prototype.tick = function() {
   if (time > 0.01666) { time = 0.01666; }
   this._time = now;
 
-  this.update(time);
-  this.render();
+  if (this.game.assets.isLoading) {
+    this.game.preloading(time);
+  } else {
+    this.update(time);
+    this.render();
+  }
 };
 
 /**
@@ -368,7 +382,6 @@ var Video = _dereq_('./video');
 var Input = _dereq_('./input');
 var Assets = _dereq_('./assets');
 var isRetina = _dereq_('./retina');
-var Animation = _dereq_('./animation');
 
 /**
  * Game class that is subclassed by actual game code
@@ -405,8 +418,6 @@ var Game = function(canvas) {
    * @type {Assets}
    */
   this.assets = new Assets();
-
-  this.animation = Animation;
 
   /**
    * True if you are using retina screen
@@ -478,9 +489,34 @@ Game.prototype.click = function() {};
  */
 Game.prototype.blur = function() {};
 
+Game.prototype.preloading = function() {
+  if (!this.video.ctx) { return; }
+
+  var ratio = this.assets.loadedItemsCount/this.assets.itemsCount;
+  var width = Math.min(this.width * 2/3, 300);
+  var height = 20;
+
+  var y = (this.height - height) / 2;
+  var x = (this.width - width) / 2;
+
+  this.video.ctx.save();
+
+  this.video.ctx.fillStyle = '#a9c848';
+  this.video.ctx.fillRect(0, 0, this.width, this.height);
+
+  this.video.ctx.fillStyle = '#88a237';
+  this.video.ctx.fillRect(x, y, width, height);
+
+  this.video.ctx.fillStyle = '#f6ffda';
+  this.video.ctx.fillRect(x, y, width * ratio, height);
+
+  this.video.ctx.restore();
+},
+
+
 module.exports = Game;
 
-},{"./animation":3,"./assets":4,"./input":7,"./retina":10,"./video":13}],7:[function(_dereq_,module,exports){
+},{"./assets":4,"./input":7,"./retina":10,"./video":13}],7:[function(_dereq_,module,exports){
 var keys = _dereq_('./keys');
 
 /**
@@ -906,7 +942,7 @@ Video.prototype.sprite = function(image, x, y, offsetX, offsetY, w, h) {
  * @param {number} y - y position
  */
 Video.prototype.animation = function(animation, x, y) {
-  this.sprite(animation.sprite, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
+  this.sprite(animation.image, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
 };
 
 module.exports = Video;
