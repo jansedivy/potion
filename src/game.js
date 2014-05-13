@@ -109,4 +109,29 @@ Game.prototype.click = function() {};
  */
 Game.prototype.blur = function() {};
 
+Game.prototype.preloading = function() {
+  if (!this.video.ctx) { return; }
+
+  var ratio = this.assets.loadedItemsCount/this.assets.itemsCount;
+  var width = Math.min(this.width * 2/3, 300);
+  var height = 20;
+
+  var y = (this.height - height) / 2;
+  var x = (this.width - width) / 2;
+
+  this.video.ctx.save();
+
+  this.video.ctx.fillStyle = '#a9c848';
+  this.video.ctx.fillRect(0, 0, this.width, this.height);
+
+  this.video.ctx.fillStyle = '#88a237';
+  this.video.ctx.fillRect(x, y, width, height);
+
+  this.video.ctx.fillStyle = '#f6ffda';
+  this.video.ctx.fillRect(x, y, width * ratio, height);
+
+  this.video.ctx.restore();
+},
+
+
 module.exports = Game;

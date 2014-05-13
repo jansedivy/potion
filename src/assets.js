@@ -9,13 +9,18 @@ require('../lib/howler.min.js');
  * @constructor
  */
 var Assets = function() {
-  this.thingsToLoad = 0;
+  this.isLoading = true;
+
+  this.itemsCount = 0;
+  this.loadedItemsCount = 0;
+
+  this._thingsToLoad = 0;
   this._data = {};
 };
 
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
-  if (this.thingsToLoad === 0) {
+  if (this._thingsToLoad === 0) {
     setTimeout(callback, 0);
   }
 };
@@ -34,7 +39,8 @@ Assets.prototype._handleCustomLoading = function(loading) {
 
 Assets.prototype.load = function(type, url, callback) {
   var self = this;
-  this.thingsToLoad += 1;
+  this._thingsToLoad += 1;
+  this.itemsCount += 1;
 
   if (utils.isFunction(type)) {
     this._handleCustomLoading(type);
@@ -93,8 +99,10 @@ Assets.prototype._save = function(url, data, callback) {
 };
 
 Assets.prototype.finishedOneFile = function() {
-  this.thingsToLoad -= 1;
-  if (this.thingsToLoad === 0) {
+  this._thingsToLoad -= 1;
+  this.loadedItemsCount += 1;
+  if (this._thingsToLoad === 0) {
+    this.isLoading = false;
     this.callback();
   }
 };

@@ -29,6 +29,9 @@ var Engine = function(canvas, methods) {
   this.game.assets.onload(function() {
     this.start();
   }.bind(this));
+
+  this._time = Time.now();
+  raf(this.tickFunc);
 };
 
 /**
@@ -74,9 +77,6 @@ Engine.prototype.setupCanvasSize = function() {
 Engine.prototype.start = function() {
   this.game.init();
   this.addEvents();
-
-  this._time = Time.now();
-  raf(this.tickFunc);
 };
 
 /**
@@ -91,8 +91,12 @@ Engine.prototype.tick = function() {
   if (time > 0.01666) { time = 0.01666; }
   this._time = now;
 
-  this.update(time);
-  this.render();
+  if (this.game.assets.isLoading) {
+    this.game.preloading(time);
+  } else {
+    this.update(time);
+    this.render();
+  }
 };
 
 /**
