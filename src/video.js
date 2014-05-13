@@ -104,7 +104,7 @@ Video.prototype.sprite = function(image, x, y, offsetX, offsetY, w, h) {
  * @param {number} y - y position
  */
 Video.prototype.animation = function(animation, x, y) {
-  this.sprite(animation.sprite, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
+  this.sprite(animation.image, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
 };
 
 module.exports = Video;

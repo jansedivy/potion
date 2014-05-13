@@ -1,16 +1,16 @@
 /**
  * Animation class for rendering sprites in grid
  * @constructor
- * @param {object} sprite - sprite object
+ * @param {object} image
  * @param {number} width - width of individual images in animation
  * @param {number} height - height of individual images in animation
  * @param {number} [columns=null] - optional number of columns in animation
  */
-var Animation = function(sprite, width, height, columns) {
+var Animation = function(image, width, height, columns) {
   /**
    * @type object
    */
-  this.sprite = sprite;
+  this.image = image;
 
   /**
    * width of individual images in animation
