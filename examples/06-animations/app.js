@@ -4,7 +4,7 @@ Potion.init(document.querySelector('.game'), {
   },
 
   init: function() {
-    this.playerAnimation = new this.animation(this.assets.get('test.png'), 130, 150, 7);
+    this.playerAnimation = new Potion.Animation(this.assets.get('test.png'), 130, 150, 7);
     this.animationTime = 0;
   },
 

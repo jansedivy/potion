@@ -2,7 +2,6 @@ var Video = require('./video');
 var Input = require('./input');
 var Assets = require('./assets');
 var isRetina = require('./retina');
-var Animation = require('./animation');
 
 /**
  * Game class that is subclassed by actual game code
@@ -39,8 +38,6 @@ var Game = function(canvas) {
    * @type {Assets}
    */
   this.assets = new Assets();
-
-  this.animation = Animation;
 
   /**
    * True if you are using retina screen
