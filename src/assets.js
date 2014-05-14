@@ -16,6 +16,8 @@ var Assets = function() {
 
   this._thingsToLoad = 0;
   this._data = {};
+
+  this.callback = null;
 };
 
 Assets.prototype.onload = function(callback) {
@@ -102,8 +104,11 @@ Assets.prototype.finishedOneFile = function() {
   this._thingsToLoad -= 1;
   this.loadedItemsCount += 1;
   if (this._thingsToLoad === 0) {
-    this.isLoading = false;
-    this.callback();
+    var self = this;
+    setTimeout(function() {
+      self.isLoading = false;
+      self.callback();
+    }, 300);
   }
 };
 
