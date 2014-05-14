@@ -1,8 +1,8 @@
 /**
- * potion - v0.4.0
+ * potion - v0.4.1
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-05-13
+ * Compiled: 2014-05-14
  *
  * potion is licensed under the MIT License.
  */
@@ -161,6 +161,8 @@ var Assets = function() {
 
   this._thingsToLoad = 0;
   this._data = {};
+
+  this.callback = null;
 };
 
 Assets.prototype.onload = function(callback) {
@@ -247,8 +249,11 @@ Assets.prototype.finishedOneFile = function() {
   this._thingsToLoad -= 1;
   this.loadedItemsCount += 1;
   if (this._thingsToLoad === 0) {
-    this.isLoading = false;
-    this.callback();
+    var self = this;
+    setTimeout(function() {
+      self.isLoading = false;
+      self.callback();
+    }, 300);
   }
 };
 
@@ -489,15 +494,19 @@ Game.prototype.click = function() {};
  */
 Game.prototype.blur = function() {};
 
-Game.prototype.preloading = function() {
+Game.prototype.preloading = function(time) {
   if (!this.video.ctx) { return; }
+  if (this._preloaderWidth === undefined) { this._preloaderWidth = 0; }
 
-  var ratio = this.assets.loadedItemsCount/this.assets.itemsCount;
+  var ratio = Math.max(0, Math.min(1, (this.assets.loadedItemsCount)/this.assets.itemsCount));
   var width = Math.min(this.width * 2/3, 300);
   var height = 20;
 
   var y = (this.height - height) / 2;
   var x = (this.width - width) / 2;
+
+  var currentWidth = width * ratio;
+  this._preloaderWidth = this._preloaderWidth + (currentWidth - this._preloaderWidth) * time * 10;
 
   this.video.ctx.save();
 
@@ -508,7 +517,7 @@ Game.prototype.preloading = function() {
   this.video.ctx.fillRect(x, y, width, height);
 
   this.video.ctx.fillStyle = '#f6ffda';
-  this.video.ctx.fillRect(x, y, width * ratio, height);
+  this.video.ctx.fillRect(x, y, this._preloaderWidth, height);
 
   this.video.ctx.restore();
 },
