@@ -23,6 +23,7 @@ var Assets = function() {
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
   if (this._thingsToLoad === 0) {
+    this.isLoading = false;
     setTimeout(callback, 0);
   }
 };
