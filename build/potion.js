@@ -1,8 +1,8 @@
 /**
- * potion - v0.4.1
+ * potion - v0.4.2
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-05-14
+ * Compiled: 2014-06-08
  *
  * potion is licensed under the MIT License.
  */
@@ -168,6 +168,7 @@ var Assets = function() {
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
   if (this._thingsToLoad === 0) {
+    this.isLoading = false;
     setTimeout(callback, 0);
   }
 };
@@ -552,6 +553,7 @@ var Input = function(game) {
    */
   this.mouse = {
     isDown: false,
+    button: null,
     x: null,
     y: null
   };
@@ -600,6 +602,7 @@ Input.prototype._addEvents = function(game) {
     var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
     var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
 
+    self.mouse.button = e.button;
     self.mouse.isDown = false;
 
     game.mouseup(x, y, e.button);
@@ -613,6 +616,7 @@ Input.prototype._addEvents = function(game) {
 
     self.mouse.x = x;
     self.mouse.y = y;
+    self.mouse.button = e.button;
     self.mouse.isDown = true;
 
     game.click(x, y, e.button);
