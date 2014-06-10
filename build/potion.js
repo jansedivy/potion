@@ -1,8 +1,8 @@
 /**
- * potion - v0.4.2
+ * potion - v0.4.3
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-06-08
+ * Compiled: 2014-06-10
  *
  * potion is licensed under the MIT License.
  */
@@ -489,6 +489,10 @@ Game.prototype.focus = function() {};
 
 Game.prototype.click = function() {};
 
+Game.prototype.keydown = function() {};
+
+Game.prototype.keyup = function() {};
+
 /**
  * Window Blur event
  * @abstract
@@ -682,10 +686,12 @@ Input.prototype._addEvents = function(game) {
 
   document.addEventListener('keydown', function(e) {
     game.input.keys[e.keyCode] = true;
+    game.keydown(e.which);
   });
 
   document.addEventListener('keyup', function(e) {
     game.input.keys[e.keyCode] = false;
+    game.keyup(e.which);
   });
 
   if (game.keypress) {
