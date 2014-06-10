@@ -103,6 +103,10 @@ Game.prototype.focus = function() {};
 
 Game.prototype.click = function() {};
 
+Game.prototype.keydown = function() {};
+
+Game.prototype.keyup = function() {};
+
 /**
  * Window Blur event
  * @abstract

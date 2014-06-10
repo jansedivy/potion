@@ -153,10 +153,12 @@ Input.prototype._addEvents = function(game) {
 
   document.addEventListener('keydown', function(e) {
     game.input.keys[e.keyCode] = true;
+    game.keydown(e.which);
   });
 
   document.addEventListener('keyup', function(e) {
     game.input.keys[e.keyCode] = false;
+    game.keyup(e.which);
   });
 
   if (game.keypress) {
