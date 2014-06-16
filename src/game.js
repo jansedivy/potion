@@ -139,7 +139,6 @@ Game.prototype.preloading = function(time) {
   this.video.ctx.fillRect(x, y, this._preloaderWidth, height);
 
   this.video.ctx.restore();
-},
-
+};
 
 module.exports = Game;
