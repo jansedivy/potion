@@ -65,7 +65,7 @@ Engine.prototype.setupCanvasSize = function() {
   this.game.video.width = this.game.canvas.width = this.game.width;
   this.game.video.height = this.game.canvas.height = this.game.height;
 
-  if (this.game.isRetina) {
+  if (this.game.config.useRetina && this.game.isRetina) {
     this.game.video.scaleCanvas(2);
   }
 };
@@ -92,7 +92,9 @@ Engine.prototype.tick = function() {
   this._time = now;
 
   if (this.game.assets.isLoading) {
-    this.game.preloading(time);
+    if (this.game.config.showPreloader) {
+      this.game.preloading(time);
+    }
   } else {
     this.update(time);
     this.render();

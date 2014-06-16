@@ -16,12 +16,6 @@ var Game = function(canvas) {
   this.canvas = canvas;
 
   /**
-   * Video instance for rendering into canvas
-   * @type {Video}
-   */
-  this.video = new Video(canvas);
-
-  /**
    * Game width in pixels
    * @type {number}
    */
@@ -51,7 +45,19 @@ var Game = function(canvas) {
    */
   this.input = new Input(this);
 
+  this.config = {
+    useRetina: true,
+    initializeCanvas: true,
+    showPreloader: true
+  };
+
   this.configure();
+
+  /**
+   * Video instance for rendering into canvas
+   * @type {Video}
+   */
+  this.video = new Video(canvas, this.config);
 };
 
 /**

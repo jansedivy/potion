@@ -2,7 +2,7 @@
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
  */
-var Video = function(canvas) {
+var Video = function(canvas, config) {
   /**
    * Canvas DOM element
    * @type {HTMLCanvasElement}
@@ -25,7 +25,9 @@ var Video = function(canvas) {
    * canvas context
    * @type {CanvasRenderingContext2D}
    */
-  this.ctx = canvas.getContext('2d');
+  if (config.initializeCanvas) {
+    this.ctx = canvas.getContext('2d');
+  }
 };
 
 /**
@@ -39,7 +41,9 @@ Video.prototype.include = function(methods) {
 };
 
 Video.prototype.beginFrame = function() {
-  this.ctx.clearRect(0, 0, this.width, this.height);
+  if (this.ctx) {
+    this.ctx.clearRect(0, 0, this.width, this.height);
+  }
 };
 
 Video.prototype.endFrame = function() {};
@@ -55,15 +59,9 @@ Video.prototype.scaleCanvas = function(scale) {
   this.canvas.width *= scale;
   this.canvas.height *= scale;
 
-  this.scale(scale);
-};
-
-/**
- * Canvas helper for scaling
- * @param {number} scale
- */
-Video.prototype.scale = function(scale) {
-  this.ctx.scale(scale, scale);
+  if (this.ctx) {
+    this.ctx.scale(scale, scale);
+  }
 };
 
 /**
@@ -77,6 +75,8 @@ Video.prototype.scale = function(scale) {
  * @param {number} [h] - final rendering height
  */
 Video.prototype.sprite = function(image, x, y, offsetX, offsetY, w, h) {
+  if (!this.ctx) { return; }
+
   offsetX = offsetX || 0;
   offsetY = offsetY || 0;
 
@@ -104,6 +104,8 @@ Video.prototype.sprite = function(image, x, y, offsetX, offsetY, w, h) {
  * @param {number} y - y position
  */
 Video.prototype.animation = function(animation, x, y) {
+  if (!this.ctx) { return; }
+
   this.sprite(animation.image, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
 };
 
