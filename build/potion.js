@@ -1,5 +1,5 @@
 /**
- * potion - v0.5.0
+ * potion - v0.5.1
  * Copyright (c) 2014, Jan Sedivy
  *
  * Compiled: 2014-06-17
@@ -339,7 +339,7 @@ Engine.prototype.setupCanvasSize = function() {
  */
 Engine.prototype.start = function() {
   this.game.init();
-  if (this.game.addInputEvents) {
+  if (this.game.config.addInputEvents) {
     this.addEvents();
   }
 };
@@ -443,7 +443,7 @@ var Game = function(canvas) {
    * Input instance for mouse and keyboard events
    * @type {Input}
    */
-  if (this.config.addEvents) {
+  if (this.config.addInputEvents) {
     this.input = new Input(this);
   }
 
