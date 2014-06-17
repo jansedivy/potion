@@ -1,8 +1,8 @@
 /**
- * potion - v0.4.3
+ * potion - v0.5.0
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-06-10
+ * Compiled: 2014-06-17
  *
  * potion is licensed under the MIT License.
  */
@@ -328,7 +328,7 @@ Engine.prototype.setupCanvasSize = function() {
   this.game.video.width = this.game.canvas.width = this.game.width;
   this.game.video.height = this.game.canvas.height = this.game.height;
 
-  if (this.game.isRetina) {
+  if (this.game.config.useRetina && this.game.isRetina) {
     this.game.video.scaleCanvas(2);
   }
 };
@@ -339,7 +339,9 @@ Engine.prototype.setupCanvasSize = function() {
  */
 Engine.prototype.start = function() {
   this.game.init();
-  this.addEvents();
+  if (this.game.addInputEvents) {
+    this.addEvents();
+  }
 };
 
 /**
@@ -355,7 +357,9 @@ Engine.prototype.tick = function() {
   this._time = now;
 
   if (this.game.assets.isLoading) {
-    this.game.preloading(time);
+    if (this.game.config.showPreloader) {
+      this.game.preloading(time);
+    }
   } else {
     this.update(time);
     this.render();
@@ -402,12 +406,6 @@ var Game = function(canvas) {
   this.canvas = canvas;
 
   /**
-   * Video instance for rendering into canvas
-   * @type {Video}
-   */
-  this.video = new Video(canvas);
-
-  /**
    * Game width in pixels
    * @type {number}
    */
@@ -431,13 +429,31 @@ var Game = function(canvas) {
    */
   this.isRetina = isRetina();
 
+  this.config = {
+    useRetina: true,
+    initializeCanvas: true,
+    initializeVideo: true,
+    addInputEvents: true,
+    showPreloader: true
+  };
+
+  this.configure();
+
   /**
    * Input instance for mouse and keyboard events
    * @type {Input}
    */
-  this.input = new Input(this);
+  if (this.config.addEvents) {
+    this.input = new Input(this);
+  }
 
-  this.configure();
+  /**
+   * Video instance for rendering into canvas
+   * @type {Video}
+   */
+  if (this.config.initializeVideo) {
+    this.video = new Video(canvas, this.config);
+  }
 };
 
 /**
@@ -500,7 +516,8 @@ Game.prototype.keyup = function() {};
 Game.prototype.blur = function() {};
 
 Game.prototype.preloading = function(time) {
-  if (!this.video.ctx) { return; }
+  if (!this.video && !this.video.ctx) { return; }
+
   if (this._preloaderWidth === undefined) { this._preloaderWidth = 0; }
 
   var ratio = Math.max(0, Math.min(1, (this.assets.loadedItemsCount)/this.assets.itemsCount));
@@ -525,8 +542,7 @@ Game.prototype.preloading = function(time) {
   this.video.ctx.fillRect(x, y, this._preloaderWidth, height);
 
   this.video.ctx.restore();
-},
-
+};
 
 module.exports = Game;
 
@@ -859,7 +875,7 @@ exports.isFunction = function(obj) {
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
  */
-var Video = function(canvas) {
+var Video = function(canvas, config) {
   /**
    * Canvas DOM element
    * @type {HTMLCanvasElement}
@@ -882,7 +898,9 @@ var Video = function(canvas) {
    * canvas context
    * @type {CanvasRenderingContext2D}
    */
-  this.ctx = canvas.getContext('2d');
+  if (config.initializeCanvas) {
+    this.ctx = canvas.getContext('2d');
+  }
 };
 
 /**
@@ -896,7 +914,9 @@ Video.prototype.include = function(methods) {
 };
 
 Video.prototype.beginFrame = function() {
-  this.ctx.clearRect(0, 0, this.width, this.height);
+  if (this.ctx) {
+    this.ctx.clearRect(0, 0, this.width, this.height);
+  }
 };
 
 Video.prototype.endFrame = function() {};
@@ -912,15 +932,9 @@ Video.prototype.scaleCanvas = function(scale) {
   this.canvas.width *= scale;
   this.canvas.height *= scale;
 
-  this.scale(scale);
-};
-
-/**
- * Canvas helper for scaling
- * @param {number} scale
- */
-Video.prototype.scale = function(scale) {
-  this.ctx.scale(scale, scale);
+  if (this.ctx) {
+    this.ctx.scale(scale, scale);
+  }
 };
 
 /**
@@ -934,6 +948,8 @@ Video.prototype.scale = function(scale) {
  * @param {number} [h] - final rendering height
  */
 Video.prototype.sprite = function(image, x, y, offsetX, offsetY, w, h) {
+  if (!this.ctx) { return; }
+
   offsetX = offsetX || 0;
   offsetY = offsetY || 0;
 
@@ -961,6 +977,8 @@ Video.prototype.sprite = function(image, x, y, offsetX, offsetY, w, h) {
  * @param {number} y - y position
  */
 Video.prototype.animation = function(animation, x, y) {
+  if (!this.ctx) { return; }
+
   this.sprite(animation.image, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
 };
 
