@@ -76,7 +76,9 @@ Engine.prototype.setupCanvasSize = function() {
  */
 Engine.prototype.start = function() {
   this.game.init();
-  this.addEvents();
+  if (this.game.addInputEvents) {
+    this.addEvents();
+  }
 };
 
 /**

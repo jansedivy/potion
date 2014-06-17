@@ -39,25 +39,31 @@ var Game = function(canvas) {
    */
   this.isRetina = isRetina();
 
-  /**
-   * Input instance for mouse and keyboard events
-   * @type {Input}
-   */
-  this.input = new Input(this);
-
   this.config = {
     useRetina: true,
     initializeCanvas: true,
+    initializeVideo: true,
+    addInputEvents: true,
     showPreloader: true
   };
 
   this.configure();
 
   /**
+   * Input instance for mouse and keyboard events
+   * @type {Input}
+   */
+  if (this.config.addEvents) {
+    this.input = new Input(this);
+  }
+
+  /**
    * Video instance for rendering into canvas
    * @type {Video}
    */
-  this.video = new Video(canvas, this.config);
+  if (this.config.initializeVideo) {
+    this.video = new Video(canvas, this.config);
+  }
 };
 
 /**
@@ -120,7 +126,8 @@ Game.prototype.keyup = function() {};
 Game.prototype.blur = function() {};
 
 Game.prototype.preloading = function(time) {
-  if (!this.video.ctx) { return; }
+  if (!this.video && !this.video.ctx) { return; }
+
   if (this._preloaderWidth === undefined) { this._preloaderWidth = 0; }
 
   var ratio = Math.max(0, Math.min(1, (this.assets.loadedItemsCount)/this.assets.itemsCount));
