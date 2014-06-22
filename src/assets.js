@@ -82,6 +82,7 @@ Assets.prototype.nextFile = function() {
         var data = JSON.parse(this.response);
         self._save(url, data, callback);
       };
+      request.onerror = function() { self._error(type, url); };
       request.send();
       break;
     case 'mp3':
@@ -91,7 +92,8 @@ Assets.prototype.nextFile = function() {
         urls: [url],
         onload: function() {
           self._save(url, sound, callback);
-        }
+        },
+        onloaderror: function() { self._error(type, url); }
       });
       break;
     case 'image':
@@ -101,6 +103,7 @@ Assets.prototype.nextFile = function() {
       image.onload = function() {
         self._save(url, image, callback);
       };
+      image.onerror = function() { self._error(type, url); };
       image.src = url;
       break;
     default: // text files
@@ -110,9 +113,15 @@ Assets.prototype.nextFile = function() {
         var data = this.response;
         self._save(url, data, callback);
       };
+      request.onerror = function() { self._error(type, url); };
       request.send();
       break;
   }
+};
+
+Assets.prototype._error = function(type, url) {
+  console.warn('Error loading "' + type + '" asset with url ' + url);
+  this.nextFile();
 };
 
 Assets.prototype._save = function(url, data, callback) {
