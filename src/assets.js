@@ -14,14 +14,19 @@ var Assets = function() {
   this.itemsCount = 0;
   this.loadedItemsCount = 0;
 
+  this._xhr = new XMLHttpRequest();
+
   this._thingsToLoad = 0;
   this._data = {};
 
   this.callback = null;
+
+  this._toLoad = [];
 };
 
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
+  this.nextFile();
   if (this._thingsToLoad === 0) {
     this.isLoading = false;
     setTimeout(callback, 0);
@@ -41,6 +46,15 @@ Assets.prototype._handleCustomLoading = function(loading) {
 };
 
 Assets.prototype.load = function(type, url, callback) {
+  this._toLoad.push({ type: type, url: url, callback: callback });
+};
+
+Assets.prototype.nextFile = function() {
+  var current = this._toLoad.shift();
+  var type = current.type;
+  var url = current.url;
+  var callback = current.callback;
+
   var self = this;
   this._thingsToLoad += 1;
   this.itemsCount += 1;
@@ -52,7 +66,7 @@ Assets.prototype.load = function(type, url, callback) {
 
   type = type.toLowerCase();
 
-  var request = new XMLHttpRequest();
+  var request = this._xhr;
 
   switch (type) {
     case 'json':
@@ -104,6 +118,7 @@ Assets.prototype._save = function(url, data, callback) {
 Assets.prototype.finishedOneFile = function() {
   this._thingsToLoad -= 1;
   this.loadedItemsCount += 1;
+  if (this._toLoad.length) { this.nextFile(); }
   if (this._thingsToLoad === 0) {
     var self = this;
     setTimeout(function() {
