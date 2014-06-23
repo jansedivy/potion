@@ -30,6 +30,8 @@ var Engine = function(canvas, methods) {
     this.start();
   }.bind(this));
 
+  this.strayTime = 0;
+
   this._time = Time.now();
   raf(this.tickFunc);
 };
@@ -90,7 +92,7 @@ Engine.prototype.tick = function() {
 
   var now = Time.now();
   var time = (now - this._time) / 1000;
-  if (time > 0.01666) { time = 0.01666; }
+  if (time > this.game.config.stepTime) { time = this.game.config.stepTime; }
   this._time = now;
 
   if (this.game.assets.isLoading) {
@@ -109,7 +111,15 @@ Engine.prototype.tick = function() {
  * @private
  */
 Engine.prototype.update = function(time) {
-  this.game.update(time);
+  if (this.game.config.fixedStep) {
+    this.strayTime = this.strayTime + time;
+    while (this.strayTime >= this.game.config.stepTime) {
+      this.strayTime = this.strayTime - this.game.config.stepTime;
+      this.game.update(this.game.config.stepTime);
+    }
+  } else {
+    this.game.update(time);
+  }
 };
 
 /**

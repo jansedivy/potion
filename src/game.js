@@ -44,7 +44,9 @@ var Game = function(canvas) {
     initializeCanvas: true,
     initializeVideo: true,
     addInputEvents: true,
-    showPreloader: true
+    showPreloader: true,
+    fixedStep: true,
+    stepTime: 0.01666
   };
 
   this.configure();
