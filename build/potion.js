@@ -1,8 +1,8 @@
 /**
- * potion - v0.5.1
+ * potion - v0.5.2
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-06-17
+ * Compiled: 2014-06-24
  *
  * potion is licensed under the MIT License.
  */
@@ -159,17 +159,25 @@ var Assets = function() {
   this.itemsCount = 0;
   this.loadedItemsCount = 0;
 
+  this._xhr = new XMLHttpRequest();
+
   this._thingsToLoad = 0;
   this._data = {};
 
   this.callback = null;
+
+  this._toLoad = [];
 };
 
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
+  this.nextFile();
   if (this._thingsToLoad === 0) {
-    this.isLoading = false;
-    setTimeout(callback, 0);
+    var self = this;
+    setTimeout(function() {
+      self.callback();
+      self.isLoading = false;
+    }, 0);
   }
 };
 
@@ -186,9 +194,21 @@ Assets.prototype._handleCustomLoading = function(loading) {
 };
 
 Assets.prototype.load = function(type, url, callback) {
-  var self = this;
-  this._thingsToLoad += 1;
   this.itemsCount += 1;
+
+  this._toLoad.push({ type: type, url: url, callback: callback });
+};
+
+Assets.prototype.nextFile = function() {
+  var current = this._toLoad.shift();
+
+  if (!current) { return; }
+
+  var type = current.type;
+  var url = current.url;
+  var callback = current.callback;
+
+  var self = this;
 
   if (utils.isFunction(type)) {
     this._handleCustomLoading(type);
@@ -197,7 +217,7 @@ Assets.prototype.load = function(type, url, callback) {
 
   type = type.toLowerCase();
 
-  var request = new XMLHttpRequest();
+  var request = this._xhr;
 
   switch (type) {
     case 'json':
@@ -207,6 +227,7 @@ Assets.prototype.load = function(type, url, callback) {
         var data = JSON.parse(this.response);
         self._save(url, data, callback);
       };
+      request.onerror = function() { self._error(type, url); };
       request.send();
       break;
     case 'mp3':
@@ -216,7 +237,8 @@ Assets.prototype.load = function(type, url, callback) {
         urls: [url],
         onload: function() {
           self._save(url, sound, callback);
-        }
+        },
+        onloaderror: function() { self._error(type, url); }
       });
       break;
     case 'image':
@@ -226,6 +248,7 @@ Assets.prototype.load = function(type, url, callback) {
       image.onload = function() {
         self._save(url, image, callback);
       };
+      image.onerror = function() { self._error(type, url); };
       image.src = url;
       break;
     default: // text files
@@ -235,9 +258,15 @@ Assets.prototype.load = function(type, url, callback) {
         var data = this.response;
         self._save(url, data, callback);
       };
+      request.onerror = function() { self._error(type, url); };
       request.send();
       break;
   }
+};
+
+Assets.prototype._error = function(type, url) {
+  console.warn('Error loading "' + type + '" asset with url ' + url);
+  this.nextFile();
 };
 
 Assets.prototype._save = function(url, data, callback) {
@@ -247,14 +276,16 @@ Assets.prototype._save = function(url, data, callback) {
 };
 
 Assets.prototype.finishedOneFile = function() {
-  this._thingsToLoad -= 1;
-  this.loadedItemsCount += 1;
+  this.nextFile();
+
+  this._thingsToLoad += 1;
+
   if (this._thingsToLoad === 0) {
     var self = this;
     setTimeout(function() {
-      self.isLoading = false;
       self.callback();
-    }, 300);
+      self.isLoading = false;
+    }, 0);
   }
 };
 
@@ -292,6 +323,8 @@ var Engine = function(canvas, methods) {
   this.game.assets.onload(function() {
     this.start();
   }.bind(this));
+
+  this.strayTime = 0;
 
   this._time = Time.now();
   raf(this.tickFunc);
@@ -353,7 +386,7 @@ Engine.prototype.tick = function() {
 
   var now = Time.now();
   var time = (now - this._time) / 1000;
-  if (time > 0.01666) { time = 0.01666; }
+  if (time > this.game.config.stepTime) { time = this.game.config.stepTime; }
   this._time = now;
 
   if (this.game.assets.isLoading) {
@@ -372,7 +405,15 @@ Engine.prototype.tick = function() {
  * @private
  */
 Engine.prototype.update = function(time) {
-  this.game.update(time);
+  if (this.game.config.fixedStep) {
+    this.strayTime = this.strayTime + time;
+    while (this.strayTime >= this.game.config.stepTime) {
+      this.strayTime = this.strayTime - this.game.config.stepTime;
+      this.game.update(this.game.config.stepTime);
+    }
+  } else {
+    this.game.update(time);
+  }
 };
 
 /**
@@ -434,7 +475,9 @@ var Game = function(canvas) {
     initializeCanvas: true,
     initializeVideo: true,
     addInputEvents: true,
-    showPreloader: true
+    showPreloader: true,
+    fixedStep: true,
+    stepTime: 0.01666
   };
 
   this.configure();
