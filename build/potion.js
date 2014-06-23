@@ -1,5 +1,5 @@
 /**
- * potion - v0.5.2
+ * potion - v0.5.3
  * Copyright (c) 2014, Jan Sedivy
  *
  * Compiled: 2014-06-24
@@ -171,13 +171,11 @@ var Assets = function() {
 
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
-  this.nextFile();
   if (this._thingsToLoad === 0) {
-    var self = this;
-    setTimeout(function() {
-      self.callback();
-      self.isLoading = false;
-    }, 0);
+    this.isLoading = false;
+    setTimeout(callback, 0);
+  } else {
+    this.nextFile();
   }
 };
 
@@ -195,6 +193,7 @@ Assets.prototype._handleCustomLoading = function(loading) {
 
 Assets.prototype.load = function(type, url, callback) {
   this.itemsCount += 1;
+  this._thingsToLoad += 1;
 
   this._toLoad.push({ type: type, url: url, callback: callback });
 };
@@ -277,8 +276,7 @@ Assets.prototype._save = function(url, data, callback) {
 
 Assets.prototype.finishedOneFile = function() {
   this.nextFile();
-
-  this._thingsToLoad += 1;
+  this._thingsToLoad -= 1;
 
   if (this._thingsToLoad === 0) {
     var self = this;
