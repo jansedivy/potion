@@ -153,17 +153,17 @@ Input.prototype._addEvents = function(game) {
 
   document.addEventListener('keydown', function(e) {
     game.input.keys[e.keyCode] = true;
-    game.keydown(e.which);
+    game.keydown(e.which, e);
   });
 
   document.addEventListener('keyup', function(e) {
     game.input.keys[e.keyCode] = false;
-    game.keyup(e.which);
+    game.keyup(e.which, e);
   });
 
   if (game.keypress) {
     document.addEventListener('keypress', function(e) {
-      game.keypress(e.which);
+      game.keypress(e.which, e);
     });
   }
 };
