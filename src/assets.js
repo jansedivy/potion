@@ -27,8 +27,11 @@ var Assets = function() {
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
   if (this._thingsToLoad === 0) {
-    this.isLoading = false;
-    setTimeout(callback, 0);
+    var self = this;
+    setTimeout(function() {
+      self.isLoading = false;
+      callback();
+    }, 0);
   } else {
     this.nextFile();
   }
