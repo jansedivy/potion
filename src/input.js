@@ -67,6 +67,15 @@ Input.prototype._addEvents = function(game) {
     self.mouse.y = y;
   });
 
+  canvas.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
+
+    game.click(x, y, e.button);
+  });
+
   canvas.addEventListener('mouseup', function(e) {
     e.preventDefault();
 
@@ -90,7 +99,7 @@ Input.prototype._addEvents = function(game) {
     self.mouse.button = e.button;
     self.mouse.isDown = true;
 
-    game.click(x, y, e.button);
+    game.mousedown(x, y, e.button);
   }, false);
 
   var touchX = null;
@@ -144,7 +153,6 @@ Input.prototype._addEvents = function(game) {
         game.click(x, y, button);
       }
     }
-
   });
 
   canvas.addEventListener('contextmenu', function(e) {
