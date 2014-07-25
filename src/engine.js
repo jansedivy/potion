@@ -100,6 +100,7 @@ Engine.prototype.tick = function() {
     }
   } else {
     this.update(time);
+    this.game.exitUpdate(time);
     this.render();
   }
 };

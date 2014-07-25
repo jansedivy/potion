@@ -100,6 +100,8 @@ Game.prototype.render = function() {};
  */
 Game.prototype.update = function(time) {};
 
+Game.prototype.exitUpdate = function(time) {};
+
 /**
  * Mousemove event
  * @param {number} x - x position
