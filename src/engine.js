@@ -92,7 +92,6 @@ Engine.prototype.tick = function() {
 
   var now = Time.now();
   var time = (now - this._time) / 1000;
-  if (time > this.game.config.stepTime) { time = this.game.config.stepTime; }
   this._time = now;
 
   if (this.game.assets.isLoading) {
@@ -111,6 +110,8 @@ Engine.prototype.tick = function() {
  * @private
  */
 Engine.prototype.update = function(time) {
+  if (time > this.game.config.mapStepTime) { time = this.game.config.mapStepTime; }
+
   if (this.game.config.fixedStep) {
     this.strayTime = this.strayTime + time;
     while (this.strayTime >= this.game.config.stepTime) {

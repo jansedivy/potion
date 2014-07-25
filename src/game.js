@@ -46,7 +46,8 @@ var Game = function(canvas) {
     addInputEvents: true,
     showPreloader: true,
     fixedStep: true,
-    stepTime: 0.01666
+    stepTime: 0.01666,
+    mapStepTime: 0.06
   };
 
   this.configure();
