@@ -45,8 +45,11 @@ Input.prototype.resetKeys = function() {
  * @return {boolean}
  */
 Input.prototype.isKeyDown = function(key) {
+  if (key == null) { return false; }
+
   if (this.canControlKeys) {
-    return this.keys[keys[key.toUpperCase()]];
+    var code = Number.isInteger(key) ? key : keys[key.toUpperCase()];
+    return this.keys[code];
   }
 };
 
