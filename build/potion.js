@@ -1,8 +1,8 @@
 /**
- * potion - v0.6.0
+ * potion - v0.6.1
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-07-27
+ * Compiled: 2014-07-28
  *
  * potion is licensed under the MIT License.
  */
@@ -388,7 +388,6 @@ Engine.prototype.start = function() {
  * @private
  */
 Engine.prototype.tick = function() {
-  console.log('tick');
   window.requestAnimationFrame(this.tickFunc);
 
   var now = Time.now();
@@ -401,7 +400,6 @@ Engine.prototype.tick = function() {
 };
 
 Engine.prototype._preloaderTick = function() {
-  console.log('preloader tick');
   this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
 
   var now = Time.now();
