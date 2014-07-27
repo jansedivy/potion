@@ -94,7 +94,6 @@ Engine.prototype.start = function() {
  * @private
  */
 Engine.prototype.tick = function() {
-  console.log('tick');
   window.requestAnimationFrame(this.tickFunc);
 
   var now = Time.now();
@@ -107,7 +106,6 @@ Engine.prototype.tick = function() {
 };
 
 Engine.prototype._preloaderTick = function() {
-  console.log('preloader tick');
   this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
 
   var now = Time.now();
