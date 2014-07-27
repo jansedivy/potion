@@ -1,8 +1,8 @@
 /**
- * potion - v0.5.3
+ * potion - v0.6.0
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-06-24
+ * Compiled: 2014-07-27
  *
  * potion is licensed under the MIT License.
  */
@@ -154,7 +154,7 @@ _dereq_('../lib/howler.min.js');
  * @constructor
  */
 var Assets = function() {
-  this.isLoading = true;
+  this.isLoading = false;
 
   this.itemsCount = 0;
   this.loadedItemsCount = 0;
@@ -171,9 +171,10 @@ var Assets = function() {
 
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
+
   if (this._thingsToLoad === 0) {
     this.isLoading = false;
-    setTimeout(callback, 0);
+    callback();
   } else {
     this.nextFile();
   }
@@ -192,6 +193,7 @@ Assets.prototype._handleCustomLoading = function(loading) {
 };
 
 Assets.prototype.load = function(type, url, callback) {
+  this.isLoading = true;
   this.itemsCount += 1;
   this._thingsToLoad += 1;
 
@@ -290,9 +292,10 @@ Assets.prototype.finishedOneFile = function() {
 module.exports = Assets;
 
 },{"../lib/howler.min.js":2,"./utils":12}],5:[function(_dereq_,module,exports){
+_dereq_('./raf-polyfill')();
+
 var Game = _dereq_('./game');
 
-var raf = _dereq_('./raf');
 var Time = _dereq_('./time');
 
 /**
@@ -312,20 +315,25 @@ var Engine = function(canvas, methods) {
    */
   this.game = new GameClass(canvas);
 
-  this.tickFunc = (function (self) {
-    return function() { self.tick(); };
-  })(this);
+  this.tickFunc = (function (self) { return function() { self.tick(); }; })(this);
+  this.preloaderTickFunc = (function (self) { return function() { self._preloaderTick(); }; })(this);
 
   this.setupCanvasSize();
-
-  this.game.assets.onload(function() {
-    this.start();
-  }.bind(this));
 
   this.strayTime = 0;
 
   this._time = Time.now();
-  raf(this.tickFunc);
+
+  this.game.assets.onload(function() {
+    this.start();
+
+    window.cancelAnimationFrame(this.preloaderId);
+    window.requestAnimationFrame(this.tickFunc);
+  }.bind(this));
+
+  if (this.game.assets.isLoading) {
+    this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
+  }
 };
 
 /**
@@ -380,20 +388,29 @@ Engine.prototype.start = function() {
  * @private
  */
 Engine.prototype.tick = function() {
-  raf(this.tickFunc);
+  console.log('tick');
+  window.requestAnimationFrame(this.tickFunc);
 
   var now = Time.now();
   var time = (now - this._time) / 1000;
-  if (time > this.game.config.stepTime) { time = this.game.config.stepTime; }
   this._time = now;
 
-  if (this.game.assets.isLoading) {
-    if (this.game.config.showPreloader) {
-      this.game.preloading(time);
-    }
-  } else {
-    this.update(time);
-    this.render();
+  this.update(time);
+  this.game.exitUpdate(time);
+  this.render();
+};
+
+Engine.prototype._preloaderTick = function() {
+  console.log('preloader tick');
+  this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
+
+  var now = Time.now();
+  var time = (now - this._time) / 1000;
+  this._time = now;
+
+  if (this.game.config.showPreloader) {
+    if (this.game.video.ctx) { this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height); }
+    this.game.preloading(time);
   }
 };
 
@@ -403,6 +420,8 @@ Engine.prototype.tick = function() {
  * @private
  */
 Engine.prototype.update = function(time) {
+  if (time > this.game.config.mapStepTime) { time = this.game.config.mapStepTime; }
+
   if (this.game.config.fixedStep) {
     this.strayTime = this.strayTime + time;
     while (this.strayTime >= this.game.config.stepTime) {
@@ -419,14 +438,13 @@ Engine.prototype.update = function(time) {
  * @private
  */
 Engine.prototype.render = function() {
-  this.game.video.beginFrame();
+  if (this.game.video.ctx) { this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height); }
   this.game.render();
-  this.game.video.endFrame();
 };
 
 module.exports = Engine;
 
-},{"./game":6,"./raf":9,"./time":11}],6:[function(_dereq_,module,exports){
+},{"./game":6,"./raf-polyfill":9,"./time":11}],6:[function(_dereq_,module,exports){
 var Video = _dereq_('./video');
 var Input = _dereq_('./input');
 var Assets = _dereq_('./assets');
@@ -475,7 +493,8 @@ var Game = function(canvas) {
     addInputEvents: true,
     showPreloader: true,
     fixedStep: true,
-    stepTime: 0.01666
+    stepTime: 0.01666,
+    mapStepTime: 0.06
   };
 
   this.configure();
@@ -528,6 +547,8 @@ Game.prototype.render = function() {};
  */
 Game.prototype.update = function(time) {};
 
+Game.prototype.exitUpdate = function(time) {};
+
 /**
  * Mousemove event
  * @param {number} x - x position
@@ -536,8 +557,6 @@ Game.prototype.update = function(time) {};
  */
 Game.prototype.mousemove = function(x, y) {};
 
-Game.prototype.mouseup = function(x, y) {};
-
 /**
  * Window Focus event
  * @abstract
@@ -545,6 +564,9 @@ Game.prototype.mouseup = function(x, y) {};
 Game.prototype.focus = function() {};
 
 Game.prototype.click = function() {};
+
+Game.prototype.mousedown = function() {};
+Game.prototype.mouseup = function() {};
 
 Game.prototype.keydown = function() {};
 
@@ -635,8 +657,11 @@ Input.prototype.resetKeys = function() {
  * @return {boolean}
  */
 Input.prototype.isKeyDown = function(key) {
+  if (key == null) { return false; }
+
   if (this.canControlKeys) {
-    return this.keys[keys[key.toUpperCase()]];
+    var code = Number.isInteger(key) ? key : keys[key.toUpperCase()];
+    return this.keys[code];
   }
 };
 
@@ -655,6 +680,15 @@ Input.prototype._addEvents = function(game) {
     game.mousemove(x, y);
     self.mouse.x = x;
     self.mouse.y = y;
+  });
+
+  canvas.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
+
+    game.click(x, y, e.button);
   });
 
   canvas.addEventListener('mouseup', function(e) {
@@ -680,7 +714,7 @@ Input.prototype._addEvents = function(game) {
     self.mouse.button = e.button;
     self.mouse.isDown = true;
 
-    game.click(x, y, e.button);
+    game.mousedown(x, y, e.button);
   }, false);
 
   var touchX = null;
@@ -734,7 +768,6 @@ Input.prototype._addEvents = function(game) {
         game.click(x, y, button);
       }
     }
-
   });
 
   canvas.addEventListener('contextmenu', function(e) {
@@ -743,17 +776,17 @@ Input.prototype._addEvents = function(game) {
 
   document.addEventListener('keydown', function(e) {
     game.input.keys[e.keyCode] = true;
-    game.keydown(e.which);
+    game.keydown(e.which, e);
   });
 
   document.addEventListener('keyup', function(e) {
     game.input.keys[e.keyCode] = false;
-    game.keyup(e.which);
+    game.keyup(e.which, e);
   });
 
   if (game.keypress) {
     document.addEventListener('keypress', function(e) {
-      game.keypress(e.which);
+      game.keypress(e.which, e);
     });
   }
 };
@@ -856,14 +889,33 @@ module.exports = {
 };
 
 },{}],9:[function(_dereq_,module,exports){
-module.exports = (function(){
-  return  window.requestAnimationFrame       ||
-          window.webkitRequestAnimationFrame ||
-          window.mozRequestAnimationFrame    ||
-          function( callback ){
-            window.setTimeout(callback, 1000 / 60);
-          };
-})();
+module.exports = function() {
+  var lastTime = 0;
+  var vendors = ['ms', 'moz', 'webkit', 'o'];
+
+  for (var i=0; i<vendors.length && !window.requestAnimationFrame; ++i) {
+    window.requestAnimationFrame = window[vendors[i]+'RequestAnimationFrame'];
+    window.cancelAnimationFrame = window[vendors[i]+'CancelAnimationFrame'] || window[vendors[i]+'CancelRequestAnimationFrame'];
+  }
+
+  if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = function(callback) {
+      var currTime = new Date().getTime();
+      var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+
+      var id = window.setTimeout(function() {
+        callback(currTime + timeToCall);
+      }, timeToCall);
+
+      lastTime = currTime + timeToCall;
+      return id;
+    };
+  }
+
+  if (!window.cancelAnimationFrame) {
+    window.cancelAnimationFrame = function(id) { clearTimeout(id); };
+  }
+};
 
 },{}],10:[function(_dereq_,module,exports){
 var isRetina = function() {
@@ -953,14 +1005,6 @@ Video.prototype.include = function(methods) {
     this[method] = methods[method];
   }
 };
-
-Video.prototype.beginFrame = function() {
-  if (this.ctx) {
-    this.ctx.clearRect(0, 0, this.width, this.height);
-  }
-};
-
-Video.prototype.endFrame = function() {};
 
 /**
  * Scale canvas buffer, used for retina screens
