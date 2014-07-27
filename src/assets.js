@@ -29,7 +29,9 @@ Assets.prototype.onload = function(callback) {
 
   if (this._thingsToLoad === 0) {
     this.isLoading = false;
-    callback();
+    process.nextTick(function() {
+      callback();
+    });
   } else {
     this.nextFile();
   }
