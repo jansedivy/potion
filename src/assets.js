@@ -9,7 +9,7 @@ require('../lib/howler.min.js');
  * @constructor
  */
 var Assets = function() {
-  this.isLoading = true;
+  this.isLoading = false;
 
   this.itemsCount = 0;
   this.loadedItemsCount = 0;
@@ -26,12 +26,10 @@ var Assets = function() {
 
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
+
   if (this._thingsToLoad === 0) {
-    var self = this;
-    setTimeout(function() {
-      self.isLoading = false;
-      callback();
-    }, 0);
+    this.isLoading = false;
+    callback();
   } else {
     this.nextFile();
   }
@@ -50,6 +48,7 @@ Assets.prototype._handleCustomLoading = function(loading) {
 };
 
 Assets.prototype.load = function(type, url, callback) {
+  this.isLoading = true;
   this.itemsCount += 1;
   this._thingsToLoad += 1;
 

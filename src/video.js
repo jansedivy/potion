@@ -40,14 +40,6 @@ Video.prototype.include = function(methods) {
   }
 };
 
-Video.prototype.beginFrame = function() {
-  if (this.ctx) {
-    this.ctx.clearRect(0, 0, this.width, this.height);
-  }
-};
-
-Video.prototype.endFrame = function() {};
-
 /**
  * Scale canvas buffer, used for retina screens
  * @param {number} scale

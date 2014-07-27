@@ -1,6 +1,7 @@
+require('./raf-polyfill')();
+
 var Game = require('./game');
 
-var raf = require('./raf');
 var Time = require('./time');
 
 /**
@@ -20,20 +21,25 @@ var Engine = function(canvas, methods) {
    */
   this.game = new GameClass(canvas);
 
-  this.tickFunc = (function (self) {
-    return function() { self.tick(); };
-  })(this);
+  this.tickFunc = (function (self) { return function() { self.tick(); }; })(this);
+  this.preloaderTickFunc = (function (self) { return function() { self._preloaderTick(); }; })(this);
 
   this.setupCanvasSize();
-
-  this.game.assets.onload(function() {
-    this.start();
-  }.bind(this));
 
   this.strayTime = 0;
 
   this._time = Time.now();
-  raf(this.tickFunc);
+
+  this.game.assets.onload(function() {
+    this.start();
+
+    window.cancelAnimationFrame(this.preloaderId);
+    window.requestAnimationFrame(this.tickFunc);
+  }.bind(this));
+
+  if (this.game.assets.isLoading) {
+    this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
+  }
 };
 
 /**
@@ -88,20 +94,29 @@ Engine.prototype.start = function() {
  * @private
  */
 Engine.prototype.tick = function() {
-  raf(this.tickFunc);
+  console.log('tick');
+  window.requestAnimationFrame(this.tickFunc);
 
   var now = Time.now();
   var time = (now - this._time) / 1000;
   this._time = now;
 
-  if (this.game.assets.isLoading) {
-    if (this.game.config.showPreloader) {
-      this.game.preloading(time);
-    }
-  } else {
-    this.update(time);
-    this.game.exitUpdate(time);
-    this.render();
+  this.update(time);
+  this.game.exitUpdate(time);
+  this.render();
+};
+
+Engine.prototype._preloaderTick = function() {
+  console.log('preloader tick');
+  this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
+
+  var now = Time.now();
+  var time = (now - this._time) / 1000;
+  this._time = now;
+
+  if (this.game.config.showPreloader) {
+    if (this.game.video.ctx) { this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height); }
+    this.game.preloading(time);
   }
 };
 
@@ -129,9 +144,8 @@ Engine.prototype.update = function(time) {
  * @private
  */
 Engine.prototype.render = function() {
-  this.game.video.beginFrame();
+  if (this.game.video.ctx) { this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height); }
   this.game.render();
-  this.game.video.endFrame();
 };
 
 module.exports = Engine;
