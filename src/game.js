@@ -47,7 +47,7 @@ var Game = function(canvas) {
     showPreloader: true,
     fixedStep: true,
     stepTime: 0.01666,
-    mapStepTime: 0.06
+    maxStepTime: 0.06
   };
 
   this.configure();
