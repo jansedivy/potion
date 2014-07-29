@@ -132,7 +132,7 @@ Game.prototype.keyup = function() {};
 Game.prototype.blur = function() {};
 
 Game.prototype.preloading = function(time) {
-  if (!this.video && !this.video.ctx) { return; }
+  if (!(this.video && this.video.ctx)) { return; }
 
   if (this._preloaderWidth === undefined) { this._preloaderWidth = 0; }
 
