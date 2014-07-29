@@ -48,7 +48,7 @@ Input.prototype.isKeyDown = function(key) {
   if (key == null) { return false; }
 
   if (this.canControlKeys) {
-    var code = Number.isInteger(key) ? key : keys[key.toUpperCase()];
+    var code = typeof key === 'number' ? key : keys[key.toUpperCase()];
     return this.keys[code];
   }
 };
