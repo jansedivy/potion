@@ -17,8 +17,9 @@ HTML5 canvas game engine
 ## Features
 
 - Asset loader
-- sounds
-- Sprites
+- Input event handling
+- Sound manager
+- Sprites, Animations
 - Retina support
 
 ## Usage
