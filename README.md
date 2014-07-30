@@ -59,6 +59,12 @@ Potion.init(document.querySelector('canvas'), {
 });
 ```
 
+
+## See also
+
+- [Potion Debugger](https://github.com/jansedivy/potion-debugger)
+- [Potion Template](https://github.com/jansedivy/potion-template)
+
 ## License
 
 [MIT license](http://opensource.org/licenses/mit-license.php)
