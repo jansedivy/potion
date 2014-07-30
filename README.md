@@ -57,3 +57,7 @@ Potion.init(document.querySelector('canvas'), {
   }
 });
 ```
+
+## License
+
+[MIT license](http://opensource.org/licenses/mit-license.php)
