@@ -5,10 +5,14 @@ var utils = require('./utils');
 require('../lib/howler.min.js');
 
 /**
- * Class for assets loading
+ * Class for managing and loading asset files
  * @constructor
  */
 var Assets = function() {
+  /**
+   * Is currently loading any assets
+   * @type {boolean}
+   */
   this.isLoading = false;
 
   this.itemsCount = 0;
@@ -24,6 +28,10 @@ var Assets = function() {
   this._toLoad = [];
 };
 
+/**
+ * Starts loading stored assets urls and runs given callback after everything is loaded
+ * @param {function} callback - callback function
+ */
 Assets.prototype.onload = function(callback) {
   this.callback = callback;
 
@@ -33,12 +41,54 @@ Assets.prototype.onload = function(callback) {
       callback();
     });
   } else {
-    this.nextFile();
+    this._nextFile();
   }
 };
 
+/**
+ * Getter for loaded assets
+ * @param {string} name - url of stored asset
+ */
 Assets.prototype.get = function(name) {
   return this._data[name];
+};
+
+/**
+ * Stores url so it can be loaded later
+ * @param {string} type - type of asset
+ * @param {string} url - url of given asset
+ * @param {function} callback - callback function
+ */
+Assets.prototype.load = function(type, url, callback) {
+  this.isLoading = true;
+  this.itemsCount += 1;
+  this._thingsToLoad += 1;
+
+  this._toLoad.push({ type: type, url: url, callback: callback });
+};
+
+Assets.prototype._finishedOneFile = function() {
+  this._nextFile();
+  this._thingsToLoad -= 1;
+
+  if (this._thingsToLoad === 0) {
+    var self = this;
+    setTimeout(function() {
+      self.callback();
+      self.isLoading = false;
+    }, 0);
+  }
+};
+
+Assets.prototype._error = function(type, url) {
+  console.warn('Error loading "' + type + '" asset with url ' + url);
+  this._nextFile();
+};
+
+Assets.prototype._save = function(url, data, callback) {
+  this._data[url] = data;
+  if (callback) { callback(data); }
+  this._finishedOneFile();
 };
 
 Assets.prototype._handleCustomLoading = function(loading) {
@@ -49,15 +99,7 @@ Assets.prototype._handleCustomLoading = function(loading) {
   loading(done);
 };
 
-Assets.prototype.load = function(type, url, callback) {
-  this.isLoading = true;
-  this.itemsCount += 1;
-  this._thingsToLoad += 1;
-
-  this._toLoad.push({ type: type, url: url, callback: callback });
-};
-
-Assets.prototype.nextFile = function() {
+Assets.prototype._nextFile = function() {
   var current = this._toLoad.shift();
 
   if (!current) { return; }
@@ -119,30 +161,6 @@ Assets.prototype.nextFile = function() {
       request.onerror = function() { self._error(type, url); };
       request.send();
       break;
-  }
-};
-
-Assets.prototype._error = function(type, url) {
-  console.warn('Error loading "' + type + '" asset with url ' + url);
-  this.nextFile();
-};
-
-Assets.prototype._save = function(url, data, callback) {
-  this._data[url] = data;
-  if (callback) { callback(data); }
-  this.finishedOneFile();
-};
-
-Assets.prototype.finishedOneFile = function() {
-  this.nextFile();
-  this._thingsToLoad -= 1;
-
-  if (this._thingsToLoad === 0) {
-    var self = this;
-    setTimeout(function() {
-      self.callback();
-      self.isLoading = false;
-    }, 0);
   }
 };
 

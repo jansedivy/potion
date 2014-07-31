@@ -39,6 +39,10 @@ var Game = function(canvas) {
    */
   this.isRetina = isRetina();
 
+  /**
+   * Object for configuring Potion
+   * @type {object}
+   */
   this.config = {
     useRetina: true,
     initializeCanvas: true,
@@ -76,61 +80,36 @@ var Game = function(canvas) {
 Game.prototype.init = function() {};
 
 /**
- * Configure the game
+ * Runs before loading assets. Can be used for configuring Potion and settings assets loader
  * @abstract
  */
 Game.prototype.configure = function() {};
 
 /**
- * Window resize event
- * @abstract
- */
-Game.prototype.resize = function() {};
-
-/**
- * Renders the game
+ * Runs every frame for rendering the game
  * @abstract
  */
 Game.prototype.render = function() {};
 
 /**
- * Updates the game
+ * Runs every frame for updating the game
+ * limits time to value set in config.maxStepTime
  * @param {number} time - time in seconds since last frame
  * @abstract
  */
 Game.prototype.update = function(time) {};
 
+/**
+ * Runs every frame after update method, but it doesn't limit time
+ * @param {number} time - time in seconds since last frame
+ * @abstract
+ */
 Game.prototype.exitUpdate = function(time) {};
 
 /**
- * Mousemove event
- * @param {number} x - x position
- * @param {number} y - y position
- * @abstract
+ * Runs every frame in the loading phase. It's used for rendering the loading bar
+ * @param {number} time - time in seconds since last frame
  */
-Game.prototype.mousemove = function(x, y) {};
-
-/**
- * Window Focus event
- * @abstract
- */
-Game.prototype.focus = function() {};
-
-Game.prototype.click = function() {};
-
-Game.prototype.mousedown = function() {};
-Game.prototype.mouseup = function() {};
-
-Game.prototype.keydown = function() {};
-
-Game.prototype.keyup = function() {};
-
-/**
- * Window Blur event
- * @abstract
- */
-Game.prototype.blur = function() {};
-
 Game.prototype.preloading = function(time) {
   if (!this.config.showPreloader && !(this.video && this.video.ctx)) { return; }
 
@@ -159,5 +138,75 @@ Game.prototype.preloading = function(time) {
 
   this.video.ctx.restore();
 };
+
+/**
+ * Window Focus event
+ * @abstract
+ */
+Game.prototype.focus = function() {};
+
+/**
+ * Window Blur event
+ * @abstract
+ */
+Game.prototype.blur = function() {};
+
+/**
+ * Click event
+ * @param {number} x - x position
+ * @param {number} y - y position
+ * @param {number} button - number of button which is pressed
+ * @abstract
+ */
+Game.prototype.click = function() {};
+
+/**
+ * Mousemove event
+ * @param {number} x - x position
+ * @param {number} y - y position
+ * @abstract
+ */
+Game.prototype.mousemove = function(x, y) {};
+
+/**
+ * Mousedown event
+ * @param {number} x - x position
+ * @param {number} y - y position
+ * @param {number} button - number of button which is pressed
+ * @abstract
+ */
+Game.prototype.mousedown = function() {};
+
+/**
+ * Mouseup event
+ * @param {number} x - x position
+ * @param {number} y - y position
+ * @param {number} button - number of button which is pressed
+ * @abstract
+ */
+Game.prototype.mouseup = function() {};
+
+/**
+ * Keydown event
+ * @param {number} key - keyCode for pressed key
+ * @param {object} e - event object
+ * @abstract
+ */
+Game.prototype.keydown = function() {};
+
+
+/**
+ * Keyup event
+ * @param {number} key - keyCode for pressed key
+ * @param {object} e - event object
+ * @abstract
+ */
+Game.prototype.keyup = function() {};
+
+/**
+ * Window resize event
+ * @abstract
+ */
+Game.prototype.resize = function() {};
 
 module.exports = Game;

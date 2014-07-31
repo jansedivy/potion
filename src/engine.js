@@ -105,6 +105,10 @@ Engine.prototype.tick = function() {
   this.render();
 };
 
+/**
+ * Main tick function in preloader loop
+ * @private
+ */
 Engine.prototype._preloaderTick = function() {
   this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
 
