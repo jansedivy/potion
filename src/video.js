@@ -40,6 +40,10 @@ Video.prototype.include = function(methods) {
   }
 };
 
+Video.prototype.beginFrame = function() {};
+
+Video.prototype.endFrame = function() {};
+
 /**
  * Scale canvas buffer, used for retina screens
  * @param {number} scale
