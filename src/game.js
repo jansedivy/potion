@@ -2,6 +2,7 @@ var Video = require('./video');
 var Input = require('./input');
 var Assets = require('./assets');
 var isRetina = require('./retina');
+var StateManager = require('./state-manager');
 
 /**
  * Game class that is subclassed by actual game code
@@ -38,6 +39,8 @@ var Game = function(canvas) {
    * @type {boolean}
    */
   this.isRetina = isRetina();
+
+  this.states = new StateManager();
 
   /**
    * Object for configuring Potion

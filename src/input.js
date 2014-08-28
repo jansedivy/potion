@@ -77,6 +77,7 @@ Input.prototype._addEvents = function(game) {
     var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
 
     game.click(x, y, e.button);
+    game.states.click(x, y, e.button);
   });
 
   canvas.addEventListener('mouseup', function(e) {
@@ -89,6 +90,7 @@ Input.prototype._addEvents = function(game) {
     self.mouse.isDown = false;
 
     game.mouseup(x, y, e.button);
+    game.states.mouseup(x, y, e.button);
   }, false);
 
   canvas.addEventListener('mousedown', function(e) {
@@ -103,6 +105,7 @@ Input.prototype._addEvents = function(game) {
     self.mouse.isDown = true;
 
     game.mousedown(x, y, e.button);
+    game.states.mousedown(x, y, e.button);
   }, false);
 
   var touchX = null;
@@ -154,6 +157,7 @@ Input.prototype._addEvents = function(game) {
         self.mouse.y = y;
 
         game.click(x, y, button);
+        game.states.click(x, y, button);
       }
     }
   });
@@ -165,18 +169,19 @@ Input.prototype._addEvents = function(game) {
   document.addEventListener('keydown', function(e) {
     game.input.keys[e.keyCode] = true;
     game.keydown(e.which, e);
+    game.states.keydown(e.which, e);
   });
 
   document.addEventListener('keyup', function(e) {
     game.input.keys[e.keyCode] = false;
     game.keyup(e.which, e);
+    game.states.keyup(e.which, e);
   });
 
-  if (game.keypress) {
-    document.addEventListener('keypress', function(e) {
-      game.keypress(e.which, e);
-    });
-  }
+  document.addEventListener('keypress', function(e) {
+    if (game.keypress) { game.keypress(e.which, e); }
+    game.states.keypress(e.which, e);
+  });
 };
 
 module.exports = Input;

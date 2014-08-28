@@ -70,6 +70,7 @@ Engine.prototype.addEvents = function() {
  */
 Engine.prototype.setupCanvasSize = function() {
   this.game.resize();
+  this.game.states.resize();
   this.game.video.width = this.game.canvas.width = this.game.width;
   this.game.video.height = this.game.canvas.height = this.game.height;
 
@@ -135,9 +136,11 @@ Engine.prototype.update = function(time) {
     while (this.strayTime >= this.game.config.stepTime) {
       this.strayTime = this.strayTime - this.game.config.stepTime;
       this.game.update(this.game.config.stepTime);
+      this.game.states.update(time);
     }
   } else {
     this.game.update(time);
+    this.game.states.update(time);
   }
 };
 
@@ -153,6 +156,7 @@ Engine.prototype.render = function() {
   }
 
   this.game.render();
+  this.game.states.render();
 
   this.game.video.endFrame();
 };
