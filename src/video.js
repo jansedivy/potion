@@ -3,6 +3,7 @@
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
  */
 var Video = function(canvas, config) {
+  this.config = config;
   /**
    * Canvas DOM element
    * @type {HTMLCanvasElement}
@@ -13,13 +14,13 @@ var Video = function(canvas, config) {
    * Game width in pixels
    * @type {number}
    */
-  this.width = null;
+  this.width = canvas.width;
 
   /**
    * Game height in pixels
    * @type {number}
    */
-  this.height = null;
+  this.height = canvas.height;
 
   /**
    * canvas context
@@ -103,6 +104,22 @@ Video.prototype.animation = function(animation, x, y) {
   if (!this.ctx) { return; }
 
   this.sprite(animation.image, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
+};
+
+Video.prototype.clear = function() {
+  if (this.ctx) { this.ctx.clearRect(0, 0, this.width, this.height); }
+};
+
+Video.prototype.createLayer = function() {
+  var container = this.canvas.parentElement;
+  var canvas = document.createElement('canvas');
+  canvas.width = this.canvas.clientWidth;
+  canvas.height = this.canvas.clientHeight;
+  canvas.style.position = 'absolute';
+  canvas.style.top = '0px';
+  canvas.style.left = '0px';
+  container.appendChild(canvas);
+  return new Video(canvas, this.config);
 };
 
 module.exports = Video;

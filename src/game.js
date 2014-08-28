@@ -63,9 +63,7 @@ var Game = function(canvas) {
    * Input instance for mouse and keyboard events
    * @type {Input}
    */
-  if (this.config.addInputEvents) {
-    this.input = new Input(this);
-  }
+  this.input = null;
 
   /**
    * Video instance for rendering into canvas

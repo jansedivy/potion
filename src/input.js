@@ -5,7 +5,8 @@ var keys = require('./keys');
  * @constructor
  * @param {Game} game - Game object
  */
-var Input = function(game) {
+var Input = function(game, container) {
+  this._container = container;
   /**
    * Pressed keys object
    * @type {object}
@@ -59,32 +60,31 @@ Input.prototype.isKeyDown = function(key) {
  */
 Input.prototype._addEvents = function(game) {
   var self = this;
-  var canvas = game.canvas;
 
-  canvas.addEventListener('mousemove', function(e) {
-    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
-    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
+  self._container.addEventListener('mousemove', function(e) {
+    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
     game.mousemove(x, y, e);
     self.mouse.x = x;
     self.mouse.y = y;
   });
 
-  canvas.addEventListener('click', function(e) {
+  self._container.addEventListener('click', function(e) {
     e.preventDefault();
 
-    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
-    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
+    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
     game.click(x, y, e.button);
     game.states.click(x, y, e.button);
   });
 
-  canvas.addEventListener('mouseup', function(e) {
+  self._container.addEventListener('mouseup', function(e) {
     e.preventDefault();
 
-    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
-    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
+    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
     self.mouse.button = e.button;
     self.mouse.isDown = false;
@@ -93,11 +93,11 @@ Input.prototype._addEvents = function(game) {
     game.states.mouseup(x, y, e.button);
   }, false);
 
-  canvas.addEventListener('mousedown', function(e) {
+  self._container.addEventListener('mousedown', function(e) {
     e.preventDefault();
 
-    var x = e.offsetX === undefined ? e.layerX - canvas.offsetLeft : e.offsetX;
-    var y = e.offsetY === undefined ? e.layerY - canvas.offsetTop : e.offsetY;
+    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
+    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
     self.mouse.x = x;
     self.mouse.y = y;
@@ -111,7 +111,7 @@ Input.prototype._addEvents = function(game) {
   var touchX = null;
   var touchY = null;
 
-  canvas.addEventListener('touchstart', function(e) {
+  self._container.addEventListener('touchstart', function(e) {
     var x = e.layerX;
     var y = e.layerY;
 
@@ -123,7 +123,7 @@ Input.prototype._addEvents = function(game) {
     self.mouse.isDown = true;
   });
 
-  canvas.addEventListener('touchmove', function(e) {
+  self._container.addEventListener('touchmove', function(e) {
     e.preventDefault();
 
     var x = e.layerX;
@@ -135,7 +135,7 @@ Input.prototype._addEvents = function(game) {
     self.mouse.y = y;
   });
 
-  canvas.addEventListener('touchend', function(e) {
+  self._container.addEventListener('touchend', function(e) {
     e.preventDefault();
 
     self.mouse.isDown = false;
@@ -143,8 +143,8 @@ Input.prototype._addEvents = function(game) {
     for (var i=0, len=e.changedTouches.length; i<len; i++) {
       var touch = e.changedTouches[i];
 
-      var x = touch.pageX - canvas.offsetLeft;
-      var y = touch.pageY - canvas.offsetTop;
+      var x = touch.pageX - self._container.offsetLeft;
+      var y = touch.pageY - self._container.offsetTop;
       var button = 0;
 
       var dx = Math.abs(touchX - x);
@@ -162,7 +162,7 @@ Input.prototype._addEvents = function(game) {
     }
   });
 
-  canvas.addEventListener('contextmenu', function(e) {
+  self._container.addEventListener('contextmenu', function(e) {
     e.preventDefault();
   });
 

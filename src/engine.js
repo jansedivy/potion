@@ -2,24 +2,39 @@ require('./raf-polyfill')();
 
 var Game = require('./game');
 
+var Input = require('./input');
 var Time = require('./time');
 
 /**
  * Main Engine class which calls the game methods
  * @constructor
  */
-var Engine = function(canvas, methods) {
-  var GameClass = function(canvas) { Game.call(this, canvas); };
+var Engine = function(container, methods) {
+  var GameClass = function(container) { Game.call(this, container); };
   GameClass.prototype = Object.create(Game.prototype);
   for (var method in methods) {
     GameClass.prototype[method] = methods[method];
   }
+
+  container.style.position = 'relative';
+
+  var canvas = document.createElement('canvas');
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+  canvas.style.position = 'absolute';
+  canvas.style.top = '0px';
+  canvas.style.left = '0px';
+  container.appendChild(canvas);
 
   /**
    * Game code instance
    * @type {Game}
    */
   this.game = new GameClass(canvas);
+
+  if (this.game.config.addInputEvents) {
+    this.game.input = new Input(this.game, container);
+  }
 
   this.tickFunc = (function (self) { return function() { self.tick(); }; })(this);
   this.preloaderTickFunc = (function (self) { return function() { self._preloaderTick(); }; })(this);
@@ -118,7 +133,7 @@ Engine.prototype._preloaderTick = function() {
   this._time = now;
 
   if (this.game.config.showPreloader) {
-    if (this.game.video.ctx) { this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height); }
+    this.game.video.clear();
     this.game.preloading(time);
   }
 };
@@ -151,9 +166,7 @@ Engine.prototype.update = function(time) {
 Engine.prototype.render = function() {
   this.game.video.beginFrame();
 
-  if (this.game.video.ctx) {
-    this.game.video.ctx.clearRect(0, 0, this.game.width, this.game.height);
-  }
+  this.game.video.clear();
 
   this.game.render();
   this.game.states.render();
