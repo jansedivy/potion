@@ -1,5 +1,4 @@
 var Video = require('./video');
-var Input = require('./input');
 var Assets = require('./assets');
 var isRetina = require('./retina');
 var StateManager = require('./state-manager');
