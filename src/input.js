@@ -170,6 +170,7 @@ Input.prototype._addEvents = function(game) {
     game.input.keys[e.keyCode] = true;
     game.keydown(e.which, e);
     game.states.keydown(e.which, e);
+    game.debug.keydown(e.which, e);
   });
 
   document.addEventListener('keyup', function(e) {

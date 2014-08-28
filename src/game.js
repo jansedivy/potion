@@ -1,3 +1,5 @@
+var Debugger = require('potion-debugger');
+
 var Video = require('./video');
 var Assets = require('./assets');
 var isRetina = require('./retina');
@@ -19,13 +21,13 @@ var Game = function(canvas) {
    * Game width in pixels
    * @type {number}
    */
-  this.width = 300;
+  this.canvas.width = this.width = 300;
 
   /**
    * Game highs in pixels
    * @type {number}
    */
-  this.height = 300;
+  this.canvas.height = this.height = 300;
 
   /**
    * Instance of Assets for loading assets for the game
@@ -71,6 +73,8 @@ var Game = function(canvas) {
   if (this.config.initializeVideo) {
     this.video = new Video(canvas, this.config);
   }
+
+  this.debug = new Debugger(this);
 };
 
 /**

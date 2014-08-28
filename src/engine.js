@@ -89,8 +89,12 @@ Engine.prototype.setupCanvasSize = function() {
   this.game.video.width = this.game.canvas.width = this.game.width;
   this.game.video.height = this.game.canvas.height = this.game.height;
 
+  this.game.debug.video.width = this.game.video.canvas.width = this.game.width;
+  this.game.debug.video.height = this.game.canvas.height = this.game.height;
+
   if (this.game.config.useRetina && this.game.isRetina) {
     this.game.video.scaleCanvas(2);
+    this.game.debug.video.scaleCanvas(2);
   }
 };
 
@@ -118,6 +122,7 @@ Engine.prototype.tick = function() {
 
   this.update(time);
   this.game.exitUpdate(time);
+  this.game.debug.update(time);
   this.render();
 };
 
@@ -170,6 +175,7 @@ Engine.prototype.render = function() {
 
   this.game.render();
   this.game.states.render();
+  this.game.debug.render();
 
   this.game.video.endFrame();
 };
