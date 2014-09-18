@@ -149,7 +149,7 @@ Engine.prototype._preloaderTick = function() {
  * @private
  */
 Engine.prototype.update = function(time) {
-  if (time > this.game.config.mapStepTime) { time = this.game.config.mapStepTime; }
+  if (time > this.game.config.maxStepTime) { time = this.game.config.maxStepTime; }
 
   if (this.game.config.fixedStep) {
     this.strayTime = this.strayTime + time;
