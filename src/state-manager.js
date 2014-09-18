@@ -113,11 +113,11 @@ StateManager.prototype.mouseup = function(x, y) {
   }
 };
 
-StateManager.prototype.mousedown = function(x, y) {
+StateManager.prototype.mousedown = function(x, y, button) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && state.state.mousedown && !state.paused) {
-      state.state.mousedown(x, y);
+      state.state.mousedown(x, y, button);
     }
   }
 };
