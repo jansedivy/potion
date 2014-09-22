@@ -5,7 +5,7 @@ var StateManager = function() {
 };
 
 StateManager.prototype.add = function(name, state) {
-  this.states[name] = this.newStateHolder(name, state);
+  this.states[name] = this._newStateHolder(name, state);
   this.refreshOrder();
   return state;
 };
@@ -34,18 +34,24 @@ StateManager.prototype.refreshOrder = function() {
   this.updateOrder.sort(updateOrderSort);
 };
 
-StateManager.prototype.newStateHolder = function(name, state) {
+StateManager.prototype._newStateHolder = function(name, state) {
   var holder = {};
   holder.name = name;
   holder.state = state;
+
+  holder.protect = false;
+
   holder.enabled = true;
   holder.paused = false;
+
   holder.render = true;
+
   holder.initialized = false;
-  holder.update = true;
-  holder.updated = !state.update;
+  holder.updated = false;
+
   holder.updateOrder = 0;
   holder.renderOrder = 0;
+
   return holder;
 };
 
@@ -71,7 +77,7 @@ StateManager.prototype.get = function(name) {
 
 StateManager.prototype.destroy = function(name) {
   var state = this.get(name);
-  if (state) {
+  if (state && !state.protect) {
     if (state.state.close) {
       state.state.close();
     }
@@ -80,17 +86,60 @@ StateManager.prototype.destroy = function(name) {
   }
 };
 
+StateManager.prototype.destroyAll = function(name) {
+  for (var i=0, len=this.updateOrder.length; i<len; i++) {
+    var state = this.updateOrder[i];
+    if (!state.protect) {
+      if (state.state.close) {
+        state.state.close();
+      }
+      this.states[name] = null;
+    }
+  }
+
+  this.refreshOrder();
+};
+
 StateManager.prototype.update = function(time) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (!state.initialized && state.state.init) {
-      state.initialized = true;
-      state.state.init();
-    }
 
     if (state.enabled && state.state.update && !state.paused) {
+      if (!state.initialized && state.state.init) {
+        state.initialized = true;
+        state.state.init();
+      }
+
       state.state.update(time);
       state.updated = true;
+    }
+  }
+};
+
+StateManager.prototype.enable = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (!holder.enabled) {
+      if (holder.state.enable) {
+        holder.state.enable();
+      }
+      holder.enabled = true;
+
+      if (holder.paused) {
+        this.unpause(name);
+      }
+    }
+  }
+};
+
+StateManager.prototype.disable = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.enabled) {
+      if (holder.state.disable) {
+        holder.state.disable();
+      }
+      holder.enabled = false;
     }
   }
 };
@@ -98,9 +147,45 @@ StateManager.prototype.update = function(time) {
 StateManager.prototype.render = function() {
   for (var i=0, len=this.renderOrder.length; i<len; i++) {
     var state = this.renderOrder[i];
-    if (state.enabled && state.updated && state.state.render && !state.paused) {
+    if (state.enabled && state.updated && state.render && state.state.render) {
       state.state.render();
     }
+  }
+};
+
+StateManager.prototype.pause = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.state.pause) {
+      holder.state.pause();
+    }
+
+    holder.paused = true;
+  }
+};
+
+StateManager.prototype.unpause = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.state.unpause) {
+      holder.state.unpause();
+    }
+
+    holder.paused = false;
+  }
+};
+
+StateManager.prototype.protect = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    holder.protect = false;
+  }
+};
+
+StateManager.prototype.unprotect = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    holder.protect = true;
   }
 };
 
@@ -161,7 +246,7 @@ StateManager.prototype.keydown = function(key) {
 StateManager.prototype.resize = function() {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && state.state.resize && !state.paused) {
+    if (state.enabled && state.render && state.state.resize) {
       state.state.resize();
     }
   }
