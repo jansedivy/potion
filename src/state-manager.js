@@ -86,14 +86,14 @@ StateManager.prototype.destroy = function(name) {
   }
 };
 
-StateManager.prototype.destroyAll = function(name) {
+StateManager.prototype.destroyAll = function() {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (!state.protect) {
       if (state.state.close) {
         state.state.close();
       }
-      this.states[name] = null;
+      delete this.states[state.name];
     }
   }
 
@@ -104,13 +104,24 @@ StateManager.prototype.update = function(time) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
 
-    if (state.enabled && state.state.update && !state.paused) {
+    if (state && state.enabled && state.state.update && !state.paused) {
       if (!state.initialized && state.state.init) {
         state.initialized = true;
         state.state.init();
       }
 
       state.state.update(time);
+      state.updated = true;
+    }
+  }
+};
+
+StateManager.prototype.exitUpdate = function(time) {
+  for (var i=0, len=this.updateOrder.length; i<len; i++) {
+    var state = this.updateOrder[i];
+
+    if (state.enabled && state.state.exitUpdate && !state.paused) {
+      state.state.exitUpdate(time);
       state.updated = true;
     }
   }
@@ -178,14 +189,23 @@ StateManager.prototype.unpause = function(name) {
 StateManager.prototype.protect = function(name) {
   var holder = this.get(name);
   if (holder) {
-    holder.protect = false;
+    holder.protect = true;
   }
 };
 
 StateManager.prototype.unprotect = function(name) {
   var holder = this.get(name);
   if (holder) {
-    holder.protect = true;
+    holder.protect = false;
+  }
+};
+
+StateManager.prototype.mousemove = function(x, y, e) {
+  for (var i=0, len=this.updateOrder.length; i<len; i++) {
+    var state = this.updateOrder[i];
+    if (state.enabled && state.state.mousemove && !state.paused) {
+      state.state.mousemove(x, y, e);
+    }
   }
 };
 

@@ -5,6 +5,10 @@ var Game = require('./game');
 var Input = require('./input');
 var Time = require('./time');
 
+var Debugger = require('potion-debugger');
+
+var StateManager = require('./state-manager');
+
 /**
  * Main Engine class which calls the game methods
  * @constructor
@@ -26,11 +30,17 @@ var Engine = function(container, methods) {
   canvas.style.left = '0px';
   container.appendChild(canvas);
 
-  /**
-   * Game code instance
-   * @type {Game}
-   */
   this.game = new GameClass(canvas);
+  this.game.debug = new Debugger(this.game);
+
+  var states = new StateManager();
+  states.add('app', this.game);
+  states.add('debug', this.game.debug);
+
+  states.protect('app');
+  states.protect('debug');
+
+  this.game.states = states;
 
   if (this.game.config.addInputEvents) {
     this.game.input = new Input(this.game, container);
@@ -84,7 +94,6 @@ Engine.prototype.addEvents = function() {
  * @private
  */
 Engine.prototype.setupCanvasSize = function() {
-  this.game.resize();
   this.game.states.resize();
   this.game.video.width = this.game.canvas.width = this.game.width;
   this.game.video.height = this.game.canvas.height = this.game.height;
@@ -103,7 +112,6 @@ Engine.prototype.setupCanvasSize = function() {
  * @private
  */
 Engine.prototype.start = function() {
-  this.game.init();
   if (this.game.config.addInputEvents) {
     this.addEvents();
   }
@@ -121,8 +129,7 @@ Engine.prototype.tick = function() {
   this._time = now;
 
   this.update(time);
-  this.game.exitUpdate(time);
-  this.game.debug.update(time);
+  this.game.states.exitUpdate(time);
   this.render();
 };
 
@@ -155,11 +162,9 @@ Engine.prototype.update = function(time) {
     this.strayTime = this.strayTime + time;
     while (this.strayTime >= this.game.config.stepTime) {
       this.strayTime = this.strayTime - this.game.config.stepTime;
-      this.game.update(this.game.config.stepTime);
-      this.game.states.update(time);
+      this.game.states.update(this.game.config.stepTime);
     }
   } else {
-    this.game.update(time);
     this.game.states.update(time);
   }
 };
@@ -173,9 +178,7 @@ Engine.prototype.render = function() {
 
   this.game.video.clear();
 
-  this.game.render();
   this.game.states.render();
-  this.game.debug.render();
 
   this.game.video.endFrame();
 };

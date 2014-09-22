@@ -1,9 +1,6 @@
-var Debugger = require('potion-debugger');
-
 var Video = require('./video');
 var Assets = require('./assets');
 var isRetina = require('./retina');
-var StateManager = require('./state-manager');
 
 /**
  * Game class that is subclassed by actual game code
@@ -41,7 +38,9 @@ var Game = function(canvas) {
    */
   this.isRetina = isRetina();
 
-  this.states = new StateManager();
+  this.states = null;
+
+  this.debug = null;
 
   /**
    * Object for configuring Potion
@@ -73,8 +72,6 @@ var Game = function(canvas) {
   if (this.config.initializeVideo) {
     this.video = new Video(canvas, this.config);
   }
-
-  this.debug = new Debugger(this);
 };
 
 /**
