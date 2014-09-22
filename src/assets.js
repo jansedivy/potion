@@ -90,7 +90,7 @@ Assets.prototype._error = function(type, url) {
 };
 
 Assets.prototype._save = function(url, data, callback) {
-  this._data[url] = data;
+  this.set(url, data);
   if (callback) { callback(data); }
   this._finishedOneFile();
 };
