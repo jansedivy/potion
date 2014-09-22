@@ -53,6 +53,10 @@ Assets.prototype.get = function(name) {
   return this._data[name];
 };
 
+Assets.prototype.set = function(name, value) {
+  this._data[name] = value;
+};
+
 /**
  * Stores url so it can be loaded later
  * @param {string} type - type of asset
