@@ -25,9 +25,7 @@ var Engine = function(container, methods) {
   var canvas = document.createElement('canvas');
   canvas.width = container.clientWidth;
   canvas.height = container.clientHeight;
-  canvas.style.position = 'absolute';
-  canvas.style.top = '0px';
-  canvas.style.left = '0px';
+  canvas.style.display = 'block';
   container.appendChild(canvas);
 
   this.game = new GameClass(canvas);
@@ -48,8 +46,6 @@ var Engine = function(container, methods) {
 
   this.tickFunc = (function (self) { return function() { self.tick(); }; })(this);
   this.preloaderTickFunc = (function (self) { return function() { self._preloaderTick(); }; })(this);
-
-  this.setupCanvasSize();
 
   this.strayTime = 0;
 
@@ -74,8 +70,12 @@ var Engine = function(container, methods) {
 Engine.prototype.addEvents = function() {
   var self = this;
 
+  var game = self.game;
   window.addEventListener('resize', function() {
-    self.setupCanvasSize();
+    game.video.setSize(self.game.canvas.parentElement.clientWidth, self.game.canvas.parentElement.clientHeight);
+
+    game.width = game.video.width;
+    game.height = game.video.height;
   });
 
   window.addEventListener('blur', function() {
@@ -87,24 +87,6 @@ Engine.prototype.addEvents = function() {
     self.game.input.resetKeys();
     self.game.focus();
   });
-};
-
-/**
- * Runs every time on resize event
- * @private
- */
-Engine.prototype.setupCanvasSize = function() {
-  this.game.states.resize();
-  this.game.video.width = this.game.canvas.width = this.game.width;
-  this.game.video.height = this.game.canvas.height = this.game.height;
-
-  this.game.debug.video.width = this.game.video.canvas.width = this.game.width;
-  this.game.debug.video.height = this.game.canvas.height = this.game.height;
-
-  if (this.game.config.useRetina && this.game.isRetina) {
-    this.game.video.scaleCanvas(2);
-    this.game.debug.video.scaleCanvas(2);
-  }
 };
 
 /**

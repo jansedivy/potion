@@ -1,3 +1,5 @@
+var isRetina = require('./retina');
+
 /**
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
@@ -61,6 +63,19 @@ Video.prototype.scaleCanvas = function(scale) {
   }
 };
 
+Video.prototype.setSize = function(width, height, resizeParent) {
+  this.width = width;
+  this.height = height;
+
+  if (resizeParent) {
+    this.canvas.parentElement.style.width = width + 'px';
+    this.canvas.parentElement.style.height = height + 'px';
+  }
+
+  this.canvas.width = width;
+  this.canvas.height = height;
+};
+
 /**
  * Draws image sprite into x a y position
  * @param {object} sprite - sprite data
@@ -110,7 +125,9 @@ Video.prototype.clear = function() {
   if (this.ctx) { this.ctx.clearRect(0, 0, this.width, this.height); }
 };
 
-Video.prototype.createLayer = function() {
+Video.prototype.createLayer = function(config) {
+  config = config || {};
+
   var container = this.canvas.parentElement;
   var canvas = document.createElement('canvas');
   canvas.width = container.clientWidth;
@@ -119,7 +136,13 @@ Video.prototype.createLayer = function() {
   canvas.style.top = '0px';
   canvas.style.left = '0px';
   container.appendChild(canvas);
-  return new Video(canvas, this.config);
+  var video = new Video(canvas, this.config);
+
+  if (config.useRetina && isRetina()) {
+    video.scaleCanvas(2);
+  }
+
+  return video;
 };
 
 module.exports = Video;

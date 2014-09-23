@@ -18,13 +18,13 @@ var Game = function(canvas) {
    * Game width in pixels
    * @type {number}
    */
-  this.canvas.width = this.width = 300;
+  this.width = this.canvas.width;
 
   /**
    * Game highs in pixels
    * @type {number}
    */
-  this.canvas.height = this.height = 300;
+  this.height = this.canvas.height;
 
   /**
    * Instance of Assets for loading assets for the game
@@ -71,6 +71,10 @@ var Game = function(canvas) {
    */
   if (this.config.initializeVideo) {
     this.video = new Video(canvas, this.config);
+
+    if (this.config.useRetina && this.isRetina) {
+      this.video.scaleCanvas(2);
+    }
   }
 };
 
@@ -106,6 +110,15 @@ Game.prototype.update = function(time) {};
  * @abstract
  */
 Game.prototype.exitUpdate = function(time) {};
+
+Game.prototype.setSize = function(width, height) {
+  this.width = width;
+  this.height = height;
+
+  this.video.setSize(width, height, true);
+
+  this.states.resize();
+};
 
 /**
  * Runs every frame in the loading phase. It's used for rendering the loading bar
