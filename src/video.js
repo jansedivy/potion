@@ -136,7 +136,8 @@ Video.prototype.createLayer = function(config) {
   canvas.style.top = '0px';
   canvas.style.left = '0px';
   container.appendChild(canvas);
-  var video = new Video(canvas, this.config);
+
+  var video = new Video(canvas, config);
 
   if (config.useRetina && isRetina()) {
     video.scaleCanvas(2);
