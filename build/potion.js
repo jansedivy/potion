@@ -1,8 +1,8 @@
 /**
- * potion - v0.7.0
+ * potion - v0.7.1
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-09-22
+ * Compiled: 2014-10-06
  *
  * potion is licensed under the MIT License.
  */
@@ -18,7 +18,7 @@ module.exports = {
   Animation: _dereq_('./src/animation')
 };
 
-},{"./src/animation":24,"./src/engine":26}],2:[function(_dereq_,module,exports){
+},{"./src/animation":25,"./src/engine":27}],2:[function(_dereq_,module,exports){
 /*!
  *  howler.js v1.1.25
  *  howlerjs.com
@@ -2203,8 +2203,52 @@ function hasOwnProperty(obj, prop) {
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./support/isBuffer":10,"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5,"inherits":4}],12:[function(_dereq_,module,exports){
+var DirtyManager = function(canvas, ctx) {
+  this.ctx = ctx;
+  this.canvas = canvas;
+
+  this.top = canvas.height;
+  this.left = canvas.width;
+  this.bottom = 0;
+  this.right = 0;
+
+  this.isDirty = false;
+};
+
+DirtyManager.prototype.addRect = function(left, top, width, height) {
+  var right  = left + width;
+  var bottom = top + height;
+
+  this.top    = top < this.top       ? top    : this.top;
+  this.left   = left < this.left     ? left   : this.left;
+  this.bottom = bottom > this.bottom ? bottom : this.bottom;
+  this.right  = right > this.right   ? right  : this.right;
+
+  this.isDirty = true;
+};
+
+DirtyManager.prototype.clear = function() {
+  if (!this.isDirty) { return; }
+
+  this.ctx.clearRect(this.left,
+                     this.top,
+                     this.right - this.left,
+                     this.bottom - this.top);
+
+  this.left = this.canvas.width;
+  this.top = this.canvas.height;
+  this.right = 0;
+  this.bottom = 0;
+
+  this.isDirty = false;
+};
+
+module.exports = DirtyManager;
+
+},{}],13:[function(_dereq_,module,exports){
 var util = _dereq_('util');
 var sourceMaps = _dereq_('source-map-support');
+var DirtyManager = _dereq_('./dirty-manager');
 
 var indexToNumberAndLowerCaseKey = function(index) {
   if (index <= 9) {
@@ -2225,7 +2269,10 @@ var defaults = [
 ];
 
 var Debugger = function(app) {
-  this.video = app.video.createLayer();
+  this.video = app.video.createLayer({
+    useRetina: true,
+    initializeCanvas: true
+  });
   this.app = app;
 
   this.options = defaults;
@@ -2236,12 +2283,6 @@ var Debugger = function(app) {
     this._initOption(option);
   }
 
-  if (window.localStorage && window.localStorage.__debug) {
-    var data = JSON.parse(window.localStorage.__debug);
-    for (var name in data) {
-      this[name] = data[name];
-    }
-  }
   this.disabled = false;
 
   sourceMaps.install();
@@ -2251,15 +2292,20 @@ var Debugger = function(app) {
   this.fpsElapsedTime = 0;
   this.fpsUpdateInterval = 0.5;
 
+  this._fontSize = 0;
+  this._dirtyManager = new DirtyManager(this.video.canvas, this.video.ctx);
+
   this.logs = [];
 
-  this.showDebug = true;
+  this.showDebug = false;
   this.enableDebugKeys = true;
   this.enableShortcuts = false;
 
   this.enableShortcutsKey = 220;
 
   this.lastKey = null;
+
+  this._load();
 
   this.keyShortcuts = [
     { key: 123, entry: 'showDebug', type: 'toggle' }
@@ -2270,6 +2316,15 @@ var Debugger = function(app) {
   window.addEventListener('error', function(error) {
     self.log(error.error.stack, 'red');
   });
+};
+
+Debugger.prototype._setFont = function(px, font) {
+  this._fontSize = px;
+  this.video.ctx.font = px + 'px ' + font;
+};
+
+Debugger.prototype.resize = function() {
+  this.video.setSize(this.app.width, this.app.height);
 };
 
 Debugger.prototype.addConfig = function(option) {
@@ -2299,15 +2354,7 @@ Debugger.prototype.log = function(message, color) {
   }
 };
 
-Debugger.prototype.enterUpdate = function() {
-  if (this.disabled) { return; }
-
-  if (this.pause) {
-    return true;
-  }
-};
-
-Debugger.prototype.update = function(time) {
+Debugger.prototype.exitUpdate = function(time) {
   if (this.disabled) { return; }
 
   if (this.showDebug) {
@@ -2369,16 +2416,7 @@ Debugger.prototype.keydown = function(key) {
 
             this[option.entry] = !this[option.entry];
 
-            var data = {};
-
-            if (window.localStorage.__debug) {
-              data = JSON.parse(window.localStorage.__debug);
-            }
-
-            data[option.entry] = this[option.entry];
-
-            window.localStorage.__debug = JSON.stringify(data);
-
+            this._save();
           } else if (option.type === 'call') {
             option.entry();
           }
@@ -2395,6 +2433,7 @@ Debugger.prototype.keydown = function(key) {
 
       if (keyShortcut.type === 'toggle') {
         this[keyShortcut.entry] = !this[keyShortcut.entry];
+        this._save();
       } else if (keyShortcut.type === 'call') {
         this[keyShortcut.entry]();
       }
@@ -2406,12 +2445,40 @@ Debugger.prototype.keydown = function(key) {
   return false;
 };
 
+Debugger.prototype._save = function() {
+  var data = {
+    showDebug: this.showDebug,
+    options: {}
+  };
+
+  for (var i=0; i<this.options.length; i++) {
+    var option = this.options[i];
+    var value = this[option.entry];
+    data.options[option.entry] = value;
+  }
+
+  window.localStorage.__potionDebug = JSON.stringify(data);
+};
+
+Debugger.prototype._load = function() {
+  if (window.localStorage && window.localStorage.__potionDebug) {
+    var data = JSON.parse(window.localStorage.__potionDebug);
+    this.showDebug = data.showDebug;
+
+    for (var name in data.options) {
+      this[name] = data.options[name];
+    }
+  }
+};
+
 Debugger.prototype.render = function() {
   if (this.disabled) { return; }
+
+  this._dirtyManager.clear();
+
   if (this.showDebug) {
-    this.video.clear();
     this.video.ctx.save();
-    this.video.ctx.font = '15px sans-serif';
+    this._setFont(15, 'sans-serif');
 
     this._renderLogs();
     this._renderData();
@@ -2419,6 +2486,7 @@ Debugger.prototype.render = function() {
 
     this.video.ctx.restore();
   }
+
 };
 
 Debugger.prototype._renderLogs = function() {
@@ -2450,7 +2518,7 @@ Debugger.prototype._renderData = function() {
 
   y += 20;
 
-  this.video.ctx.font = '20px sans-serif';
+  this._setFont(20, 'sans-serif');
   if (this.showTime) {
     if (this.app.runtime && this.app.runtime.time != null) {
       this._renderText(this.app.runtime.time.toFixed(2) + ' s', x, y);
@@ -2458,7 +2526,7 @@ Debugger.prototype._renderData = function() {
   }
   y += 30;
 
-  this.video.ctx.font = '15px sans-serif';
+  this._setFont(15, 'sans-serif');
 
   if (this.showKeyCodes) {
     this._renderText('key ' + this.lastKey, x, y, this.app.input.isKeyDown(this.lastKey) ? '#e9dc7c' : 'white');
@@ -2471,7 +2539,7 @@ Debugger.prototype._renderShortcuts = function() {
   if (this.enableShortcuts) {
     var height = 28;
 
-    this.video.ctx.font = '20px Helvetica Neue, sans-serif';
+    this._setFont(20, 'Helvetica Neue, sans-serif');
     this.video.ctx.textAlign = 'left';
     this.video.ctx.textBaseline = 'top';
     var maxPerCollumn = Math.floor((this.app.height - 14)/height);
@@ -2521,11 +2589,24 @@ Debugger.prototype._renderText = function(text, x, y, color, outline) {
   this.video.ctx.lineWidth = 3;
   this.video.ctx.strokeText(text, x, y);
   this.video.ctx.fillText(text, x, y);
+
+  var width = this.video.ctx.measureText(text).width;
+
+  var dx = x - 5;
+  var dy = y;
+  var dwidth = width + 10;
+  var dheight = this._fontSize + 10;
+
+  if (this.video.ctx.textAlign === 'right') {
+    dx = x - 5 - width;
+  }
+
+  this._dirtyManager.addRect(dx, dy, dwidth, dheight);
 };
 
 module.exports = Debugger;
 
-},{"source-map-support":23,"util":11}],13:[function(_dereq_,module,exports){
+},{"./dirty-manager":12,"source-map-support":24,"util":11}],14:[function(_dereq_,module,exports){
 /*
  * Copyright 2009-2011 Mozilla Foundation and contributors
  * Licensed under the New BSD license. See LICENSE.txt or:
@@ -2535,7 +2616,7 @@ exports.SourceMapGenerator = _dereq_('./source-map/source-map-generator').Source
 exports.SourceMapConsumer = _dereq_('./source-map/source-map-consumer').SourceMapConsumer;
 exports.SourceNode = _dereq_('./source-map/source-node').SourceNode;
 
-},{"./source-map/source-map-consumer":18,"./source-map/source-map-generator":19,"./source-map/source-node":20}],14:[function(_dereq_,module,exports){
+},{"./source-map/source-map-consumer":19,"./source-map/source-map-generator":20,"./source-map/source-node":21}],15:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -2634,7 +2715,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./util":21,"amdefine":22}],15:[function(_dereq_,module,exports){
+},{"./util":22,"amdefine":23}],16:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -2780,7 +2861,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./base64":16,"amdefine":22}],16:[function(_dereq_,module,exports){
+},{"./base64":17,"amdefine":23}],17:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -2824,7 +2905,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"amdefine":22}],17:[function(_dereq_,module,exports){
+},{"amdefine":23}],18:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -2907,7 +2988,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"amdefine":22}],18:[function(_dereq_,module,exports){
+},{"amdefine":23}],19:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -3387,7 +3468,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./array-set":14,"./base64-vlq":15,"./binary-search":17,"./util":21,"amdefine":22}],19:[function(_dereq_,module,exports){
+},{"./array-set":15,"./base64-vlq":16,"./binary-search":18,"./util":22,"amdefine":23}],20:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -3769,7 +3850,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./array-set":14,"./base64-vlq":15,"./util":21,"amdefine":22}],20:[function(_dereq_,module,exports){
+},{"./array-set":15,"./base64-vlq":16,"./util":22,"amdefine":23}],21:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4142,7 +4223,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./source-map-generator":19,"./util":21,"amdefine":22}],21:[function(_dereq_,module,exports){
+},{"./source-map-generator":20,"./util":22,"amdefine":23}],22:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4349,7 +4430,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"amdefine":22}],22:[function(_dereq_,module,exports){
+},{"amdefine":23}],23:[function(_dereq_,module,exports){
 (function (process,__filename){
 /** vim: et:ts=4:sw=4:sts=4
  * @license amdefine 0.1.0 Copyright (c) 2011, The Dojo Foundation All Rights Reserved.
@@ -4652,7 +4733,7 @@ function amdefine(module, requireFn) {
 module.exports = amdefine;
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),"/node_modules/potion-debugger/node_modules/source-map-support/node_modules/source-map/node_modules/amdefine/amdefine.js")
-},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5,"path":9}],23:[function(_dereq_,module,exports){
+},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5,"path":9}],24:[function(_dereq_,module,exports){
 (function (process,Buffer){
 var SourceMapConsumer = _dereq_('source-map').SourceMapConsumer;
 var path = _dereq_('path');
@@ -4961,7 +5042,7 @@ exports.install = function(options) {
 };
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),_dereq_("buffer").Buffer)
-},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5,"buffer":6,"fs":3,"path":9,"source-map":13}],24:[function(_dereq_,module,exports){
+},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5,"buffer":6,"fs":3,"path":9,"source-map":14}],25:[function(_dereq_,module,exports){
 /**
  * Animation class for rendering sprites in grid
  * @constructor
@@ -5074,7 +5155,7 @@ Animation.prototype.setState = function(state) {
 
 module.exports = Animation;
 
-},{}],25:[function(_dereq_,module,exports){
+},{}],26:[function(_dereq_,module,exports){
 (function (process){
 /* global Howl */
 
@@ -5249,13 +5330,17 @@ Assets.prototype._nextFile = function() {
 module.exports = Assets;
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"../lib/howler.min.js":2,"./utils":34,"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5}],26:[function(_dereq_,module,exports){
+},{"../lib/howler.min.js":2,"./utils":35,"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5}],27:[function(_dereq_,module,exports){
 _dereq_('./raf-polyfill')();
 
 var Game = _dereq_('./game');
 
 var Input = _dereq_('./input');
 var Time = _dereq_('./time');
+
+var Debugger = _dereq_('potion-debugger');
+
+var StateManager = _dereq_('./state-manager');
 
 /**
  * Main Engine class which calls the game methods
@@ -5273,16 +5358,20 @@ var Engine = function(container, methods) {
   var canvas = document.createElement('canvas');
   canvas.width = container.clientWidth;
   canvas.height = container.clientHeight;
-  canvas.style.position = 'absolute';
-  canvas.style.top = '0px';
-  canvas.style.left = '0px';
+  canvas.style.display = 'block';
   container.appendChild(canvas);
 
-  /**
-   * Game code instance
-   * @type {Game}
-   */
   this.game = new GameClass(canvas);
+  this.game.debug = new Debugger(this.game);
+
+  var states = new StateManager();
+  states.add('app', this.game);
+  states.add('debug', this.game.debug);
+
+  states.protect('app');
+  states.protect('debug');
+
+  this.game.states = states;
 
   if (this.game.config.addInputEvents) {
     this.game.input = new Input(this.game, container);
@@ -5290,8 +5379,6 @@ var Engine = function(container, methods) {
 
   this.tickFunc = (function (self) { return function() { self.tick(); }; })(this);
   this.preloaderTickFunc = (function (self) { return function() { self._preloaderTick(); }; })(this);
-
-  this.setupCanvasSize();
 
   this.strayTime = 0;
 
@@ -5316,8 +5403,12 @@ var Engine = function(container, methods) {
 Engine.prototype.addEvents = function() {
   var self = this;
 
+  var game = self.game;
   window.addEventListener('resize', function() {
-    self.setupCanvasSize();
+    game.video.setSize(self.game.canvas.parentElement.clientWidth, self.game.canvas.parentElement.clientHeight);
+
+    game.width = game.video.width;
+    game.height = game.video.height;
   });
 
   window.addEventListener('blur', function() {
@@ -5332,30 +5423,10 @@ Engine.prototype.addEvents = function() {
 };
 
 /**
- * Runs every time on resize event
- * @private
- */
-Engine.prototype.setupCanvasSize = function() {
-  this.game.resize();
-  this.game.states.resize();
-  this.game.video.width = this.game.canvas.width = this.game.width;
-  this.game.video.height = this.game.canvas.height = this.game.height;
-
-  this.game.debug.video.width = this.game.video.canvas.width = this.game.width;
-  this.game.debug.video.height = this.game.canvas.height = this.game.height;
-
-  if (this.game.config.useRetina && this.game.isRetina) {
-    this.game.video.scaleCanvas(2);
-    this.game.debug.video.scaleCanvas(2);
-  }
-};
-
-/**
  * Starts the game, adds events and run first frame
  * @private
  */
 Engine.prototype.start = function() {
-  this.game.init();
   if (this.game.config.addInputEvents) {
     this.addEvents();
   }
@@ -5373,8 +5444,7 @@ Engine.prototype.tick = function() {
   this._time = now;
 
   this.update(time);
-  this.game.exitUpdate(time);
-  this.game.debug.update(time);
+  this.game.states.exitUpdate(time);
   this.render();
 };
 
@@ -5407,11 +5477,9 @@ Engine.prototype.update = function(time) {
     this.strayTime = this.strayTime + time;
     while (this.strayTime >= this.game.config.stepTime) {
       this.strayTime = this.strayTime - this.game.config.stepTime;
-      this.game.update(this.game.config.stepTime);
-      this.game.states.update(time);
+      this.game.states.update(this.game.config.stepTime);
     }
   } else {
-    this.game.update(time);
     this.game.states.update(time);
   }
 };
@@ -5425,22 +5493,17 @@ Engine.prototype.render = function() {
 
   this.game.video.clear();
 
-  this.game.render();
   this.game.states.render();
-  this.game.debug.render();
 
   this.game.video.endFrame();
 };
 
 module.exports = Engine;
 
-},{"./game":27,"./input":28,"./raf-polyfill":30,"./time":33}],27:[function(_dereq_,module,exports){
-var Debugger = _dereq_('potion-debugger');
-
+},{"./game":28,"./input":29,"./raf-polyfill":31,"./state-manager":33,"./time":34,"potion-debugger":13}],28:[function(_dereq_,module,exports){
 var Video = _dereq_('./video');
 var Assets = _dereq_('./assets');
 var isRetina = _dereq_('./retina');
-var StateManager = _dereq_('./state-manager');
 
 /**
  * Game class that is subclassed by actual game code
@@ -5458,13 +5521,13 @@ var Game = function(canvas) {
    * Game width in pixels
    * @type {number}
    */
-  this.canvas.width = this.width = 300;
+  this.width = this.canvas.width;
 
   /**
    * Game highs in pixels
    * @type {number}
    */
-  this.canvas.height = this.height = 300;
+  this.height = this.canvas.height;
 
   /**
    * Instance of Assets for loading assets for the game
@@ -5478,7 +5541,9 @@ var Game = function(canvas) {
    */
   this.isRetina = isRetina();
 
-  this.states = new StateManager();
+  this.states = null;
+
+  this.debug = null;
 
   /**
    * Object for configuring Potion
@@ -5509,9 +5574,11 @@ var Game = function(canvas) {
    */
   if (this.config.initializeVideo) {
     this.video = new Video(canvas, this.config);
-  }
 
-  this.debug = new Debugger(this);
+    if (this.config.useRetina && this.isRetina) {
+      this.video.scaleCanvas(2);
+    }
+  }
 };
 
 /**
@@ -5547,6 +5614,15 @@ Game.prototype.update = function(time) {};
  */
 Game.prototype.exitUpdate = function(time) {};
 
+Game.prototype.setSize = function(width, height) {
+  this.width = width;
+  this.height = height;
+
+  this.video.setSize(width, height, true);
+
+  this.states.resize();
+};
+
 /**
  * Runs every frame in the loading phase. It's used for rendering the loading bar
  * @param {number} time - time in seconds since last frame
@@ -5554,30 +5630,32 @@ Game.prototype.exitUpdate = function(time) {};
 Game.prototype.preloading = function(time) {
   if (!this.config.showPreloader && !(this.video && this.video.ctx)) { return; }
 
-  if (this._preloaderWidth === undefined) { this._preloaderWidth = 0; }
+  if (this.video.ctx) {
+    if (this._preloaderWidth === undefined) { this._preloaderWidth = 0; }
 
-  var ratio = Math.max(0, Math.min(1, (this.assets.loadedItemsCount)/this.assets.itemsCount));
-  var width = Math.min(this.width * 2/3, 300);
-  var height = 20;
+    var ratio = Math.max(0, Math.min(1, (this.assets.loadedItemsCount)/this.assets.itemsCount));
+    var width = Math.min(this.width * 2/3, 300);
+    var height = 20;
 
-  var y = (this.height - height) / 2;
-  var x = (this.width - width) / 2;
+    var y = (this.height - height) / 2;
+    var x = (this.width - width) / 2;
 
-  var currentWidth = width * ratio;
-  this._preloaderWidth = this._preloaderWidth + (currentWidth - this._preloaderWidth) * time * 10;
+    var currentWidth = width * ratio;
+    this._preloaderWidth = this._preloaderWidth + (currentWidth - this._preloaderWidth) * time * 10;
 
-  this.video.ctx.save();
+    this.video.ctx.save();
 
-  this.video.ctx.fillStyle = '#a9c848';
-  this.video.ctx.fillRect(0, 0, this.width, this.height);
+    this.video.ctx.fillStyle = '#a9c848';
+    this.video.ctx.fillRect(0, 0, this.width, this.height);
 
-  this.video.ctx.fillStyle = '#88a237';
-  this.video.ctx.fillRect(x, y, width, height);
+    this.video.ctx.fillStyle = '#88a237';
+    this.video.ctx.fillRect(x, y, width, height);
 
-  this.video.ctx.fillStyle = '#f6ffda';
-  this.video.ctx.fillRect(x, y, this._preloaderWidth, height);
+    this.video.ctx.fillStyle = '#f6ffda';
+    this.video.ctx.fillRect(x, y, this._preloaderWidth, height);
 
-  this.video.ctx.restore();
+    this.video.ctx.restore();
+  }
 };
 
 /**
@@ -5652,7 +5730,7 @@ Game.prototype.resize = function() {};
 
 module.exports = Game;
 
-},{"./assets":25,"./retina":31,"./state-manager":32,"./video":35,"potion-debugger":12}],28:[function(_dereq_,module,exports){
+},{"./assets":26,"./retina":32,"./video":36}],29:[function(_dereq_,module,exports){
 var keys = _dereq_('./keys');
 
 /**
@@ -5720,7 +5798,7 @@ Input.prototype._addEvents = function(game) {
     var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
     var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
-    game.mousemove(x, y, e);
+    game.states.mousemove(x, y, e);
     self.mouse.x = x;
     self.mouse.y = y;
   });
@@ -5731,7 +5809,6 @@ Input.prototype._addEvents = function(game) {
     var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
     var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
-    game.click(x, y, e.button);
     game.states.click(x, y, e.button);
   });
 
@@ -5744,7 +5821,6 @@ Input.prototype._addEvents = function(game) {
     self.mouse.button = e.button;
     self.mouse.isDown = false;
 
-    game.mouseup(x, y, e.button);
     game.states.mouseup(x, y, e.button);
   }, false);
 
@@ -5759,7 +5835,6 @@ Input.prototype._addEvents = function(game) {
     self.mouse.button = e.button;
     self.mouse.isDown = true;
 
-    game.mousedown(x, y, e.button);
     game.states.mousedown(x, y, e.button);
   }, false);
 
@@ -5784,7 +5859,7 @@ Input.prototype._addEvents = function(game) {
     var x = e.layerX;
     var y = e.layerY;
 
-    game.mousemove(x, y);
+    game.states.mousemove(x, y, e);
 
     self.mouse.x = x;
     self.mouse.y = y;
@@ -5811,7 +5886,6 @@ Input.prototype._addEvents = function(game) {
         self.mouse.x = x;
         self.mouse.y = y;
 
-        game.click(x, y, button);
         game.states.click(x, y, button);
       }
     }
@@ -5823,26 +5897,22 @@ Input.prototype._addEvents = function(game) {
 
   document.addEventListener('keydown', function(e) {
     game.input.keys[e.keyCode] = true;
-    game.keydown(e.which, e);
     game.states.keydown(e.which, e);
-    game.debug.keydown(e.which, e);
   });
 
   document.addEventListener('keyup', function(e) {
     game.input.keys[e.keyCode] = false;
-    game.keyup(e.which, e);
     game.states.keyup(e.which, e);
   });
 
   document.addEventListener('keypress', function(e) {
-    if (game.keypress) { game.keypress(e.which, e); }
     game.states.keypress(e.which, e);
   });
 };
 
 module.exports = Input;
 
-},{"./keys":29}],29:[function(_dereq_,module,exports){
+},{"./keys":30}],30:[function(_dereq_,module,exports){
 module.exports = {
   'MOUSE1':-1,
   'MOUSE2':-3,
@@ -5937,7 +6007,7 @@ module.exports = {
   'PERIOD':190
 };
 
-},{}],30:[function(_dereq_,module,exports){
+},{}],31:[function(_dereq_,module,exports){
 module.exports = function() {
   var lastTime = 0;
   var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -5966,7 +6036,7 @@ module.exports = function() {
   }
 };
 
-},{}],31:[function(_dereq_,module,exports){
+},{}],32:[function(_dereq_,module,exports){
 var isRetina = function() {
   var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),\
   (min--moz-device-pixel-ratio: 1.5),\
@@ -5984,7 +6054,7 @@ var isRetina = function() {
 
 module.exports = isRetina;
 
-},{}],32:[function(_dereq_,module,exports){
+},{}],33:[function(_dereq_,module,exports){
 var StateManager = function() {
   this.states = {};
   this.renderOrder = [];
@@ -6073,14 +6143,14 @@ StateManager.prototype.destroy = function(name) {
   }
 };
 
-StateManager.prototype.destroyAll = function(name) {
+StateManager.prototype.destroyAll = function() {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (!state.protect) {
       if (state.state.close) {
         state.state.close();
       }
-      this.states[name] = null;
+      delete this.states[state.name];
     }
   }
 
@@ -6091,13 +6161,24 @@ StateManager.prototype.update = function(time) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
 
-    if (state.enabled && state.state.update && !state.paused) {
+    if (state && state.enabled && state.state.update && !state.paused) {
       if (!state.initialized && state.state.init) {
         state.initialized = true;
         state.state.init();
       }
 
       state.state.update(time);
+      state.updated = true;
+    }
+  }
+};
+
+StateManager.prototype.exitUpdate = function(time) {
+  for (var i=0, len=this.updateOrder.length; i<len; i++) {
+    var state = this.updateOrder[i];
+
+    if (state.enabled && state.state.exitUpdate && !state.paused) {
+      state.state.exitUpdate(time);
       state.updated = true;
     }
   }
@@ -6165,14 +6246,23 @@ StateManager.prototype.unpause = function(name) {
 StateManager.prototype.protect = function(name) {
   var holder = this.get(name);
   if (holder) {
-    holder.protect = false;
+    holder.protect = true;
   }
 };
 
 StateManager.prototype.unprotect = function(name) {
   var holder = this.get(name);
   if (holder) {
-    holder.protect = true;
+    holder.protect = false;
+  }
+};
+
+StateManager.prototype.mousemove = function(x, y, e) {
+  for (var i=0, len=this.updateOrder.length; i<len; i++) {
+    var state = this.updateOrder[i];
+    if (state.enabled && state.state.mousemove && !state.paused) {
+      state.state.mousemove(x, y, e);
+    }
   }
 };
 
@@ -6241,12 +6331,12 @@ StateManager.prototype.resize = function() {
 
 module.exports = StateManager;
 
-},{}],33:[function(_dereq_,module,exports){
+},{}],34:[function(_dereq_,module,exports){
 module.exports = (function() {
   return window.performance || Date;
 })();
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],35:[function(_dereq_,module,exports){
 var get = exports.get = function(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -6269,7 +6359,9 @@ exports.isFunction = function(obj) {
 };
 
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],36:[function(_dereq_,module,exports){
+var isRetina = _dereq_('./retina');
+
 /**
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
@@ -6333,6 +6425,19 @@ Video.prototype.scaleCanvas = function(scale) {
   }
 };
 
+Video.prototype.setSize = function(width, height, resizeParent) {
+  this.width = width;
+  this.height = height;
+
+  if (resizeParent) {
+    this.canvas.parentElement.style.width = width + 'px';
+    this.canvas.parentElement.style.height = height + 'px';
+  }
+
+  this.canvas.width = width;
+  this.canvas.height = height;
+};
+
 /**
  * Draws image sprite into x a y position
  * @param {object} sprite - sprite data
@@ -6382,7 +6487,9 @@ Video.prototype.clear = function() {
   if (this.ctx) { this.ctx.clearRect(0, 0, this.width, this.height); }
 };
 
-Video.prototype.createLayer = function() {
+Video.prototype.createLayer = function(config) {
+  config = config || {};
+
   var container = this.canvas.parentElement;
   var canvas = document.createElement('canvas');
   canvas.width = container.clientWidth;
@@ -6391,11 +6498,18 @@ Video.prototype.createLayer = function() {
   canvas.style.top = '0px';
   canvas.style.left = '0px';
   container.appendChild(canvas);
-  return new Video(canvas, this.config);
+
+  var video = new Video(canvas, config);
+
+  if (config.useRetina && isRetina()) {
+    video.scaleCanvas(2);
+  }
+
+  return video;
 };
 
 module.exports = Video;
 
-},{}]},{},[1])
+},{"./retina":32}]},{},[1])
 (1)
 });
