@@ -130,14 +130,13 @@ Game.prototype.preloading = function(time) {
   if (this.video.ctx) {
     if (this._preloaderWidth === undefined) { this._preloaderWidth = 0; }
 
-    var ratio = Math.max(0, Math.min(1, (this.assets.loadedItemsCount)/this.assets.itemsCount));
     var width = Math.min(this.width * 2/3, 300);
     var height = 20;
 
     var y = (this.height - height) / 2;
     var x = (this.width - width) / 2;
 
-    var currentWidth = width * ratio;
+    var currentWidth = width * this.assets.progress;
     this._preloaderWidth = this._preloaderWidth + (currentWidth - this._preloaderWidth) * time * 10;
 
     this.video.ctx.save();

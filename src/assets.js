@@ -17,6 +17,7 @@ var Assets = function() {
 
   this.itemsCount = 0;
   this.loadedItemsCount = 0;
+  this.progress = 0;
 
   this._xhr = new XMLHttpRequest();
 
@@ -74,6 +75,7 @@ Assets.prototype.load = function(type, url, callback) {
 Assets.prototype._finishedOneFile = function() {
   this._nextFile();
   this._thingsToLoad -= 1;
+  this.loadedItemsCount += 1;
 
   if (this._thingsToLoad === 0) {
     var self = this;
@@ -122,6 +124,11 @@ Assets.prototype._nextFile = function() {
   type = type.toLowerCase();
 
   var request = this._xhr;
+
+  request.onprogress = function(e) {
+    var progress = e.loaded/e.total;
+    self.progress = self.loadedItemsCount/self.itemsCount + progress/self.itemsCount;
+  };
 
   switch (type) {
     case 'json':
