@@ -1,8 +1,8 @@
 /**
- * potion - v0.7.1
+ * potion - v0.7.2
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-10-06
+ * Compiled: 2014-11-24
  *
  * potion is licensed under the MIT License.
  */
@@ -5176,6 +5176,7 @@ var Assets = function() {
 
   this.itemsCount = 0;
   this.loadedItemsCount = 0;
+  this.progress = 0;
 
   this._xhr = new XMLHttpRequest();
 
@@ -5233,6 +5234,7 @@ Assets.prototype.load = function(type, url, callback) {
 Assets.prototype._finishedOneFile = function() {
   this._nextFile();
   this._thingsToLoad -= 1;
+  this.loadedItemsCount += 1;
 
   if (this._thingsToLoad === 0) {
     var self = this;
@@ -5281,6 +5283,11 @@ Assets.prototype._nextFile = function() {
   type = type.toLowerCase();
 
   var request = this._xhr;
+
+  request.onprogress = function(e) {
+    var progress = e.loaded/e.total;
+    self.progress = self.loadedItemsCount/self.itemsCount + progress/self.itemsCount;
+  };
 
   switch (type) {
     case 'json':
@@ -5633,14 +5640,13 @@ Game.prototype.preloading = function(time) {
   if (this.video.ctx) {
     if (this._preloaderWidth === undefined) { this._preloaderWidth = 0; }
 
-    var ratio = Math.max(0, Math.min(1, (this.assets.loadedItemsCount)/this.assets.itemsCount));
     var width = Math.min(this.width * 2/3, 300);
     var height = 20;
 
     var y = (this.height - height) / 2;
     var x = (this.width - width) / 2;
 
-    var currentWidth = width * ratio;
+    var currentWidth = width * this.assets.progress;
     this._preloaderWidth = this._preloaderWidth + (currentWidth - this._preloaderWidth) * time * 10;
 
     this.video.ctx.save();
