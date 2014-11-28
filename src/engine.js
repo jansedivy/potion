@@ -27,14 +27,7 @@ var Engine = function(container, methods) {
   this.game = new GameClass(canvas);
   this.game.debug = new Debugger(this.game);
 
-  var states = new StateManager();
-  states.add('app', this.game);
-  states.add('debug', this.game.debug);
-
-  states.protect('app');
-  states.protect('debug');
-
-  this.game.states = states;
+  this._setDefaultStates();
 
   if (this.game.config.addInputEvents) {
     this.game.input = new Input(this.game, container);
@@ -57,6 +50,17 @@ var Engine = function(container, methods) {
   if (this.game.assets.isLoading) {
     this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
   }
+};
+
+Engine.prototype._setDefaultStates = function() {
+  var states = new StateManager();
+  states.add('app', this.game);
+  states.add('debug', this.game.debug);
+
+  states.protect('app');
+  states.protect('debug');
+
+  this.game.states = states;
 };
 
 Engine.prototype._subclassGame = function(container, methods) {
