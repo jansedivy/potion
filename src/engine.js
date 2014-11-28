@@ -14,11 +14,7 @@ var StateManager = require('./state-manager');
  * @constructor
  */
 var Engine = function(container, methods) {
-  var GameClass = function(container) { Game.call(this, container); };
-  GameClass.prototype = Object.create(Game.prototype);
-  for (var method in methods) {
-    GameClass.prototype[method] = methods[method];
-  }
+  var GameClass = this._subclassGame(container, methods);
 
   container.style.position = 'relative';
 
@@ -61,6 +57,20 @@ var Engine = function(container, methods) {
   if (this.game.assets.isLoading) {
     this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
   }
+};
+
+Engine.prototype._subclassGame = function(container, methods) {
+  var GameClass = function(container) {
+    Game.call(this, container);
+  };
+
+  GameClass.prototype = Object.create(Game.prototype);
+
+  for (var method in methods) {
+    GameClass.prototype[method] = methods[method];
+  }
+
+  return GameClass;
 };
 
 /**
