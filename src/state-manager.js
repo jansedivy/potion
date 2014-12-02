@@ -122,7 +122,6 @@ StateManager.prototype.exitUpdate = function(time) {
 
     if (state.enabled && state.state.exitUpdate && !state.paused) {
       state.state.exitUpdate(time);
-      state.updated = true;
     }
   }
 };
