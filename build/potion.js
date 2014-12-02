@@ -1,8 +1,8 @@
 /**
- * potion - v0.7.2
+ * potion - v0.7.3
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-11-24
+ * Compiled: 2014-12-02
  *
  * potion is licensed under the MIT License.
  */
@@ -2353,6 +2353,8 @@ Debugger.prototype.log = function(message, color) {
     this.logs.push({ text: msg, life: 10, color: color });
   }
 };
+
+Debugger.prototype.update = function() {};
 
 Debugger.prototype.exitUpdate = function(time) {
   if (this.disabled) { return; }
@@ -5354,11 +5356,7 @@ var StateManager = _dereq_('./state-manager');
  * @constructor
  */
 var Engine = function(container, methods) {
-  var GameClass = function(container) { Game.call(this, container); };
-  GameClass.prototype = Object.create(Game.prototype);
-  for (var method in methods) {
-    GameClass.prototype[method] = methods[method];
-  }
+  var GameClass = this._subclassGame(container, methods);
 
   container.style.position = 'relative';
 
@@ -5371,14 +5369,7 @@ var Engine = function(container, methods) {
   this.game = new GameClass(canvas);
   this.game.debug = new Debugger(this.game);
 
-  var states = new StateManager();
-  states.add('app', this.game);
-  states.add('debug', this.game.debug);
-
-  states.protect('app');
-  states.protect('debug');
-
-  this.game.states = states;
+  this._setDefaultStates();
 
   if (this.game.config.addInputEvents) {
     this.game.input = new Input(this.game, container);
@@ -5401,6 +5392,31 @@ var Engine = function(container, methods) {
   if (this.game.assets.isLoading) {
     this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
   }
+};
+
+Engine.prototype._setDefaultStates = function() {
+  var states = new StateManager();
+  states.add('app', this.game);
+  states.add('debug', this.game.debug);
+
+  states.protect('app');
+  states.protect('debug');
+
+  this.game.states = states;
+};
+
+Engine.prototype._subclassGame = function(container, methods) {
+  var GameClass = function(container) {
+    Game.call(this, container);
+  };
+
+  GameClass.prototype = Object.create(Game.prototype);
+
+  for (var method in methods) {
+    GameClass.prototype[method] = methods[method];
+  }
+
+  return GameClass;
 };
 
 /**
@@ -6185,7 +6201,6 @@ StateManager.prototype.exitUpdate = function(time) {
 
     if (state.enabled && state.state.exitUpdate && !state.paused) {
       state.state.exitUpdate(time);
-      state.updated = true;
     }
   }
 };
