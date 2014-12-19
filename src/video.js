@@ -43,8 +43,14 @@ Video.prototype.include = function(methods) {
   }
 };
 
+/**
+ * Called at the beginning of each frame
+ */
 Video.prototype.beginFrame = function() {};
 
+/**
+ * Called at the end of each frame
+ */
 Video.prototype.endFrame = function() {};
 
 /**
@@ -63,6 +69,9 @@ Video.prototype.scaleCanvas = function(scale) {
   }
 };
 
+/**
+ * Resize canvas element
+ */
 Video.prototype.setSize = function(width, height, resizeParent) {
   this.width = width;
   this.height = height;
@@ -121,10 +130,17 @@ Video.prototype.animation = function(animation, x, y) {
   this.sprite(animation.image, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
 };
 
+
+/**
+ * clear canvas screen
+ */
 Video.prototype.clear = function() {
   if (this.ctx) { this.ctx.clearRect(0, 0, this.width, this.height); }
 };
 
+/**
+ * Create another canvas element on top of the previous one
+ */
 Video.prototype.createLayer = function(config) {
   config = config || {};
 
