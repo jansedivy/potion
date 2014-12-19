@@ -52,9 +52,9 @@ var Game = function(canvas) {
     initializeVideo: true,
     addInputEvents: true,
     showPreloader: true,
-    fixedStep: true,
+    fixedStep: false,
     stepTime: 0.01666,
-    maxStepTime: 0.06
+    maxStepTime: 0.01666
   };
 
   this.configure();
