@@ -54,6 +54,12 @@ Assets.prototype.get = function(name) {
   return this._data[name];
 };
 
+/**
+ * Used for storing some value in assets module
+ * useful for overrating values
+ * @param {string} name - url of the asset
+ * @param {any} value - value to be stored
+ */
 Assets.prototype.set = function(name, value) {
   this._data[name] = value;
 };
