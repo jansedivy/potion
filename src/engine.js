@@ -52,31 +52,6 @@ var Engine = function(container, methods) {
   }
 };
 
-Engine.prototype._setDefaultStates = function() {
-  var states = new StateManager();
-  states.add('app', this.game);
-  states.add('debug', this.game.debug);
-
-  states.protect('app');
-  states.protect('debug');
-
-  this.game.states = states;
-};
-
-Engine.prototype._subclassGame = function(container, methods) {
-  var GameClass = function(container) {
-    Game.call(this, container);
-  };
-
-  GameClass.prototype = Object.create(Game.prototype);
-
-  for (var method in methods) {
-    GameClass.prototype[method] = methods[method];
-  }
-
-  return GameClass;
-};
-
 /**
  * Add event listener for window events
  * @private
@@ -130,23 +105,6 @@ Engine.prototype.tick = function() {
 };
 
 /**
- * Main tick function in preloader loop
- * @private
- */
-Engine.prototype._preloaderTick = function() {
-  this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
-
-  var now = Time.now();
-  var time = (now - this._time) / 1000;
-  this._time = now;
-
-  if (this.game.config.showPreloader) {
-    this.game.video.clear();
-    this.game.preloading(time);
-  }
-};
-
-/**
  * Updates the game
  * @param {number} time - time in seconds since last frame
  * @private
@@ -177,6 +135,48 @@ Engine.prototype.render = function() {
   this.game.states.render();
 
   this.game.video.endFrame();
+};
+
+/**
+ * Main tick function in preloader loop
+ * @private
+ */
+Engine.prototype._preloaderTick = function() {
+  this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
+
+  var now = Time.now();
+  var time = (now - this._time) / 1000;
+  this._time = now;
+
+  if (this.game.config.showPreloader) {
+    this.game.video.clear();
+    this.game.preloading(time);
+  }
+};
+
+Engine.prototype._setDefaultStates = function() {
+  var states = new StateManager();
+  states.add('app', this.game);
+  states.add('debug', this.game.debug);
+
+  states.protect('app');
+  states.protect('debug');
+
+  this.game.states = states;
+};
+
+Engine.prototype._subclassGame = function(container, methods) {
+  var GameClass = function(container) {
+    Game.call(this, container);
+  };
+
+  GameClass.prototype = Object.create(Game.prototype);
+
+  for (var method in methods) {
+    GameClass.prototype[method] = methods[method];
+  }
+
+  return GameClass;
 };
 
 module.exports = Engine;
