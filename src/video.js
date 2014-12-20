@@ -23,7 +23,7 @@ var Video = function(game, canvas, config) {
    * Game height in pixels
    * @type {number}
    */
-  this.height = game.width;
+  this.height = game.height;
 
   /**
    * canvas context
