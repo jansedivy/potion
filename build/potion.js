@@ -1,8 +1,8 @@
 /**
- * potion - v0.7.3
+ * potion - v0.8.0
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-12-02
+ * Compiled: 2014-12-20
  *
  * potion is licensed under the MIT License.
  */
@@ -13,12 +13,10 @@ module.exports = {
   init: function(canvas, methods) {
     var engine = new Engine(canvas, methods);
     return engine.game;
-  },
-
-  Animation: _dereq_('./src/animation')
+  }
 };
 
-},{"./src/animation":25,"./src/engine":27}],2:[function(_dereq_,module,exports){
+},{"./src/engine":26}],2:[function(_dereq_,module,exports){
 /*!
  *  howler.js v1.1.25
  *  howlerjs.com
@@ -2339,6 +2337,10 @@ Debugger.prototype._initOption = function(option) {
   if (option.type === 'toggle') {
     this[option.entry] = option.default;
   }
+};
+
+Debugger.prototype.clear = function() {
+  this.logs.length = 0;
 };
 
 Debugger.prototype.log = function(message, color) {
@@ -5045,119 +5047,6 @@ exports.install = function(options) {
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),_dereq_("buffer").Buffer)
 },{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5,"buffer":6,"fs":3,"path":9,"source-map":14}],25:[function(_dereq_,module,exports){
-/**
- * Animation class for rendering sprites in grid
- * @constructor
- * @param {object} image
- * @param {number} width - width of individual images in animation
- * @param {number} height - height of individual images in animation
- * @param {number} [columns=null] - optional number of columns in animation
- */
-var Animation = function(image, width, height, columns) {
-  /**
-   * @type object
-   */
-  this.image = image;
-
-  /**
-   * width of individual images in animation
-   * @type {number}
-   */
-  this.width = width;
-
-  /**
-   * height of individual images in animation
-   * @type {number}
-   */
-  this.height = height;
-
-  /**
-   * number of columns in animation
-   * @type {number}
-   */
-  this.columns = columns;
-
-  /**
-   * Current index of image
-   * @type {number}
-   */
-  this.state = 0;
-
-  /**
-   * Current X index
-   * @type {number}
-   */
-  this.indexX = 0;
-
-  /**
-   * Current Y index
-   * @type {number}
-   */
-  this.indexY = 0;
-
-  /**
-   * Image offset X
-   * @type {number}
-   */
-  this.offsetX = 0;
-
-  /**
-   * Image offset Y
-   * @type {number}
-   */
-  this.offsetY = 0;
-};
-
-/**
- * Set x and y index
- * @param {number} x - x index
- * @param {number} y - y index
- */
-Animation.prototype.setIndexes = function(x, y) {
-  this.setIndexX(x);
-  this.setIndexY(y);
-};
-
-/**
- * Set x index
- * @param {number} x - x index
- */
-Animation.prototype.setIndexX = function(x) {
-  this.indexX = x;
-  this.offsetX = this.width * this.indexX;
-};
-
-/**
- * Set y index
- * @param {number} y - y index
- */
-Animation.prototype.setIndexY = function(y) {
-  this.indexY = y;
-  this.offsetY = this.height * this.indexY;
-};
-
-/**
- * Set image index
- * @param {number} state - image index
- */
-Animation.prototype.setState = function(state) {
-  this.state = state;
-
-  var x = this.state;
-  var y = 0;
-
-  if (this.columns) {
-    x = this.state % this.columns;
-    y = Math.floor(this.state/this.columns);
-  }
-
-  this.setIndexX(x);
-  this.setIndexY(y);
-};
-
-module.exports = Animation;
-
-},{}],26:[function(_dereq_,module,exports){
 (function (process){
 /* global Howl */
 
@@ -5215,6 +5104,12 @@ Assets.prototype.get = function(name) {
   return this._data[name];
 };
 
+/**
+ * Used for storing some value in assets module
+ * useful for overrating values
+ * @param {string} name - url of the asset
+ * @param {any} value - value to be stored
+ */
 Assets.prototype.set = function(name, value) {
   this._data[name] = value;
 };
@@ -5339,7 +5234,7 @@ Assets.prototype._nextFile = function() {
 module.exports = Assets;
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"../lib/howler.min.js":2,"./utils":35,"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5}],27:[function(_dereq_,module,exports){
+},{"../lib/howler.min.js":2,"./utils":34,"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5}],26:[function(_dereq_,module,exports){
 _dereq_('./raf-polyfill')();
 
 var Game = _dereq_('./game');
@@ -5359,6 +5254,7 @@ var Engine = function(container, methods) {
   var GameClass = this._subclassGame(container, methods);
 
   container.style.position = 'relative';
+  container.style.display = 'inline-block';
 
   var canvas = document.createElement('canvas');
   canvas.width = container.clientWidth;
@@ -5394,31 +5290,6 @@ var Engine = function(container, methods) {
   }
 };
 
-Engine.prototype._setDefaultStates = function() {
-  var states = new StateManager();
-  states.add('app', this.game);
-  states.add('debug', this.game.debug);
-
-  states.protect('app');
-  states.protect('debug');
-
-  this.game.states = states;
-};
-
-Engine.prototype._subclassGame = function(container, methods) {
-  var GameClass = function(container) {
-    Game.call(this, container);
-  };
-
-  GameClass.prototype = Object.create(Game.prototype);
-
-  for (var method in methods) {
-    GameClass.prototype[method] = methods[method];
-  }
-
-  return GameClass;
-};
-
 /**
  * Add event listener for window events
  * @private
@@ -5428,10 +5299,7 @@ Engine.prototype.addEvents = function() {
 
   var game = self.game;
   window.addEventListener('resize', function() {
-    game.video.setSize(self.game.canvas.parentElement.clientWidth, self.game.canvas.parentElement.clientHeight);
-
-    game.width = game.video.width;
-    game.height = game.video.height;
+    game.setSize(self.game.canvas.parentElement.clientWidth, self.game.canvas.parentElement.clientHeight);
   });
 
   window.addEventListener('blur', function() {
@@ -5472,23 +5340,6 @@ Engine.prototype.tick = function() {
 };
 
 /**
- * Main tick function in preloader loop
- * @private
- */
-Engine.prototype._preloaderTick = function() {
-  this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
-
-  var now = Time.now();
-  var time = (now - this._time) / 1000;
-  this._time = now;
-
-  if (this.game.config.showPreloader) {
-    this.game.video.clear();
-    this.game.preloading(time);
-  }
-};
-
-/**
  * Updates the game
  * @param {number} time - time in seconds since last frame
  * @private
@@ -5521,12 +5372,53 @@ Engine.prototype.render = function() {
   this.game.video.endFrame();
 };
 
+/**
+ * Main tick function in preloader loop
+ * @private
+ */
+Engine.prototype._preloaderTick = function() {
+  this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
+
+  var now = Time.now();
+  var time = (now - this._time) / 1000;
+  this._time = now;
+
+  if (this.game.config.showPreloader) {
+    this.game.video.clear();
+    this.game.preloading(time);
+  }
+};
+
+Engine.prototype._setDefaultStates = function() {
+  var states = new StateManager();
+  states.add('app', this.game);
+  states.add('debug', this.game.debug);
+
+  states.protect('app');
+  states.protect('debug');
+
+  this.game.states = states;
+};
+
+Engine.prototype._subclassGame = function(container, methods) {
+  var GameClass = function(container) {
+    Game.call(this, container);
+  };
+
+  GameClass.prototype = Object.create(Game.prototype);
+
+  for (var method in methods) {
+    GameClass.prototype[method] = methods[method];
+  }
+
+  return GameClass;
+};
+
 module.exports = Engine;
 
-},{"./game":28,"./input":29,"./raf-polyfill":31,"./state-manager":33,"./time":34,"potion-debugger":13}],28:[function(_dereq_,module,exports){
+},{"./game":27,"./input":28,"./raf-polyfill":30,"./state-manager":32,"./time":33,"potion-debugger":13}],27:[function(_dereq_,module,exports){
 var Video = _dereq_('./video');
 var Assets = _dereq_('./assets');
-var isRetina = _dereq_('./retina');
 
 /**
  * Game class that is subclassed by actual game code
@@ -5544,25 +5436,19 @@ var Game = function(canvas) {
    * Game width in pixels
    * @type {number}
    */
-  this.width = this.canvas.width;
+  this.width = 300;
 
   /**
    * Game highs in pixels
    * @type {number}
    */
-  this.height = this.canvas.height;
+  this.height = 300;
 
   /**
    * Instance of Assets for loading assets for the game
    * @type {Assets}
    */
   this.assets = new Assets();
-
-  /**
-   * True if you are using retina screen
-   * @type {boolean}
-   */
-  this.isRetina = isRetina();
 
   this.states = null;
 
@@ -5578,9 +5464,9 @@ var Game = function(canvas) {
     initializeVideo: true,
     addInputEvents: true,
     showPreloader: true,
-    fixedStep: true,
+    fixedStep: false,
     stepTime: 0.01666,
-    maxStepTime: 0.06
+    maxStepTime: 0.01666
   };
 
   this.configure();
@@ -5596,11 +5482,7 @@ var Game = function(canvas) {
    * @type {Video}
    */
   if (this.config.initializeVideo) {
-    this.video = new Video(canvas, this.config);
-
-    if (this.config.useRetina && this.isRetina) {
-      this.video.scaleCanvas(2);
-    }
+    this.video = new Video(this, canvas, this.config);
   }
 };
 
@@ -5641,9 +5523,13 @@ Game.prototype.setSize = function(width, height) {
   this.width = width;
   this.height = height;
 
-  this.video.setSize(width, height, true);
+  if (this.video) {
+    this.video.setSize(width, height);
+  }
 
-  this.states.resize();
+  if (this.states) {
+    this.states.resize();
+  }
 };
 
 /**
@@ -5752,7 +5638,7 @@ Game.prototype.resize = function() {};
 
 module.exports = Game;
 
-},{"./assets":26,"./retina":32,"./video":36}],29:[function(_dereq_,module,exports){
+},{"./assets":25,"./video":35}],28:[function(_dereq_,module,exports){
 var keys = _dereq_('./keys');
 
 /**
@@ -5934,7 +5820,7 @@ Input.prototype._addEvents = function(game) {
 
 module.exports = Input;
 
-},{"./keys":30}],30:[function(_dereq_,module,exports){
+},{"./keys":29}],29:[function(_dereq_,module,exports){
 module.exports = {
   'MOUSE1':-1,
   'MOUSE2':-3,
@@ -6029,7 +5915,7 @@ module.exports = {
   'PERIOD':190
 };
 
-},{}],31:[function(_dereq_,module,exports){
+},{}],30:[function(_dereq_,module,exports){
 module.exports = function() {
   var lastTime = 0;
   var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -6058,7 +5944,7 @@ module.exports = function() {
   }
 };
 
-},{}],32:[function(_dereq_,module,exports){
+},{}],31:[function(_dereq_,module,exports){
 var isRetina = function() {
   var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),\
   (min--moz-device-pixel-ratio: 1.5),\
@@ -6076,7 +5962,15 @@ var isRetina = function() {
 
 module.exports = isRetina;
 
-},{}],33:[function(_dereq_,module,exports){
+},{}],32:[function(_dereq_,module,exports){
+var renderOrderSort = function(a, b) {
+  return a.renderOrder < b.renderOrder;
+};
+
+var updateOrderSort = function(a, b) {
+  return a.updateOrder < b.updateOrder;
+};
+
 var StateManager = function() {
   this.states = {};
   this.renderOrder = [];
@@ -6089,12 +5983,68 @@ StateManager.prototype.add = function(name, state) {
   return state;
 };
 
-var renderOrderSort = function(a, b) {
-  return a.renderOrder < b.renderOrder;
+StateManager.prototype.enable = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (!holder.enabled) {
+      if (holder.state.enable) {
+        holder.state.enable();
+      }
+      holder.enabled = true;
+
+      if (holder.paused) {
+        this.unpause(name);
+      }
+    }
+  }
 };
 
-var updateOrderSort = function(a, b) {
-  return a.updateOrder < b.updateOrder;
+StateManager.prototype.disable = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.enabled) {
+      if (holder.state.disable) {
+        holder.state.disable();
+      }
+      holder.enabled = false;
+    }
+  }
+};
+
+StateManager.prototype.pause = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.state.pause) {
+      holder.state.pause();
+    }
+
+    holder.paused = true;
+  }
+};
+
+StateManager.prototype.unpause = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.state.unpause) {
+      holder.state.unpause();
+    }
+
+    holder.paused = false;
+  }
+};
+
+StateManager.prototype.protect = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    holder.protect = true;
+  }
+};
+
+StateManager.prototype.unprotect = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    holder.protect = false;
+  }
 };
 
 StateManager.prototype.refreshOrder = function() {
@@ -6150,10 +6100,6 @@ StateManager.prototype.setRenderOrder = function(name, order) {
   }
 };
 
-StateManager.prototype.get = function(name) {
-  return this.states[name];
-};
-
 StateManager.prototype.destroy = function(name) {
   var state = this.get(name);
   if (state && !state.protect) {
@@ -6177,6 +6123,10 @@ StateManager.prototype.destroyAll = function() {
   }
 
   this.refreshOrder();
+};
+
+StateManager.prototype.get = function(name) {
+  return this.states[name];
 };
 
 StateManager.prototype.update = function(time) {
@@ -6205,79 +6155,14 @@ StateManager.prototype.exitUpdate = function(time) {
   }
 };
 
-StateManager.prototype.enable = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    if (!holder.enabled) {
-      if (holder.state.enable) {
-        holder.state.enable();
-      }
-      holder.enabled = true;
-
-      if (holder.paused) {
-        this.unpause(name);
-      }
-    }
-  }
-};
-
-StateManager.prototype.disable = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    if (holder.enabled) {
-      if (holder.state.disable) {
-        holder.state.disable();
-      }
-      holder.enabled = false;
-    }
-  }
-};
-
 StateManager.prototype.render = function() {
   for (var i=0, len=this.renderOrder.length; i<len; i++) {
     var state = this.renderOrder[i];
-    if (state.enabled && state.updated && state.render && state.state.render) {
+    if (state.enabled && (state.updated || !state.state.update) && state.render && state.state.render) {
       state.state.render();
     }
   }
 };
-
-StateManager.prototype.pause = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    if (holder.state.pause) {
-      holder.state.pause();
-    }
-
-    holder.paused = true;
-  }
-};
-
-StateManager.prototype.unpause = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    if (holder.state.unpause) {
-      holder.state.unpause();
-    }
-
-    holder.paused = false;
-  }
-};
-
-StateManager.prototype.protect = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    holder.protect = true;
-  }
-};
-
-StateManager.prototype.unprotect = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    holder.protect = false;
-  }
-};
-
 StateManager.prototype.mousemove = function(x, y, e) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
@@ -6352,12 +6237,12 @@ StateManager.prototype.resize = function() {
 
 module.exports = StateManager;
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],33:[function(_dereq_,module,exports){
 module.exports = (function() {
   return window.performance || Date;
 })();
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],34:[function(_dereq_,module,exports){
 var get = exports.get = function(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -6379,15 +6264,15 @@ exports.isFunction = function(obj) {
   return !!(obj && obj.constructor && obj.call && obj.apply);
 };
 
-
-},{}],36:[function(_dereq_,module,exports){
-var isRetina = _dereq_('./retina');
+},{}],35:[function(_dereq_,module,exports){
+var isRetina = _dereq_('./retina')();
 
 /**
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
  */
-var Video = function(canvas, config) {
+var Video = function(game, canvas, config) {
+  this.game = game;
   this.config = config;
   /**
    * Canvas DOM element
@@ -6399,13 +6284,13 @@ var Video = function(canvas, config) {
    * Game width in pixels
    * @type {number}
    */
-  this.width = canvas.width;
+  this.width = game.width;
 
   /**
    * Game height in pixels
    * @type {number}
    */
-  this.height = canvas.height;
+  this.height = game.width;
 
   /**
    * canvas context
@@ -6414,6 +6299,8 @@ var Video = function(canvas, config) {
   if (config.initializeCanvas) {
     this.ctx = canvas.getContext('2d');
   }
+
+  this._applySizeToCanvas();
 };
 
 /**
@@ -6426,8 +6313,14 @@ Video.prototype.include = function(methods) {
   }
 };
 
+/**
+ * Called at the beginning of each frame
+ */
 Video.prototype.beginFrame = function() {};
 
+/**
+ * Called at the end of each frame
+ */
 Video.prototype.endFrame = function() {};
 
 /**
@@ -6446,91 +6339,54 @@ Video.prototype.scaleCanvas = function(scale) {
   }
 };
 
-Video.prototype.setSize = function(width, height, resizeParent) {
+/**
+ * Resize canvas element
+ */
+Video.prototype.setSize = function(width, height) {
   this.width = width;
   this.height = height;
 
-  if (resizeParent) {
-    this.canvas.parentElement.style.width = width + 'px';
-    this.canvas.parentElement.style.height = height + 'px';
-  }
+  this._applySizeToCanvas();
+};
 
-  this.canvas.width = width;
-  this.canvas.height = height;
+Video.prototype._applySizeToCanvas = function() {
+  this.canvas.width = this.width;
+  this.canvas.height = this.height;
+
+  if (this.config.useRetina && isRetina) {
+    this.scaleCanvas(2);
+  }
 };
 
 /**
- * Draws image sprite into x a y position
- * @param {object} sprite - sprite data
- * @param {number} x - x position
- * @param {number} y - y position
- * @param {number} [offsetX] - image position offset x
- * @param {number} [offsetY] - image position offset y
- * @param {number} [w] - final rendering width
- * @param {number} [h] - final rendering height
+ * clear canvas screen
  */
-Video.prototype.sprite = function(image, x, y, offsetX, offsetY, w, h) {
-  if (!this.ctx) { return; }
-
-  offsetX = offsetX || 0;
-  offsetY = offsetY || 0;
-
-  w = w || image.width;
-  h = h || image.height;
-
-  x = Math.floor(x);
-  y = Math.floor(y);
-
-  var drawWidth = w;
-  var drawHeight = h;
-
-  if (image.src.match(/@2x.png$/)) {
-    drawWidth /= 2;
-    drawHeight /= 2;
-  }
-
-  this.ctx.drawImage(image, image.x + offsetX, image.y + offsetY, w, h, x, y, drawWidth, drawHeight);
-};
-
-/**
- * Draw animatino at given location
- * @param {Animation} animation - Animation object
- * @param {number} x - x position
- * @param {number} y - y position
- */
-Video.prototype.animation = function(animation, x, y) {
-  if (!this.ctx) { return; }
-
-  this.sprite(animation.image, x, y, animation.offsetX, animation.offsetY, animation.width, animation.height);
-};
-
 Video.prototype.clear = function() {
   if (this.ctx) { this.ctx.clearRect(0, 0, this.width, this.height); }
 };
 
+/**
+ * Create another canvas element on top of the previous one
+ */
 Video.prototype.createLayer = function(config) {
   config = config || {};
 
   var container = this.canvas.parentElement;
   var canvas = document.createElement('canvas');
-  canvas.width = container.clientWidth;
-  canvas.height = container.clientHeight;
+  canvas.width = this.width;
+  canvas.height = this.height;
   canvas.style.position = 'absolute';
   canvas.style.top = '0px';
   canvas.style.left = '0px';
   container.appendChild(canvas);
 
-  var video = new Video(canvas, config);
-
-  if (config.useRetina && isRetina()) {
-    video.scaleCanvas(2);
-  }
+  var video = new Video(this.game, canvas, config);
 
   return video;
 };
 
 module.exports = Video;
 
-},{"./retina":32}]},{},[1])
+},{"./retina":31}]},{},[1])
 (1)
 });
