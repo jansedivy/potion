@@ -61,10 +61,6 @@ Engine.prototype.addEvents = function() {
   var self = this;
 
   var game = self.game;
-  window.addEventListener('resize', function() {
-    game.setSize(self.game.canvas.parentElement.clientWidth, self.game.canvas.parentElement.clientHeight);
-  });
-
   window.addEventListener('blur', function() {
     self.game.input.resetKeys();
     self.game.blur();
