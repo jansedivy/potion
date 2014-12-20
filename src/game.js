@@ -117,6 +117,10 @@ Game.prototype.setSize = function(width, height) {
 
   this.video.setSize(width, height, true);
 
+  if (this.config.useRetina && this.isRetina) {
+    this.video.scaleCanvas(2);
+  }
+
   this.states.resize();
 };
 
