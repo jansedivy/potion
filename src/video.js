@@ -1,10 +1,11 @@
-var isRetina = require('./retina');
+var isRetina = require('./retina')();
 
 /**
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
  */
-var Video = function(canvas, config) {
+var Video = function(game, canvas, config) {
+  this.game = game;
   this.config = config;
   /**
    * Canvas DOM element
@@ -16,13 +17,13 @@ var Video = function(canvas, config) {
    * Game width in pixels
    * @type {number}
    */
-  this.width = canvas.width;
+  this.width = game.width;
 
   /**
    * Game height in pixels
    * @type {number}
    */
-  this.height = canvas.height;
+  this.height = game.width;
 
   /**
    * canvas context
@@ -31,6 +32,8 @@ var Video = function(canvas, config) {
   if (config.initializeCanvas) {
     this.ctx = canvas.getContext('2d');
   }
+
+  this._applySizeToCanvas();
 };
 
 /**
@@ -72,17 +75,20 @@ Video.prototype.scaleCanvas = function(scale) {
 /**
  * Resize canvas element
  */
-Video.prototype.setSize = function(width, height, resizeParent) {
+Video.prototype.setSize = function(width, height) {
   this.width = width;
   this.height = height;
 
-  if (resizeParent) {
-    this.canvas.parentElement.style.width = width + 'px';
-    this.canvas.parentElement.style.height = height + 'px';
-  }
+  this._applySizeToCanvas();
+};
 
-  this.canvas.width = width;
-  this.canvas.height = height;
+Video.prototype._applySizeToCanvas = function() {
+  this.canvas.width = this.width;
+  this.canvas.height = this.height;
+
+  if (this.config.useRetina && isRetina) {
+    this.scaleCanvas(2);
+  }
 };
 
 /**
@@ -146,18 +152,14 @@ Video.prototype.createLayer = function(config) {
 
   var container = this.canvas.parentElement;
   var canvas = document.createElement('canvas');
-  canvas.width = container.clientWidth;
-  canvas.height = container.clientHeight;
+  canvas.width = this.width;
+  canvas.height = this.height;
   canvas.style.position = 'absolute';
   canvas.style.top = '0px';
   canvas.style.left = '0px';
   container.appendChild(canvas);
 
-  var video = new Video(canvas, config);
-
-  if (config.useRetina && isRetina()) {
-    video.scaleCanvas(2);
-  }
+  var video = new Video(this.game, canvas, config);
 
   return video;
 };

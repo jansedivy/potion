@@ -1,6 +1,5 @@
 var Video = require('./video');
 var Assets = require('./assets');
-var isRetina = require('./retina');
 
 /**
  * Game class that is subclassed by actual game code
@@ -18,25 +17,19 @@ var Game = function(canvas) {
    * Game width in pixels
    * @type {number}
    */
-  this.width = this.canvas.width;
+  this.width = 300;
 
   /**
    * Game highs in pixels
    * @type {number}
    */
-  this.height = this.canvas.height;
+  this.height = 300;
 
   /**
    * Instance of Assets for loading assets for the game
    * @type {Assets}
    */
   this.assets = new Assets();
-
-  /**
-   * True if you are using retina screen
-   * @type {boolean}
-   */
-  this.isRetina = isRetina();
 
   this.states = null;
 
@@ -70,11 +63,7 @@ var Game = function(canvas) {
    * @type {Video}
    */
   if (this.config.initializeVideo) {
-    this.video = new Video(canvas, this.config);
-
-    if (this.config.useRetina && this.isRetina) {
-      this.video.scaleCanvas(2);
-    }
+    this.video = new Video(this, canvas, this.config);
   }
 };
 
@@ -115,13 +104,13 @@ Game.prototype.setSize = function(width, height) {
   this.width = width;
   this.height = height;
 
-  this.video.setSize(width, height, true);
-
-  if (this.config.useRetina && this.isRetina) {
-    this.video.scaleCanvas(2);
+  if (this.video) {
+    this.video.setSize(width, height);
   }
 
-  this.states.resize();
+  if (this.states) {
+    this.states.resize();
+  }
 };
 
 /**

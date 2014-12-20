@@ -17,6 +17,7 @@ var Engine = function(container, methods) {
   var GameClass = this._subclassGame(container, methods);
 
   container.style.position = 'relative';
+  container.style.display = 'inline-block';
 
   var canvas = document.createElement('canvas');
   canvas.width = container.clientWidth;
