@@ -193,7 +193,7 @@ StateManager.prototype.exitUpdate = function(time) {
 StateManager.prototype.render = function() {
   for (var i=0, len=this.renderOrder.length; i<len; i++) {
     var state = this.renderOrder[i];
-    if (state.enabled && state.updated && state.render && state.state.render) {
+    if (state.enabled && (state.updated || !state.state.update) && state.render && state.state.render) {
       state.state.render();
     }
   }
