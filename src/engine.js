@@ -61,10 +61,7 @@ Engine.prototype.addEvents = function() {
 
   var game = self.game;
   window.addEventListener('resize', function() {
-    game.video.setSize(self.game.canvas.parentElement.clientWidth, self.game.canvas.parentElement.clientHeight);
-
-    game.width = game.video.width;
-    game.height = game.video.height;
+    game.setSize(self.game.canvas.parentElement.clientWidth, self.game.canvas.parentElement.clientHeight);
   });
 
   window.addEventListener('blur', function() {
