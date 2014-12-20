@@ -26,13 +26,6 @@ HTML5 canvas game engine
 ## Usage
 
 ```html
-<style>
-  .container {
-    width: 400px;
-    height: 400px;
-  }
-</style>
-
 <div class="container"></div>
 ```
 
@@ -40,6 +33,10 @@ HTML5 canvas game engine
 var Potion = require('potion'); // if you use browserify version
 
 Potion.init(document.querySelector('.container'), {
+  configure: function() {
+    this.setSize(400, 400);
+  },
+
   init: function() {
     this.x = 0;
     this.y = 0;
