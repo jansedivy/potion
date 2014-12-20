@@ -1,3 +1,11 @@
+var renderOrderSort = function(a, b) {
+  return a.renderOrder < b.renderOrder;
+};
+
+var updateOrderSort = function(a, b) {
+  return a.updateOrder < b.updateOrder;
+};
+
 var StateManager = function() {
   this.states = {};
   this.renderOrder = [];
@@ -10,12 +18,68 @@ StateManager.prototype.add = function(name, state) {
   return state;
 };
 
-var renderOrderSort = function(a, b) {
-  return a.renderOrder < b.renderOrder;
+StateManager.prototype.enable = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (!holder.enabled) {
+      if (holder.state.enable) {
+        holder.state.enable();
+      }
+      holder.enabled = true;
+
+      if (holder.paused) {
+        this.unpause(name);
+      }
+    }
+  }
 };
 
-var updateOrderSort = function(a, b) {
-  return a.updateOrder < b.updateOrder;
+StateManager.prototype.disable = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.enabled) {
+      if (holder.state.disable) {
+        holder.state.disable();
+      }
+      holder.enabled = false;
+    }
+  }
+};
+
+StateManager.prototype.pause = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.state.pause) {
+      holder.state.pause();
+    }
+
+    holder.paused = true;
+  }
+};
+
+StateManager.prototype.unpause = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.state.unpause) {
+      holder.state.unpause();
+    }
+
+    holder.paused = false;
+  }
+};
+
+StateManager.prototype.protect = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    holder.protect = true;
+  }
+};
+
+StateManager.prototype.unprotect = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    holder.protect = false;
+  }
 };
 
 StateManager.prototype.refreshOrder = function() {
@@ -71,10 +135,6 @@ StateManager.prototype.setRenderOrder = function(name, order) {
   }
 };
 
-StateManager.prototype.get = function(name) {
-  return this.states[name];
-};
-
 StateManager.prototype.destroy = function(name) {
   var state = this.get(name);
   if (state && !state.protect) {
@@ -98,6 +158,10 @@ StateManager.prototype.destroyAll = function() {
   }
 
   this.refreshOrder();
+};
+
+StateManager.prototype.get = function(name) {
+  return this.states[name];
 };
 
 StateManager.prototype.update = function(time) {
@@ -126,34 +190,6 @@ StateManager.prototype.exitUpdate = function(time) {
   }
 };
 
-StateManager.prototype.enable = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    if (!holder.enabled) {
-      if (holder.state.enable) {
-        holder.state.enable();
-      }
-      holder.enabled = true;
-
-      if (holder.paused) {
-        this.unpause(name);
-      }
-    }
-  }
-};
-
-StateManager.prototype.disable = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    if (holder.enabled) {
-      if (holder.state.disable) {
-        holder.state.disable();
-      }
-      holder.enabled = false;
-    }
-  }
-};
-
 StateManager.prototype.render = function() {
   for (var i=0, len=this.renderOrder.length; i<len; i++) {
     var state = this.renderOrder[i];
@@ -162,43 +198,6 @@ StateManager.prototype.render = function() {
     }
   }
 };
-
-StateManager.prototype.pause = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    if (holder.state.pause) {
-      holder.state.pause();
-    }
-
-    holder.paused = true;
-  }
-};
-
-StateManager.prototype.unpause = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    if (holder.state.unpause) {
-      holder.state.unpause();
-    }
-
-    holder.paused = false;
-  }
-};
-
-StateManager.prototype.protect = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    holder.protect = true;
-  }
-};
-
-StateManager.prototype.unprotect = function(name) {
-  var holder = this.get(name);
-  if (holder) {
-    holder.protect = false;
-  }
-};
-
 StateManager.prototype.mousemove = function(x, y, e) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
