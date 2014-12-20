@@ -19,7 +19,6 @@ HTML5 canvas game engine
 - Asset loader
 - Input event handling
 - Sound manager
-- Sprites, Animations
 - State manager
 - Multiple canvas layers
 - Retina support
