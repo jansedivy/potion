@@ -1,5 +1,5 @@
 /**
- * potion - v0.8.0
+ * potion - v0.8.1
  * Copyright (c) 2014, Jan Sedivy
  *
  * Compiled: 2014-12-20
@@ -2521,14 +2521,6 @@ Debugger.prototype._renderData = function() {
   }
 
   y += 20;
-
-  this._setFont(20, 'sans-serif');
-  if (this.showTime) {
-    if (this.app.runtime && this.app.runtime.time != null) {
-      this._renderText(this.app.runtime.time.toFixed(2) + ' s', x, y);
-    }
-  }
-  y += 30;
 
   this._setFont(15, 'sans-serif');
 
@@ -5298,10 +5290,6 @@ Engine.prototype.addEvents = function() {
   var self = this;
 
   var game = self.game;
-  window.addEventListener('resize', function() {
-    game.setSize(self.game.canvas.parentElement.clientWidth, self.game.canvas.parentElement.clientHeight);
-  });
-
   window.addEventListener('blur', function() {
     self.game.input.resetKeys();
     self.game.blur();
@@ -6290,7 +6278,7 @@ var Video = function(game, canvas, config) {
    * Game height in pixels
    * @type {number}
    */
-  this.height = game.width;
+  this.height = game.height;
 
   /**
    * canvas context
