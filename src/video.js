@@ -86,6 +86,10 @@ Video.prototype._applySizeToCanvas = function() {
   this.canvas.width = this.width;
   this.canvas.height = this.height;
 
+  var container = this.canvas.parentElement;
+  container.style.width = this.width + 'px';
+  container.style.height = this.height + 'px';
+
   if (this.config.useRetina && isRetina) {
     this.scaleCanvas(2);
   }
