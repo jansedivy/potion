@@ -88,6 +88,18 @@ Input.prototype._addEvents = function(game) {
     self.mouse.button = e.button;
     self.mouse.isDown = false;
 
+    switch (e.button) {
+      case 0:
+        self.mouse.isLeftDown = false;
+      break;
+      case 1:
+        self.mouse.isMiddleDown = false;
+        break;
+      case 2:
+        self.mouse.isRightDown = false;
+        break;
+    }
+
     game.states.mouseup(x, y, e.button);
   }, false);
 
@@ -101,6 +113,18 @@ Input.prototype._addEvents = function(game) {
     self.mouse.y = y;
     self.mouse.button = e.button;
     self.mouse.isDown = true;
+
+    switch (e.button) {
+      case 0:
+        self.mouse.isLeftDown = true;
+      break;
+      case 1:
+        self.mouse.isMiddleDown = true;
+        break;
+      case 2:
+        self.mouse.isRightDown = true;
+        break;
+    }
 
     game.states.mousedown(x, y, e.button);
   }, false);
