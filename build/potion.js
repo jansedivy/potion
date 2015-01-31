@@ -1,8 +1,8 @@
 /**
- * potion - v0.8.1
+ * potion - v0.9.0
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2014-12-20
+ * Compiled: 2015-01-31
  *
  * potion is licensed under the MIT License.
  */
@@ -5246,11 +5246,8 @@ var Engine = function(container, methods) {
   var GameClass = this._subclassGame(container, methods);
 
   container.style.position = 'relative';
-  container.style.display = 'inline-block';
 
   var canvas = document.createElement('canvas');
-  canvas.width = container.clientWidth;
-  canvas.height = container.clientHeight;
   canvas.style.display = 'block';
   container.appendChild(canvas);
 
@@ -5717,6 +5714,18 @@ Input.prototype._addEvents = function(game) {
     self.mouse.button = e.button;
     self.mouse.isDown = false;
 
+    switch (e.button) {
+      case 0:
+        self.mouse.isLeftDown = false;
+      break;
+      case 1:
+        self.mouse.isMiddleDown = false;
+        break;
+      case 2:
+        self.mouse.isRightDown = false;
+        break;
+    }
+
     game.states.mouseup(x, y, e.button);
   }, false);
 
@@ -5730,6 +5739,18 @@ Input.prototype._addEvents = function(game) {
     self.mouse.y = y;
     self.mouse.button = e.button;
     self.mouse.isDown = true;
+
+    switch (e.button) {
+      case 0:
+        self.mouse.isLeftDown = true;
+      break;
+      case 1:
+        self.mouse.isMiddleDown = true;
+        break;
+      case 2:
+        self.mouse.isRightDown = true;
+        break;
+    }
 
     game.states.mousedown(x, y, e.button);
   }, false);
@@ -6340,6 +6361,10 @@ Video.prototype.setSize = function(width, height) {
 Video.prototype._applySizeToCanvas = function() {
   this.canvas.width = this.width;
   this.canvas.height = this.height;
+
+  var container = this.canvas.parentElement;
+  container.style.width = this.width + 'px';
+  container.style.height = this.height + 'px';
 
   if (this.config.useRetina && isRetina) {
     this.scaleCanvas(2);
