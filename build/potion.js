@@ -1,8 +1,8 @@
 /**
- * potion - v0.9.0
+ * potion - v0.9.1
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2015-01-31
+ * Compiled: 2015-02-22
  *
  * potion is licensed under the MIT License.
  */
@@ -6181,11 +6181,11 @@ StateManager.prototype.mousemove = function(x, y, e) {
   }
 };
 
-StateManager.prototype.mouseup = function(x, y) {
+StateManager.prototype.mouseup = function(x, y, button) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && state.state.mouseup && !state.paused) {
-      state.state.mouseup(x, y);
+      state.state.mouseup(x, y, button);
     }
   }
 };
