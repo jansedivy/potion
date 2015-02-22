@@ -207,11 +207,11 @@ StateManager.prototype.mousemove = function(x, y, e) {
   }
 };
 
-StateManager.prototype.mouseup = function(x, y) {
+StateManager.prototype.mouseup = function(x, y, button) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && state.state.mouseup && !state.paused) {
-      state.state.mouseup(x, y);
+      state.state.mouseup(x, y, button);
     }
   }
 };
