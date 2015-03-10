@@ -1,8 +1,8 @@
 /**
- * potion - v0.9.1
+ * potion - v0.9.2
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2015-02-22
+ * Compiled: 2015-03-10
  *
  * potion is licensed under the MIT License.
  */
@@ -5122,6 +5122,7 @@ Assets.prototype.load = function(type, url, callback) {
 
 Assets.prototype._finishedOneFile = function() {
   this._nextFile();
+  this.progress = this.loadedItemsCount / this.itemsCount;
   this._thingsToLoad -= 1;
   this.loadedItemsCount += 1;
 
@@ -5172,11 +5173,6 @@ Assets.prototype._nextFile = function() {
   type = type.toLowerCase();
 
   var request = this._xhr;
-
-  request.onprogress = function(e) {
-    var progress = e.loaded/e.total;
-    self.progress = self.loadedItemsCount/self.itemsCount + progress/self.itemsCount;
-  };
 
   switch (type) {
     case 'json':
