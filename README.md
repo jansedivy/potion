@@ -6,7 +6,7 @@ HTML5 canvas game engine
 
 ### Include potion.js file
 
-- download [potion.js](https://raw2.github.com/jansedivy/potion/master/build/potion.js) or [potion.min.js](https://raw2.github.com/jansedivy/potion/master/build/potion.min.js)
+- download [potion.js](https://raw.githubusercontent.com/jansedivy/potion/master/build/potion.js) or [potion.min.js](https://raw.githubusercontent.com/jansedivy/potion/master/build/potion.min.js)
 - Add this into your html file `<script src="potion.js"></script>`
 
 ### Browserify
