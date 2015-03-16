@@ -1,8 +1,8 @@
 /**
- * potion - v0.9.2
+ * potion - v0.9.3
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2015-03-10
+ * Compiled: 2015-03-16
  *
  * potion is licensed under the MIT License.
  */
@@ -5764,6 +5764,8 @@ Input.prototype._addEvents = function(game) {
     self.mouse.x = x;
     self.mouse.y = y;
     self.mouse.isDown = true;
+
+    game.states.mousedown(x, y, e);
   });
 
   self._container.addEventListener('touchmove', function(e) {
