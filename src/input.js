@@ -142,6 +142,8 @@ Input.prototype._addEvents = function(game) {
     self.mouse.x = x;
     self.mouse.y = y;
     self.mouse.isDown = true;
+
+    game.states.mousedown(x, y, e);
   });
 
   self._container.addEventListener('touchmove', function(e) {
