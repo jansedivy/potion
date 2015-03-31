@@ -1,6 +1,6 @@
 /**
- * potion - v0.10.0
- * Copyright (c) 2014, Jan Sedivy
+ * potion - v0.10.1
+ * Copyright (c) 2015, Jan Sedivy
  *
  * Compiled: 2015-03-31
  *
@@ -2697,6 +2697,18 @@ var util = require('util');
 var sourceMaps = require('source-map-support');
 var DirtyManager = require('./dirty-manager');
 
+var ObjectPool = [];
+
+var GetObjectFromPool = function() {
+  var result = ObjectPool.pop();
+
+  if (result) {
+    return result;
+  }
+
+  return {};
+};
+
 var indexToNumberAndLowerCaseKey = function(index) {
   if (index <= 9) {
     return 48 + index;
@@ -2800,8 +2812,16 @@ Debugger.prototype.log = function(message, color) {
 
   for (var i=0; i<messages.length; i++) {
     var msg = messages[i];
-    if (this.logs.length >= this._maxLogsCounts) { this.logs.shift(); }
-    this.logs.push({ text: msg, life: 10, color: color });
+    if (this.logs.length >= this._maxLogsCounts) {
+      ObjectPool.push(this.logs.shift());
+    }
+
+    var messageObject = GetObjectFromPool();
+    messageObject.text = msg;
+    messageObject.life = 10;
+    messageObject.color = color;
+
+    this.logs.push(messageObject);
   }
 };
 
@@ -5197,7 +5217,7 @@ var fileContentsCache = {};
 var sourceMapCache = {};
 
 function isInBrowser() {
-  return ((typeof window !== 'undefined') && (typeof XMLHttpRequest === 'function'));
+  return typeof window !== 'undefined';
 }
 
 function retrieveFile(path) {
@@ -5313,16 +5333,11 @@ function mapSourcePosition(position) {
           }
         });
       }
-    } else {
-      sourceMap = sourceMapCache[position.source] = {
-        url: null,
-        map: null
-      };
     }
   }
 
   // Resolve the source URL relative to the URL of the source map
-  if (sourceMap && sourceMap.map) {
+  if (sourceMap) {
     var originalPosition = sourceMap.map.originalPositionFor(position);
 
     // Only return the original position if a matching line was found. If no
@@ -5365,84 +5380,6 @@ function mapEvalOrigin(origin) {
   return origin;
 }
 
-// This is copied almost verbatim from the V8 source code at
-// https://code.google.com/p/v8/source/browse/trunk/src/messages.js. The
-// implementation of wrapCallSite() used to just forward to the actual source
-// code of CallSite.prototype.toString but unfortunately a new release of V8
-// did something to the prototype chain and broke the shim. The only fix I
-// could find was copy/paste.
-function CallSiteToString() {
-  var fileName;
-  var fileLocation = "";
-  if (this.isNative()) {
-    fileLocation = "native";
-  } else {
-    fileName = this.getScriptNameOrSourceURL();
-    if (!fileName && this.isEval()) {
-      fileLocation = this.getEvalOrigin();
-      fileLocation += ", ";  // Expecting source position to follow.
-    }
-
-    if (fileName) {
-      fileLocation += fileName;
-    } else {
-      // Source code does not originate from a file and is not native, but we
-      // can still get the source position inside the source string, e.g. in
-      // an eval string.
-      fileLocation += "<anonymous>";
-    }
-    var lineNumber = this.getLineNumber();
-    if (lineNumber != null) {
-      fileLocation += ":" + lineNumber;
-      var columnNumber = this.getColumnNumber();
-      if (columnNumber) {
-        fileLocation += ":" + columnNumber;
-      }
-    }
-  }
-
-  var line = "";
-  var functionName = this.getFunctionName();
-  var addSuffix = true;
-  var isConstructor = this.isConstructor();
-  var isMethodCall = !(this.isToplevel() || isConstructor);
-  if (isMethodCall) {
-    var typeName = this.getTypeName();
-    var methodName = this.getMethodName();
-    if (functionName) {
-      if (typeName && functionName.indexOf(typeName) != 0) {
-        line += typeName + ".";
-      }
-      line += functionName;
-      if (methodName && functionName.indexOf("." + methodName) != functionName.length - methodName.length - 1) {
-        line += " [as " + methodName + "]";
-      }
-    } else {
-      line += typeName + "." + (methodName || "<anonymous>");
-    }
-  } else if (isConstructor) {
-    line += "new " + (functionName || "<anonymous>");
-  } else if (functionName) {
-    line += functionName;
-  } else {
-    line += fileLocation;
-    addSuffix = false;
-  }
-  if (addSuffix) {
-    line += " (" + fileLocation + ")";
-  }
-  return line;
-}
-
-function cloneCallSite(frame) {
-  var object = {};
-  Object.getOwnPropertyNames(Object.getPrototypeOf(frame)).forEach(function(name) {
-    object[name] = /^(?:is|get)/.test(name) ? function() { return frame[name].call(frame); } : frame[name];
-  });
-  object.toString = CallSiteToString;
-  return object;
-}
-
 function wrapCallSite(frame) {
   // Most call sites will return the source file from getFileName(), but code
   // passed to eval() ending in "//# sourceURL=..." will return the source file
@@ -5454,21 +5391,23 @@ function wrapCallSite(frame) {
       line: frame.getLineNumber(),
       column: frame.getColumnNumber() - 1
     });
-    frame = cloneCallSite(frame);
-    frame.getFileName = function() { return position.source; };
-    frame.getLineNumber = function() { return position.line; };
-    frame.getColumnNumber = function() { return position.column + 1; };
-    frame.getScriptNameOrSourceURL = function() { return position.source; };
-    return frame;
+    return {
+      __proto__: frame,
+      getFileName: function() { return position.source; },
+      getLineNumber: function() { return position.line; },
+      getColumnNumber: function() { return position.column + 1; },
+      getScriptNameOrSourceURL: function() { return position.source; }
+    };
   }
 
   // Code called using eval() needs special handling
   var origin = frame.isEval() && frame.getEvalOrigin();
   if (origin) {
     origin = mapEvalOrigin(origin);
-    frame = cloneCallSite(frame);
-    frame.getEvalOrigin = function() { return origin; };
-    return frame;
+    return {
+      __proto__: frame,
+      getEvalOrigin: function() { return origin; }
+    };
   }
 
   // If we get here then we were unable to change the source position
@@ -6063,11 +6002,24 @@ Game.prototype.preloading = function(time) {
     this.video.ctx.fillStyle = '#a9c848';
     this.video.ctx.fillRect(0, 0, this.width, this.height);
 
+    this.video.ctx.fillStyle = '#f6ffda';
+    this.video.ctx.font = '300 40px sans-serif';
+    this.video.ctx.textAlign = 'center';
+    this.video.ctx.textBaseline = 'bottom';
+    this.video.ctx.fillText("Potion.js", this.width/2, y);
+
     this.video.ctx.fillStyle = '#88a237';
-    this.video.ctx.fillRect(x, y, width, height);
+    this.video.ctx.fillRect(x, y + 15, width, height);
 
     this.video.ctx.fillStyle = '#f6ffda';
-    this.video.ctx.fillRect(x, y, this._preloaderWidth, height);
+    this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height);
+
+    this.video.ctx.strokeStyle = '#f6ffda';
+    this.video.ctx.lineWidth = 2;
+    this.video.ctx.beginPath();
+    this.video.ctx.rect(x - 5, y + 10, this._preloaderWidth + 10, height + 10);
+    this.video.ctx.closePath();
+    this.video.ctx.stroke();
 
     this.video.ctx.restore();
   }
