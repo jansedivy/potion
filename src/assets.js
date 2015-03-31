@@ -1,8 +1,6 @@
-/* global Howl */
-
 var utils = require('./utils');
 
-require('../lib/howler.min.js');
+var PotionAudio = require('potion-audio');
 
 /**
  * Class for managing and loading asset files
@@ -27,6 +25,8 @@ var Assets = function() {
   this.callback = null;
 
   this._toLoad = [];
+
+  this.audio = new PotionAudio();
 };
 
 /**
@@ -146,12 +146,8 @@ Assets.prototype._nextFile = function() {
     case 'mp3':
     case 'music':
     case 'sound':
-      var sound = new Howl({
-        urls: [url],
-        onload: function() {
-          self._save(url, sound, callback);
-        },
-        onloaderror: function() { self._error(type, url); }
+      self.audio.load(url, function(audio) {
+        self._save(url, audio, callback);
       });
       break;
     case 'image':

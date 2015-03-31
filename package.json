@@ -18,6 +18,7 @@
     "grunt-contrib-concat": "~0.3.0"
   },
   "dependencies": {
+    "potion-audio": "^1.1.0",
     "potion-debugger": "git://github.com/jansedivy/potion-debugger"
   }
 }
