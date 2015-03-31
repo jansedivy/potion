@@ -66,6 +66,7 @@ Potion.init(document.querySelector('.container'), {
 
 ## See also
 
+- [Potion Audio](https://github.com/jansedivy/potion-audio)
 - [Potion Debugger](https://github.com/jansedivy/potion-debugger)
 - [Potion Template](https://github.com/jansedivy/potion-template)
 
