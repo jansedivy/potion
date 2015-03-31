@@ -137,11 +137,24 @@ Game.prototype.preloading = function(time) {
     this.video.ctx.fillStyle = '#a9c848';
     this.video.ctx.fillRect(0, 0, this.width, this.height);
 
+    this.video.ctx.fillStyle = '#f6ffda';
+    this.video.ctx.font = '300 40px sans-serif';
+    this.video.ctx.textAlign = 'center';
+    this.video.ctx.textBaseline = 'bottom';
+    this.video.ctx.fillText("Potion.js", this.width/2, y);
+
     this.video.ctx.fillStyle = '#88a237';
-    this.video.ctx.fillRect(x, y, width, height);
+    this.video.ctx.fillRect(x, y + 15, width, height);
 
     this.video.ctx.fillStyle = '#f6ffda';
-    this.video.ctx.fillRect(x, y, this._preloaderWidth, height);
+    this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height);
+
+    this.video.ctx.strokeStyle = '#f6ffda';
+    this.video.ctx.lineWidth = 2;
+    this.video.ctx.beginPath();
+    this.video.ctx.rect(x - 5, y + 10, this._preloaderWidth + 10, height + 10);
+    this.video.ctx.closePath();
+    this.video.ctx.stroke();
 
     this.video.ctx.restore();
   }
