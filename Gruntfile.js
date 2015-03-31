@@ -14,15 +14,6 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg : grunt.file.readJSON('package.json'),
 
-    jsdoc : {
-      dist : {
-        src: ['src/*.js'],
-        options: {
-          destination: 'docs'
-        }
-      }
-    },
-
     browserify: {
       dist: {
         files: {
@@ -59,7 +50,6 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
