@@ -1,8 +1,8 @@
 /**
- * potion - v0.9.3
+ * potion - v0.10.0
  * Copyright (c) 2014, Jan Sedivy
  *
- * Compiled: 2015-03-16
+ * Compiled: 2015-03-31
  *
  * potion is licensed under the MIT License.
  */
@@ -16,20 +16,9 @@ module.exports = {
   }
 };
 
-},{"./src/engine":26}],2:[function(_dereq_,module,exports){
-/*!
- *  howler.js v1.1.25
- *  howlerjs.com
- *
- *  (c) 2013-2014, James Simpson of GoldFire Studios
- *  goldfirestudios.com
- *
- *  MIT License
- */
-!function(){var e={},t=null,n=!0,r=!1;try{"undefined"!=typeof AudioContext?t=new AudioContext:"undefined"!=typeof webkitAudioContext?t=new webkitAudioContext:n=!1}catch(i){n=!1}if(!n)if("undefined"!=typeof Audio)try{new Audio}catch(i){r=!0}else r=!0;if(n){var s=void 0===t.createGain?t.createGainNode():t.createGain();s.gain.value=1,s.connect(t.destination)}var o=function(e){this._volume=1,this._muted=!1,this.usingWebAudio=n,this.ctx=t,this.noAudio=r,this._howls=[],this._codecs=e,this.iOSAutoEnable=!0};o.prototype={volume:function(e){var t=this;if(e=parseFloat(e),e>=0&&1>=e){t._volume=e,n&&(s.gain.value=e);for(var r in t._howls)if(t._howls.hasOwnProperty(r)&&t._howls[r]._webAudio===!1)for(var i=0;i<t._howls[r]._audioNode.length;i++)t._howls[r]._audioNode[i].volume=t._howls[r]._volume*t._volume;return t}return n?s.gain.value:t._volume},mute:function(){return this._setMuted(!0),this},unmute:function(){return this._setMuted(!1),this},_setMuted:function(e){var t=this;t._muted=e,n&&(s.gain.value=e?0:t._volume);for(var r in t._howls)if(t._howls.hasOwnProperty(r)&&t._howls[r]._webAudio===!1)for(var i=0;i<t._howls[r]._audioNode.length;i++)t._howls[r]._audioNode[i].muted=e},codecs:function(e){return this._codecs[e]},_enableiOSAudio:function(){var e=this;if(!t||!e._iOSEnabled&&/iPhone|iPad|iPod/i.test(navigator.userAgent)){e._iOSEnabled=!1;var n=function(){var r=t.createBuffer(1,1,22050),i=t.createBufferSource();i.buffer=r,i.connect(t.destination),void 0===i.start?i.noteOn(0):i.start(0),setTimeout(function(){(i.playbackState===i.PLAYING_STATE||i.playbackState===i.FINISHED_STATE)&&(e._iOSEnabled=!0,e.iOSAutoEnable=!1,window.removeEventListener("touchstart",n,!1))},0)};return window.addEventListener("touchstart",n,!1),e}}};var u=null,a={};r||(u=new Audio,a={mp3:!!u.canPlayType("audio/mpeg;").replace(/^no$/,""),opus:!!u.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/,""),ogg:!!u.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/,""),wav:!!u.canPlayType('audio/wav; codecs="1"').replace(/^no$/,""),aac:!!u.canPlayType("audio/aac;").replace(/^no$/,""),m4a:!!(u.canPlayType("audio/x-m4a;")||u.canPlayType("audio/m4a;")||u.canPlayType("audio/aac;")).replace(/^no$/,""),mp4:!!(u.canPlayType("audio/x-mp4;")||u.canPlayType("audio/mp4;")||u.canPlayType("audio/aac;")).replace(/^no$/,""),weba:!!u.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/,"")});var f=new o(a),l=function(e){var r=this;r._autoplay=e.autoplay||!1,r._buffer=e.buffer||!1,r._duration=e.duration||0,r._format=e.format||null,r._loop=e.loop||!1,r._loaded=!1,r._sprite=e.sprite||{},r._src=e.src||"",r._pos3d=e.pos3d||[0,0,-.5],r._volume=void 0!==e.volume?e.volume:1,r._urls=e.urls||[],r._rate=e.rate||1,r._model=e.model||null,r._onload=[e.onload||function(){}],r._onloaderror=[e.onloaderror||function(){}],r._onend=[e.onend||function(){}],r._onpause=[e.onpause||function(){}],r._onplay=[e.onplay||function(){}],r._onendTimer=[],r._webAudio=n&&!r._buffer,r._audioNode=[],r._webAudio&&r._setupAudioNode(),void 0!==t&&t&&f.iOSAutoEnable&&f._enableiOSAudio(),f._howls.push(r),r.load()};if(l.prototype={load:function(){var e=this,t=null;if(r)return void e.on("loaderror");for(var n=0;n<e._urls.length;n++){var i,s;if(e._format)i=e._format;else{if(s=e._urls[n],i=/^data:audio\/([^;,]+);/i.exec(s),i||(i=/\.([^.]+)$/.exec(s.split("?",1)[0])),!i)return void e.on("loaderror");i=i[1].toLowerCase()}if(a[i]){t=e._urls[n];break}}if(!t)return void e.on("loaderror");if(e._src=t,e._webAudio)c(e,t);else{var u=new Audio;u.addEventListener("error",function(){u.error&&4===u.error.code&&(o.noAudio=!0),e.on("loaderror",{type:u.error?u.error.code:0})},!1),e._audioNode.push(u),u.src=t,u._pos=0,u.preload="auto",u.volume=f._muted?0:e._volume*f.volume();var l=function(){e._duration=Math.ceil(10*u.duration)/10,0===Object.getOwnPropertyNames(e._sprite).length&&(e._sprite={_default:[0,1e3*e._duration]}),e._loaded||(e._loaded=!0,e.on("load")),e._autoplay&&e.play(),u.removeEventListener("canplaythrough",l,!1)};u.addEventListener("canplaythrough",l,!1),u.load()}return e},urls:function(e){var t=this;return e?(t.stop(),t._urls="string"==typeof e?[e]:e,t._loaded=!1,t.load(),t):t._urls},play:function(e,n){var r=this;return"function"==typeof e&&(n=e),e&&"function"!=typeof e||(e="_default"),r._loaded?r._sprite[e]?(r._inactiveNode(function(i){i._sprite=e;var s=i._pos>0?i._pos:r._sprite[e][0]/1e3,o=0;r._webAudio?(o=r._sprite[e][1]/1e3-i._pos,i._pos>0&&(s=r._sprite[e][0]/1e3+s)):o=r._sprite[e][1]/1e3-(s-r._sprite[e][0]/1e3);var u,a=!(!r._loop&&!r._sprite[e][2]),l="string"==typeof n?n:Math.round(Date.now()*Math.random())+"";if(function(){var t={id:l,sprite:e,loop:a};u=setTimeout(function(){!r._webAudio&&a&&r.stop(t.id).play(e,t.id),r._webAudio&&!a&&(r._nodeById(t.id).paused=!0,r._nodeById(t.id)._pos=0,r._clearEndTimer(t.id)),r._webAudio||a||r.stop(t.id),r.on("end",l)},1e3*o),r._onendTimer.push({timer:u,id:t.id})}(),r._webAudio){var c=r._sprite[e][0]/1e3,h=r._sprite[e][1]/1e3;i.id=l,i.paused=!1,d(r,[a,c,h],l),r._playStart=t.currentTime,i.gain.value=r._volume,void 0===i.bufferSource.start?i.bufferSource.noteGrainOn(0,s,o):i.bufferSource.start(0,s,o)}else{if(4!==i.readyState&&(i.readyState||!navigator.isCocoonJS))return r._clearEndTimer(l),function(){var t=r,s=e,o=n,u=i,a=function(){t.play(s,o),u.removeEventListener("canplaythrough",a,!1)};u.addEventListener("canplaythrough",a,!1)}(),r;i.readyState=4,i.id=l,i.currentTime=s,i.muted=f._muted||i.muted,i.volume=r._volume*f.volume(),setTimeout(function(){i.play()},0)}return r.on("play"),"function"==typeof n&&n(l),r}),r):("function"==typeof n&&n(),r):(r.on("load",function(){r.play(e,n)}),r)},pause:function(e){var t=this;if(!t._loaded)return t.on("play",function(){t.pause(e)}),t;t._clearEndTimer(e);var n=e?t._nodeById(e):t._activeNode();if(n)if(n._pos=t.pos(null,e),t._webAudio){if(!n.bufferSource||n.paused)return t;n.paused=!0,void 0===n.bufferSource.stop?n.bufferSource.noteOff(0):n.bufferSource.stop(0)}else n.pause();return t.on("pause"),t},stop:function(e){var t=this;if(!t._loaded)return t.on("play",function(){t.stop(e)}),t;t._clearEndTimer(e);var n=e?t._nodeById(e):t._activeNode();if(n)if(n._pos=0,t._webAudio){if(!n.bufferSource||n.paused)return t;n.paused=!0,void 0===n.bufferSource.stop?n.bufferSource.noteOff(0):n.bufferSource.stop(0)}else isNaN(n.duration)||(n.pause(),n.currentTime=0);return t},mute:function(e){var t=this;if(!t._loaded)return t.on("play",function(){t.mute(e)}),t;var n=e?t._nodeById(e):t._activeNode();return n&&(t._webAudio?n.gain.value=0:n.muted=!0),t},unmute:function(e){var t=this;if(!t._loaded)return t.on("play",function(){t.unmute(e)}),t;var n=e?t._nodeById(e):t._activeNode();return n&&(t._webAudio?n.gain.value=t._volume:n.muted=!1),t},volume:function(e,t){var n=this;if(e=parseFloat(e),e>=0&&1>=e){if(n._volume=e,!n._loaded)return n.on("play",function(){n.volume(e,t)}),n;var r=t?n._nodeById(t):n._activeNode();return r&&(n._webAudio?r.gain.value=e:r.volume=e*f.volume()),n}return n._volume},loop:function(e){var t=this;return"boolean"==typeof e?(t._loop=e,t):t._loop},sprite:function(e){var t=this;return"object"==typeof e?(t._sprite=e,t):t._sprite},pos:function(e,n){var r=this;if(!r._loaded)return r.on("load",function(){r.pos(e)}),"number"==typeof e?r:r._pos||0;e=parseFloat(e);var i=n?r._nodeById(n):r._activeNode();if(i)return e>=0?(r.pause(n),i._pos=e,r.play(i._sprite,n),r):r._webAudio?i._pos+(t.currentTime-r._playStart):i.currentTime;if(e>=0)return r;for(var s=0;s<r._audioNode.length;s++)if(r._audioNode[s].paused&&4===r._audioNode[s].readyState)return r._webAudio?r._audioNode[s]._pos:r._audioNode[s].currentTime},pos3d:function(e,t,n,r){var i=this;if(t=void 0!==t&&t?t:0,n=void 0!==n&&n?n:-.5,!i._loaded)return i.on("play",function(){i.pos3d(e,t,n,r)}),i;if(!(e>=0||0>e))return i._pos3d;if(i._webAudio){var s=r?i._nodeById(r):i._activeNode();s&&(i._pos3d=[e,t,n],s.panner.setPosition(e,t,n),s.panner.panningModel=i._model||"HRTF")}return i},fade:function(e,t,n,r,i){var s=this,o=Math.abs(e-t),u=e>t?"down":"up",a=o/.01,f=n/a;if(!s._loaded)return s.on("load",function(){s.fade(e,t,n,r,i)}),s;s.volume(e,i);for(var l=1;a>=l;l++)!function(){var e=s._volume+("up"===u?.01:-.01)*l,n=Math.round(1e3*e)/1e3,o=t;setTimeout(function(){s.volume(n,i),n===o&&r&&r()},f*l)}()},fadeIn:function(e,t,n){return this.volume(0).play().fade(0,e,t,n)},fadeOut:function(e,t,n,r){var i=this;return i.fade(i._volume,e,t,function(){n&&n(),i.pause(r),i.on("end")},r)},_nodeById:function(e){for(var t=this,n=t._audioNode[0],r=0;r<t._audioNode.length;r++)if(t._audioNode[r].id===e){n=t._audioNode[r];break}return n},_activeNode:function(){for(var e=this,t=null,n=0;n<e._audioNode.length;n++)if(!e._audioNode[n].paused){t=e._audioNode[n];break}return e._drainPool(),t},_inactiveNode:function(e){for(var t=this,n=null,r=0;r<t._audioNode.length;r++)if(t._audioNode[r].paused&&4===t._audioNode[r].readyState){e(t._audioNode[r]),n=!0;break}if(t._drainPool(),!n){var i;if(t._webAudio)i=t._setupAudioNode(),e(i);else{t.load(),i=t._audioNode[t._audioNode.length-1];var s=navigator.isCocoonJS?"canplaythrough":"loadedmetadata",o=function(){i.removeEventListener(s,o,!1),e(i)};i.addEventListener(s,o,!1)}}},_drainPool:function(){var e,t=this,n=0;for(e=0;e<t._audioNode.length;e++)t._audioNode[e].paused&&n++;for(e=t._audioNode.length-1;e>=0&&!(5>=n);e--)t._audioNode[e].paused&&(t._webAudio&&t._audioNode[e].disconnect(0),n--,t._audioNode.splice(e,1))},_clearEndTimer:function(e){for(var t=this,n=0,r=0;r<t._onendTimer.length;r++)if(t._onendTimer[r].id===e){n=r;break}var i=t._onendTimer[n];i&&(clearTimeout(i.timer),t._onendTimer.splice(n,1))},_setupAudioNode:function(){var e=this,n=e._audioNode,r=e._audioNode.length;return n[r]=void 0===t.createGain?t.createGainNode():t.createGain(),n[r].gain.value=e._volume,n[r].paused=!0,n[r]._pos=0,n[r].readyState=4,n[r].connect(s),n[r].panner=t.createPanner(),n[r].panner.panningModel=e._model||"equalpower",n[r].panner.setPosition(e._pos3d[0],e._pos3d[1],e._pos3d[2]),n[r].panner.connect(n[r]),n[r]},on:function(e,t){var n=this,r=n["_on"+e];if("function"==typeof t)r.push(t);else for(var i=0;i<r.length;i++)t?r[i].call(n,t):r[i].call(n);return n},off:function(e,t){var n=this,r=n["_on"+e],i=t?""+t:null;if(i){for(var s=0;s<r.length;s++)if(i===""+r[s]){r.splice(s,1);break}}else n["_on"+e]=[];return n},unload:function(){for(var t=this,n=t._audioNode,r=0;r<t._audioNode.length;r++)n[r].paused||(t.stop(n[r].id),t.on("end",n[r].id)),t._webAudio?n[r].disconnect(0):n[r].src="";for(r=0;r<t._onendTimer.length;r++)clearTimeout(t._onendTimer[r].timer);var i=f._howls.indexOf(t);null!==i&&i>=0&&f._howls.splice(i,1),delete e[t._src],t=null}},n)var c=function(t,n){if(n in e)return t._duration=e[n].duration,void p(t);if(/^data:[^;]+;base64,/.test(n)){for(var r=atob(n.split(",")[1]),i=new Uint8Array(r.length),s=0;s<r.length;++s)i[s]=r.charCodeAt(s);h(i.buffer,t,n)}else{var o=new XMLHttpRequest;o.open("GET",n,!0),o.responseType="arraybuffer",o.onload=function(){h(o.response,t,n)},o.onerror=function(){t._webAudio&&(t._buffer=!0,t._webAudio=!1,t._audioNode=[],delete t._gainNode,delete e[n],t.load())};try{o.send()}catch(u){o.onerror()}}},h=function(n,r,i){t.decodeAudioData(n,function(t){t&&(e[i]=t,p(r,t))},function(){r.on("loaderror")})},p=function(e,t){e._duration=t?t.duration:e._duration,0===Object.getOwnPropertyNames(e._sprite).length&&(e._sprite={_default:[0,1e3*e._duration]}),e._loaded||(e._loaded=!0,e.on("load")),e._autoplay&&e.play()},d=function(n,r,i){var s=n._nodeById(i);s.bufferSource=t.createBufferSource(),s.bufferSource.buffer=e[n._src],s.bufferSource.connect(s.panner),s.bufferSource.loop=r[0],r[0]&&(s.bufferSource.loopStart=r[1],s.bufferSource.loopEnd=r[1]+r[2]),s.bufferSource.playbackRate.value=n._rate};"function"==typeof define&&define.amd&&define(function(){return{Howler:f,Howl:l}}),"undefined"!=typeof exports&&(exports.Howler=f,exports.Howl=l),"undefined"!=typeof window&&(window.Howler=f,window.Howl=l)}();
-},{}],3:[function(_dereq_,module,exports){
+},{"./src/engine":29}],2:[function(_dereq_,module,exports){
 
-},{}],4:[function(_dereq_,module,exports){
+},{}],3:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -54,7 +43,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],5:[function(_dereq_,module,exports){
+},{}],4:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -109,7 +98,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],6:[function(_dereq_,module,exports){
+},{}],5:[function(_dereq_,module,exports){
 var base64 = _dereq_('base64-js')
 var ieee754 = _dereq_('ieee754')
 
@@ -1167,7 +1156,7 @@ function assert (test, message) {
   if (!test) throw new Error(message || 'Failed assertion')
 }
 
-},{"base64-js":7,"ieee754":8}],7:[function(_dereq_,module,exports){
+},{"base64-js":6,"ieee754":7}],6:[function(_dereq_,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -1289,7 +1278,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],8:[function(_dereq_,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -1375,7 +1364,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],9:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -1603,14 +1592,14 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5}],10:[function(_dereq_,module,exports){
+},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":4}],9:[function(_dereq_,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],11:[function(_dereq_,module,exports){
+},{}],10:[function(_dereq_,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -2200,7 +2189,148 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":10,"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5,"inherits":4}],12:[function(_dereq_,module,exports){
+},{"./support/isBuffer":9,"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":4,"inherits":3}],11:[function(_dereq_,module,exports){
+module.exports = _dereq_('./src/audio-manager');
+
+},{"./src/audio-manager":12}],12:[function(_dereq_,module,exports){
+var LoadedAudio = _dereq_('./loaded-audio');
+
+var AudioManager = function() {
+  var AudioContext = window.AudioContext || window.webkitAudioContext;
+
+  this.ctx = new AudioContext();
+  this.masterGain = this.ctx.createGain();
+  this._volume = 1;
+
+  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
+  if (iOS) {
+    this._enableiOS();
+  }
+};
+
+AudioManager.prototype._enableiOS = function() {
+  var self = this;
+
+  var touch = function() {
+    var buffer = self.ctx.createBuffer(1, 1, 22050);
+    var source = self.ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(self.ctx.destination);
+    source.start(0);
+
+    window.removeEventListener('touchstart', touch, false);
+  };
+
+  window.addEventListener('touchstart', touch, false);
+};
+
+AudioManager.prototype.setVolume = function(volume) {
+  this._volume = volume;
+  this.masterGain.gain.value = volume;
+};
+
+AudioManager.prototype.load = function(url, callback) {
+  var self = this;
+
+  var request = new XMLHttpRequest();
+  request.open('GET', url, true);
+  request.responseType = 'arraybuffer';
+  request.onload = function() {
+    self.decodeAudioData(request.response, function(source) {
+      callback(source);
+    });
+  };
+  request.send();
+};
+
+AudioManager.prototype.decodeAudioData = function(data, callback) {
+  var self = this;
+
+  this.ctx.decodeAudioData(data, function(result) {
+    var audio = new LoadedAudio(self.ctx, result, self.masterGain);
+
+    callback(audio);
+  });
+};
+
+module.exports = AudioManager;
+
+},{"./loaded-audio":13}],13:[function(_dereq_,module,exports){
+var PlayingAudio = _dereq_('./playing-audio');
+
+var LoadedAudio = function(ctx, buffer, masterGain) {
+  this._ctx = ctx;
+  this._masterGain = masterGain;
+  this._buffer = buffer;
+  this._buffer.loop = false;
+};
+
+LoadedAudio.prototype.play = function() {
+  var source = this._ctx.createBufferSource();
+  source.buffer = this._buffer;
+
+  var gain = this._ctx.createGain();
+  source.connect(this._masterGain);
+  this._masterGain.connect(gain);
+  gain.connect(this._ctx.destination);
+
+  source.start(0);
+
+  return new PlayingAudio(source, gain);
+};
+
+LoadedAudio.prototype.fadeIn = function(value, time) {
+  var source = this._ctx.createBufferSource();
+  source.buffer = this._buffer;
+
+  var gain = this._ctx.createGain();
+
+  gain.gain.setValueAtTime(0, 0);
+  gain.gain.linearRampToValueAtTime(0.01, 0);
+  gain.gain.linearRampToValueAtTime(value, time);
+
+  source.connect(this._masterGain);
+  this._masterGain.connect(gain);
+  gain.connect(this._ctx.destination);
+
+  source.start(0);
+
+  return new PlayingAudio(source, gain);
+};
+
+LoadedAudio.prototype.loop = function() {
+  var source = this._ctx.createBufferSource();
+  source.buffer = this._buffer;
+
+  var gain = this._ctx.createGain();
+  source.connect(gain);
+  gain.connect(this._ctx.destination);
+
+  source.loop = true;
+  source.start(0);
+
+  return new PlayingAudio(source, gain);
+};
+
+module.exports = LoadedAudio;
+
+},{"./playing-audio":14}],14:[function(_dereq_,module,exports){
+var PlayingAudio = function(source, gain) {
+  this._gain = gain;
+  this._source = source;
+};
+
+PlayingAudio.prototype.setVolume = function(volume) {
+  this._gain.gain.value = volume;
+};
+
+PlayingAudio.prototype.stop = function() {
+  this._source.stop(0);
+};
+
+module.exports = PlayingAudio;
+
+},{}],15:[function(_dereq_,module,exports){
 var DirtyManager = function(canvas, ctx) {
   this.ctx = ctx;
   this.canvas = canvas;
@@ -2243,7 +2373,7 @@ DirtyManager.prototype.clear = function() {
 
 module.exports = DirtyManager;
 
-},{}],13:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 var util = _dereq_('util');
 var sourceMaps = _dereq_('source-map-support');
 var DirtyManager = _dereq_('./dirty-manager');
@@ -2602,7 +2732,7 @@ Debugger.prototype._renderText = function(text, x, y, color, outline) {
 
 module.exports = Debugger;
 
-},{"./dirty-manager":12,"source-map-support":24,"util":11}],14:[function(_dereq_,module,exports){
+},{"./dirty-manager":15,"source-map-support":27,"util":10}],17:[function(_dereq_,module,exports){
 /*
  * Copyright 2009-2011 Mozilla Foundation and contributors
  * Licensed under the New BSD license. See LICENSE.txt or:
@@ -2612,7 +2742,7 @@ exports.SourceMapGenerator = _dereq_('./source-map/source-map-generator').Source
 exports.SourceMapConsumer = _dereq_('./source-map/source-map-consumer').SourceMapConsumer;
 exports.SourceNode = _dereq_('./source-map/source-node').SourceNode;
 
-},{"./source-map/source-map-consumer":19,"./source-map/source-map-generator":20,"./source-map/source-node":21}],15:[function(_dereq_,module,exports){
+},{"./source-map/source-map-consumer":22,"./source-map/source-map-generator":23,"./source-map/source-node":24}],18:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -2711,7 +2841,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./util":22,"amdefine":23}],16:[function(_dereq_,module,exports){
+},{"./util":25,"amdefine":26}],19:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -2857,7 +2987,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./base64":17,"amdefine":23}],17:[function(_dereq_,module,exports){
+},{"./base64":20,"amdefine":26}],20:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -2901,7 +3031,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"amdefine":23}],18:[function(_dereq_,module,exports){
+},{"amdefine":26}],21:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -2984,7 +3114,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"amdefine":23}],19:[function(_dereq_,module,exports){
+},{"amdefine":26}],22:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -3464,7 +3594,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./array-set":15,"./base64-vlq":16,"./binary-search":18,"./util":22,"amdefine":23}],20:[function(_dereq_,module,exports){
+},{"./array-set":18,"./base64-vlq":19,"./binary-search":21,"./util":25,"amdefine":26}],23:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -3846,7 +3976,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./array-set":15,"./base64-vlq":16,"./util":22,"amdefine":23}],21:[function(_dereq_,module,exports){
+},{"./array-set":18,"./base64-vlq":19,"./util":25,"amdefine":26}],24:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4219,7 +4349,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"./source-map-generator":20,"./util":22,"amdefine":23}],22:[function(_dereq_,module,exports){
+},{"./source-map-generator":23,"./util":25,"amdefine":26}],25:[function(_dereq_,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4426,7 +4556,7 @@ define(function (_dereq_, exports, module) {
 
 });
 
-},{"amdefine":23}],23:[function(_dereq_,module,exports){
+},{"amdefine":26}],26:[function(_dereq_,module,exports){
 (function (process,__filename){
 /** vim: et:ts=4:sw=4:sts=4
  * @license amdefine 0.1.0 Copyright (c) 2011, The Dojo Foundation All Rights Reserved.
@@ -4729,7 +4859,7 @@ function amdefine(module, requireFn) {
 module.exports = amdefine;
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),"/node_modules/potion-debugger/node_modules/source-map-support/node_modules/source-map/node_modules/amdefine/amdefine.js")
-},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5,"path":9}],24:[function(_dereq_,module,exports){
+},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":4,"path":8}],27:[function(_dereq_,module,exports){
 (function (process,Buffer){
 var SourceMapConsumer = _dereq_('source-map').SourceMapConsumer;
 var path = _dereq_('path');
@@ -5038,13 +5168,11 @@ exports.install = function(options) {
 };
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),_dereq_("buffer").Buffer)
-},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5,"buffer":6,"fs":3,"path":9,"source-map":14}],25:[function(_dereq_,module,exports){
+},{"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":4,"buffer":5,"fs":2,"path":8,"source-map":17}],28:[function(_dereq_,module,exports){
 (function (process){
-/* global Howl */
-
 var utils = _dereq_('./utils');
 
-_dereq_('../lib/howler.min.js');
+var PotionAudio = _dereq_('potion-audio');
 
 /**
  * Class for managing and loading asset files
@@ -5069,6 +5197,8 @@ var Assets = function() {
   this.callback = null;
 
   this._toLoad = [];
+
+  this.audio = new PotionAudio();
 };
 
 /**
@@ -5188,12 +5318,8 @@ Assets.prototype._nextFile = function() {
     case 'mp3':
     case 'music':
     case 'sound':
-      var sound = new Howl({
-        urls: [url],
-        onload: function() {
-          self._save(url, sound, callback);
-        },
-        onloaderror: function() { self._error(type, url); }
+      self.audio.load(url, function(audio) {
+        self._save(url, audio, callback);
       });
       break;
     case 'image':
@@ -5222,7 +5348,7 @@ Assets.prototype._nextFile = function() {
 module.exports = Assets;
 
 }).call(this,_dereq_("/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"../lib/howler.min.js":2,"./utils":34,"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":5}],26:[function(_dereq_,module,exports){
+},{"./utils":37,"/Users/sedivy/Dropbox/dev/potion/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":4,"potion-audio":11}],29:[function(_dereq_,module,exports){
 _dereq_('./raf-polyfill')();
 
 var Game = _dereq_('./game');
@@ -5397,7 +5523,7 @@ Engine.prototype._subclassGame = function(container, methods) {
 
 module.exports = Engine;
 
-},{"./game":27,"./input":28,"./raf-polyfill":30,"./state-manager":32,"./time":33,"potion-debugger":13}],27:[function(_dereq_,module,exports){
+},{"./game":30,"./input":31,"./raf-polyfill":33,"./state-manager":35,"./time":36,"potion-debugger":16}],30:[function(_dereq_,module,exports){
 var Video = _dereq_('./video');
 var Assets = _dereq_('./assets');
 
@@ -5619,7 +5745,7 @@ Game.prototype.resize = function() {};
 
 module.exports = Game;
 
-},{"./assets":25,"./video":35}],28:[function(_dereq_,module,exports){
+},{"./assets":28,"./video":38}],31:[function(_dereq_,module,exports){
 var keys = _dereq_('./keys');
 
 /**
@@ -5827,7 +5953,7 @@ Input.prototype._addEvents = function(game) {
 
 module.exports = Input;
 
-},{"./keys":29}],29:[function(_dereq_,module,exports){
+},{"./keys":32}],32:[function(_dereq_,module,exports){
 module.exports = {
   'MOUSE1':-1,
   'MOUSE2':-3,
@@ -5922,7 +6048,7 @@ module.exports = {
   'PERIOD':190
 };
 
-},{}],30:[function(_dereq_,module,exports){
+},{}],33:[function(_dereq_,module,exports){
 module.exports = function() {
   var lastTime = 0;
   var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -5951,7 +6077,7 @@ module.exports = function() {
   }
 };
 
-},{}],31:[function(_dereq_,module,exports){
+},{}],34:[function(_dereq_,module,exports){
 var isRetina = function() {
   var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),\
   (min--moz-device-pixel-ratio: 1.5),\
@@ -5969,7 +6095,7 @@ var isRetina = function() {
 
 module.exports = isRetina;
 
-},{}],32:[function(_dereq_,module,exports){
+},{}],35:[function(_dereq_,module,exports){
 var renderOrderSort = function(a, b) {
   return a.renderOrder < b.renderOrder;
 };
@@ -6244,12 +6370,12 @@ StateManager.prototype.resize = function() {
 
 module.exports = StateManager;
 
-},{}],33:[function(_dereq_,module,exports){
+},{}],36:[function(_dereq_,module,exports){
 module.exports = (function() {
   return window.performance || Date;
 })();
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
 var get = exports.get = function(url, callback) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -6271,7 +6397,7 @@ exports.isFunction = function(obj) {
   return !!(obj && obj.constructor && obj.call && obj.apply);
 };
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],38:[function(_dereq_,module,exports){
 var isRetina = _dereq_('./retina')();
 
 /**
@@ -6398,6 +6524,6 @@ Video.prototype.createLayer = function(config) {
 
 module.exports = Video;
 
-},{"./retina":31}]},{},[1])
+},{"./retina":34}]},{},[1])
 (1)
 });
