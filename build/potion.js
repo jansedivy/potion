@@ -1045,7 +1045,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var util = __webpack_require__(12);
+	var util = __webpack_require__(13);
 	var DirtyManager = __webpack_require__(11);
 
 	var ObjectPool = [];
@@ -1420,7 +1420,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = __webpack_require__(13)();
+	var isRetina = __webpack_require__(12)();
 
 	/**
 	 * @constructor
@@ -1892,6 +1892,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2446,24 +2464,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(16)))
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
 
 /***/ },
 /* 14 */
