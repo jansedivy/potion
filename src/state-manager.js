@@ -173,12 +173,12 @@ StateManager.prototype.update = function(time) {
     if (state && state.enabled) {
       state.changed = false;
 
-      if (state.state.update && !state.paused) {
-        if (!state.initialized && state.state.init) {
-          state.initialized = true;
-          state.state.init();
-        }
+      if (!state.initialized && state.state.init) {
+        state.initialized = true;
+        state.state.init();
+      }
 
+      if (state.state.update && !state.paused) {
         state.state.update(time);
         state.updated = true;
       }
