@@ -22,7 +22,7 @@ update_version 'package.json' $next_version
 npm run build
 
 git add -A build
-git commit -am "$next_version"
+git commit -m "$next_version"
 
 git tag $next_ref
 git tag latest -f
