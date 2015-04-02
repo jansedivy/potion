@@ -41,6 +41,7 @@ StateManager.prototype.disable = function(name) {
       if (holder.state.disable) {
         holder.state.disable();
       }
+      holder.changed = true;
       holder.enabled = false;
     }
   }
@@ -112,6 +113,7 @@ StateManager.prototype._newStateHolder = function(name, state) {
 
   holder.initialized = false;
   holder.updated = false;
+  holder.changed = true;
 
   holder.updateOrder = 0;
   holder.renderOrder = 0;
@@ -168,14 +170,18 @@ StateManager.prototype.update = function(time) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
 
-    if (state && state.enabled && state.state.update && !state.paused) {
-      if (!state.initialized && state.state.init) {
-        state.initialized = true;
-        state.state.init();
-      }
+    if (state && state.enabled) {
+      state.changed = false;
 
-      state.state.update(time);
-      state.updated = true;
+      if (state.state.update && !state.paused) {
+        if (!state.initialized && state.state.init) {
+          state.initialized = true;
+          state.state.init();
+        }
+
+        state.state.update(time);
+        state.updated = true;
+      }
     }
   }
 };
@@ -201,7 +207,7 @@ StateManager.prototype.render = function() {
 StateManager.prototype.mousemove = function(x, y, e) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && state.state.mousemove && !state.paused) {
+    if (state.enabled && !state.changed && state.state.mousemove && !state.paused) {
       state.state.mousemove(x, y, e);
     }
   }
@@ -210,7 +216,7 @@ StateManager.prototype.mousemove = function(x, y, e) {
 StateManager.prototype.mouseup = function(x, y, button) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && state.state.mouseup && !state.paused) {
+    if (state.enabled && !state.changed && state.state.mouseup && !state.paused) {
       state.state.mouseup(x, y, button);
     }
   }
@@ -219,7 +225,7 @@ StateManager.prototype.mouseup = function(x, y, button) {
 StateManager.prototype.mousedown = function(x, y, button) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && state.state.mousedown && !state.paused) {
+    if (state.enabled && !state.changed && state.state.mousedown && !state.paused) {
       state.state.mousedown(x, y, button);
     }
   }
@@ -228,7 +234,7 @@ StateManager.prototype.mousedown = function(x, y, button) {
 StateManager.prototype.click = function(x, y, button) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && state.state.click && !state.paused) {
+    if (state.enabled && !state.changed && state.state.click && !state.paused) {
       state.state.click(x, y, button);
     }
   }
@@ -237,7 +243,7 @@ StateManager.prototype.click = function(x, y, button) {
 StateManager.prototype.keypress = function(key) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && state.state.keypress && !state.paused) {
+    if (state.enabled && !state.changed && state.state.keypress && !state.paused) {
       state.state.keypress(key);
     }
   }
@@ -246,7 +252,7 @@ StateManager.prototype.keypress = function(key) {
 StateManager.prototype.keyup = function(key) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && state.state.keyup && !state.paused) {
+    if (state.enabled && !state.changed && state.state.keyup && !state.paused) {
       state.state.keyup(key);
     }
   }
@@ -255,7 +261,7 @@ StateManager.prototype.keyup = function(key) {
 StateManager.prototype.keydown = function(key) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && state.state.keydown && !state.paused) {
+    if (state.enabled && !state.changed && state.state.keydown && !state.paused) {
       state.state.keydown(key);
     }
   }
@@ -264,7 +270,7 @@ StateManager.prototype.keydown = function(key) {
 StateManager.prototype.resize = function() {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && state.render && state.state.resize) {
+    if (state.enabled && !state.changed && state.render && state.state.resize) {
       state.state.resize();
     }
   }
