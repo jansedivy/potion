@@ -21,6 +21,7 @@ update_version 'package.json' $next_version
 
 npm run build
 
+git add package.json
 git add -A build
 git commit -m "$next_version"
 
