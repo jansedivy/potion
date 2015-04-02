@@ -1007,29 +1007,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	StateManager.prototype.keypress = function (key) {
+	StateManager.prototype.keypress = function (key, e) {
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
 	    if (state.enabled && !state.changed && state.state.keypress && !state.paused) {
-	      state.state.keypress(key);
+	      state.state.keypress(key, e);
 	    }
 	  }
 	};
 
-	StateManager.prototype.keyup = function (key) {
+	StateManager.prototype.keyup = function (key, e) {
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
 	    if (state.enabled && !state.changed && state.state.keyup && !state.paused) {
-	      state.state.keyup(key);
+	      state.state.keyup(key, e);
 	    }
 	  }
 	};
 
-	StateManager.prototype.keydown = function (key) {
+	StateManager.prototype.keydown = function (key, e) {
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
 	    if (state.enabled && !state.changed && state.state.keydown && !state.paused) {
-	      state.state.keydown(key);
+	      state.state.keydown(key, e);
 	    }
 	  }
 	};
@@ -1078,7 +1078,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	var defaults = [{ name: "Show FPS", entry: "showFps", "default": true }, { name: "Show Key Codes", entry: "showKeyCodes", "default": true }, { name: "Show Time", entry: "showTime", "default": true }];
+	var defaults = [{ name: "Show FPS", entry: "showFps", "default": true }, { name: "Show Key Codes", entry: "showKeyCodes", "default": true }];
 
 	var Debugger = function Debugger(app) {
 	  this.video = app.video.createLayer({
@@ -1206,7 +1206,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	Debugger.prototype.keydown = function (key) {
+	Debugger.prototype.keydown = function (key, e) {
 	  if (this.disabled) {
 	    return;
 	  }
@@ -1217,6 +1217,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if (this.enableDebugKeys) {
 	    if (key === this.enableShortcutsKey) {
+	      e.preventDefault();
+
 	      this.enableShortcuts = !this.enableShortcuts;
 	      return true;
 	    }
@@ -1224,7 +1226,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this.enableShortcuts) {
 	      for (i = 0; i < this.options.length; i++) {
 	        var option = this.options[i];
-
 	        var keyIndex = i + 1;
 
 	        if (this.app.input.isKeyDown("ctrl")) {
@@ -1234,6 +1235,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var charId = indexToNumberAndLowerCaseKey(keyIndex);
 
 	        if (charId && key === charId) {
+	          e.preventDefault();
+
 	          if (option.type === "toggle") {
 
 	            this[option.entry] = !this[option.entry];
@@ -1252,6 +1255,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  for (i = 0; i < this.keyShortcuts.length; i++) {
 	    var keyShortcut = this.keyShortcuts[i];
 	    if (keyShortcut.key === key) {
+	      e.preventDefault();
 
 	      if (keyShortcut.type === "toggle") {
 	        this[keyShortcut.entry] = !this[keyShortcut.entry];
