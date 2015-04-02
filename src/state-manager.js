@@ -240,29 +240,29 @@ StateManager.prototype.click = function(x, y, button) {
   }
 };
 
-StateManager.prototype.keypress = function(key) {
+StateManager.prototype.keypress = function(key, e) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.keypress && !state.paused) {
-      state.state.keypress(key);
+      state.state.keypress(key, e);
     }
   }
 };
 
-StateManager.prototype.keyup = function(key) {
+StateManager.prototype.keyup = function(key, e) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.keyup && !state.paused) {
-      state.state.keyup(key);
+      state.state.keyup(key, e);
     }
   }
 };
 
-StateManager.prototype.keydown = function(key) {
+StateManager.prototype.keydown = function(key, e) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.keydown && !state.paused) {
-      state.state.keydown(key);
+      state.state.keydown(key, e);
     }
   }
 };
