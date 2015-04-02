@@ -8,13 +8,17 @@
     "type": "git",
     "url": "https://github.com/jansedivy/potion.git"
   },
+  "scripts": {
+    "build": "NODE_ENV=production webpack index.js build/potion.js && NODE_ENV=production COMPRESS=1 webpack index.js build/potion.min.js",
+    "examples": "webpack-dev-server --config examples/webpack.config.js --content-base examples"
+  },
   "main": "index.js",
   "devDependencies": {
-    "browserify": "^9.0.3",
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^3.6.0",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-uglify": "^0.8.1"
+    "babel": "^4.7.16",
+    "babel-core": "^4.7.16",
+    "babel-loader": "^4.3.0",
+    "webpack": "^1.7.3",
+    "webpack-dev-server": "^1.8.0"
   },
   "dependencies": {
     "potion-audio": "^1.1.0",
