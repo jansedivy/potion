@@ -1,5 +1,3 @@
-var Potion = require('potion');
-
 Potion.init(document.querySelector('.game'), {
   configure: function() {
     this.assets.load('text', './textfile.txt');

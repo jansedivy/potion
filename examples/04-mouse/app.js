@@ -1,5 +1,3 @@
-var Potion = require('potion');
-
 Potion.init(document.querySelector('.game'), {
   render: function() {
     if (this.input.mouse.isDown) {
