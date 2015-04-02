@@ -19,7 +19,7 @@ next_ref="v$next_version"
 
 update_version 'package.json' $next_version
 
-grunt build
+npm run build
 
 git add -A build
 git commit -am "$next_version"
