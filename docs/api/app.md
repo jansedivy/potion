@@ -7,21 +7,59 @@ Properties
 
 ### `canvas`
 
+DOM reference to the actual canvas element.
+
 ### `width`
+
+Width of the game in pixels
 
 ### `height`
 
-### `assets`
-
-### `states`
-
-### `debug`
+Height of the game in pixels
 
 ### `config`
 
+Object for configuring Potion. Can only be used in `configure()` entry point.
+
+#### Example
+```javascript
+this.config.fixedStep = true;
+```
+
+#### Default values
+
+```javascript
+{
+  useRetina: true,
+  initializeCanvas: true,
+  initializeVideo: true,
+  addInputEvents: true,
+  showPreloader: true,
+  fixedStep: false,
+  stepTime: 0.01666,
+  maxStepTime: 0.01666
+};
+```
+
+### `assets`
+
+Instance of [`Assets`](/docs/api/assets.md)
+
+### `states`
+
+Instance of [`States`](/docs/api/states.md)
+
 ### `input`
 
+Instance of [`Input`](/docs/api/input.md)
+
 ### `video`
+
+Instance of [`Video`](/docs/api/video.md)
+
+### `debug`
+
+Instance of [`Debugger`](https://github.com/jansedivy/potion-debugger)
 
 Methods
 -------
