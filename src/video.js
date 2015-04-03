@@ -6,29 +6,15 @@ var isRetina = require('./retina')();
  */
 var Video = function(game, canvas, config) {
   this.game = game;
+
   this.config = config;
-  /**
-   * Canvas DOM element
-   * @type {HTMLCanvasElement}
-   */
+
   this.canvas = canvas;
 
-  /**
-   * Game width in pixels
-   * @type {number}
-   */
   this.width = game.width;
 
-  /**
-   * Game height in pixels
-   * @type {number}
-   */
   this.height = game.height;
 
-  /**
-   * canvas context
-   * @type {CanvasRenderingContext2D}
-   */
   if (config.initializeCanvas) {
     this.ctx = canvas.getContext('2d');
   }
@@ -46,20 +32,10 @@ Video.prototype.include = function(methods) {
   }
 };
 
-/**
- * Called at the beginning of each frame
- */
 Video.prototype.beginFrame = function() {};
 
-/**
- * Called at the end of each frame
- */
 Video.prototype.endFrame = function() {};
 
-/**
- * Scale canvas buffer, used for retina screens
- * @param {number} scale
- */
 Video.prototype.scaleCanvas = function(scale) {
   this.canvas.style.width = this.canvas.width + 'px';
   this.canvas.style.height = this.canvas.height + 'px';
@@ -72,9 +48,6 @@ Video.prototype.scaleCanvas = function(scale) {
   }
 };
 
-/**
- * Resize canvas element
- */
 Video.prototype.setSize = function(width, height) {
   this.width = width;
   this.height = height;
@@ -95,16 +68,10 @@ Video.prototype._applySizeToCanvas = function() {
   }
 };
 
-/**
- * clear canvas screen
- */
 Video.prototype.clear = function() {
   if (this.ctx) { this.ctx.clearRect(0, 0, this.width, this.height); }
 };
 
-/**
- * Create another canvas element on top of the previous one
- */
 Video.prototype.createLayer = function(config) {
   config = config || {};
 
