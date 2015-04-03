@@ -1,4 +1,5 @@
 var utils = require('./utils');
+var path = require('path');
 
 var PotionAudio = require('potion-audio');
 
@@ -51,7 +52,7 @@ Assets.prototype.onload = function(callback) {
  * @param {string} name - url of stored asset
  */
 Assets.prototype.get = function(name) {
-  return this._data[name];
+  return this._data[path.normalize(name)];
 };
 
 /**
@@ -61,7 +62,7 @@ Assets.prototype.get = function(name) {
  * @param {any} value - value to be stored
  */
 Assets.prototype.set = function(name, value) {
-  this._data[name] = value;
+  this._data[path.normalize(name)] = value;
 };
 
 /**
@@ -75,7 +76,7 @@ Assets.prototype.load = function(type, url, callback) {
   this.itemsCount += 1;
   this._thingsToLoad += 1;
 
-  this._toLoad.push({ type: type, url: url, callback: callback });
+  this._toLoad.push({ type: type, url: path.normalize(url), callback: callback });
 };
 
 Assets.prototype._finishedOneFile = function() {
