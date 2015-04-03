@@ -61,6 +61,8 @@ Instance of [`Video`](/docs/api/video.md)
 
 Instance of [`Debugger`](https://github.com/jansedivy/potion-debugger)
 
+Instance of [`Video`](/docs/api/video.md)
+
 Methods
 -------
 
@@ -68,26 +70,64 @@ Methods
 
 #### `init()`
 
+This method is called when all assets are loaded.
+
 #### `configure()`
+
+Method for configuring potion, setting up width and height and main probably the main thing is to define which assets to load.
 
 #### `render()`
 
+This method is called every frame. Used for rendering.
+
 #### `update(time)`
+
+This method is called every frame. Used for updating.
+
+`time` is the difference in seconds from the last frame.
 
 #### `exitUpdate(time)`
 
 #### `preloading()`
 
+This method is used for rendering loading bar. Could be overwritten to rendering different style of the loading bar.
+
+#### `setSize(width, height)`
+
+Method which sets width and height of the app and the canvas element.
+
 #### `focus()`
+
+Event which is called when browser gets focus
 
 #### `blur()`
 
+Event which is called when browser gets blur
+
 #### `click()`
+
+Event which is called when the user clicks on the canvas element
 
 #### `mousemove()`
 
+Event which is called when the user moves mouse over the canvas element
+
 #### `mousedown()`
+
+Event which is called when the user do mousedown over the canvas element
 
 #### `mouseup()`
 
+Event which is called when the user do mouseup over the canvas element
+
+#### `keydown()`
+
+Event which is called when the user do presses some key
+
 #### `keyup()`
+
+Event which is called when the user do releases some key
+
+#### `keypress()`
+
+Event which is called when the user do presses some key
