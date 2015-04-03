@@ -47,6 +47,26 @@ StateManager.prototype.disable = function(name) {
   }
 };
 
+StateManager.prototype.hide = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.enabled) {
+      holder.changed = true;
+      holder.render = false;
+    }
+  }
+};
+
+StateManager.prototype.show = function(name) {
+  var holder = this.get(name);
+  if (holder) {
+    if (holder.enabled) {
+      holder.changed = true;
+      holder.render = true;
+    }
+  }
+};
+
 StateManager.prototype.pause = function(name) {
   var holder = this.get(name);
   if (holder) {
