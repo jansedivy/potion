@@ -107,7 +107,9 @@ Event which is called when browser gets blur
 Event which is called when the user clicks on the canvas element
 
 `x` - x coordinate of the action
+
 `y` - y coordinate of the action
+
 `button` - which mouse button was used (1, 2, 3)
 
 #### `mousemove(x, y, button)`
@@ -115,7 +117,9 @@ Event which is called when the user clicks on the canvas element
 Event which is called when the user moves mouse over the canvas element
 
 `x` - x coordinate of the action
+
 `y` - y coordinate of the action
+
 `button` - which mouse button was used (1, 2, 3)
 
 #### `mousedown(x, y, button)`
@@ -123,7 +127,9 @@ Event which is called when the user moves mouse over the canvas element
 Event which is called when the user do mousedown over the canvas element
 
 `x` - x coordinate of the action
+
 `y` - y coordinate of the action
+
 `button` - which mouse button was used (1, 2, 3)
 
 #### `mouseup(x, y, button)`
@@ -131,7 +137,9 @@ Event which is called when the user do mousedown over the canvas element
 Event which is called when the user do mouseup over the canvas element
 
 `x` - x coordinate of the action
+
 `y` - y coordinate of the action
+
 `button` - which mouse button was used (1, 2, 3)
 
 #### `keydown(keyCode, e)`
@@ -139,6 +147,7 @@ Event which is called when the user do mouseup over the canvas element
 Event which is called when the user do presses some key
 
 `keyCode` - code number of the pressed key
+
 `e` - event object
 
 #### `keyup(keyCode, e)`
@@ -146,6 +155,7 @@ Event which is called when the user do presses some key
 Event which is called when the user do releases some key
 
 `keyCode` - code number of the pressed key
+
 `e` - event object
 
 #### `keypress(keyCode, e)`
@@ -153,4 +163,5 @@ Event which is called when the user do releases some key
 Event which is called when the user do presses some key
 
 `keyCode` - code number of the pressed key
+
 `e` - event object
