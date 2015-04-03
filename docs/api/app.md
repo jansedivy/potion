@@ -102,30 +102,55 @@ Event which is called when browser gets focus
 
 Event which is called when browser gets blur
 
-#### `click()`
+#### `click(x, y, button)`
 
 Event which is called when the user clicks on the canvas element
 
-#### `mousemove()`
+`x` - x coordinate of the action
+`y` - y coordinate of the action
+`button` - which mouse button was used (1, 2, 3)
+
+#### `mousemove(x, y, button)`
 
 Event which is called when the user moves mouse over the canvas element
 
-#### `mousedown()`
+`x` - x coordinate of the action
+`y` - y coordinate of the action
+`button` - which mouse button was used (1, 2, 3)
+
+#### `mousedown(x, y, button)`
 
 Event which is called when the user do mousedown over the canvas element
 
-#### `mouseup()`
+`x` - x coordinate of the action
+`y` - y coordinate of the action
+`button` - which mouse button was used (1, 2, 3)
+
+#### `mouseup(x, y, button)`
 
 Event which is called when the user do mouseup over the canvas element
 
-#### `keydown()`
+`x` - x coordinate of the action
+`y` - y coordinate of the action
+`button` - which mouse button was used (1, 2, 3)
+
+#### `keydown(keyCode, e)`
 
 Event which is called when the user do presses some key
 
-#### `keyup()`
+`keyCode` - code number of the pressed key
+`e` - event object
+
+#### `keyup(keyCode, e)`
 
 Event which is called when the user do releases some key
 
-#### `keypress()`
+`keyCode` - code number of the pressed key
+`e` - event object
+
+#### `keypress(keyCode, e)`
 
 Event which is called when the user do presses some key
+
+`keyCode` - code number of the pressed key
+`e` - event object
