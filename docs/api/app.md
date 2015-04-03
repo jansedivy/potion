@@ -67,7 +67,7 @@ Methods
 
 ### Entry points
 
-Rest of the methods are defined in (States)[/docs/api/states.md]
+Rest of the methods are defined in [States](/docs/api/states.md)
 
 #### `init()`
 
