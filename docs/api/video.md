@@ -44,7 +44,7 @@ Sets the width and height
 
 #### `clear()`
 
-Methods which clears the screen. Could be overwritten for different rendering, like WebGl.
+Methods which clears the screen. Could be overwritten for different rendering, like WebGL.
 
 #### `createLayer()`
 
