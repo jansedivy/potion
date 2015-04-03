@@ -1,12 +1,13 @@
+var Potion = require('potion');
+
 var app = Potion.init(document.querySelector('.game'), {
+  configure: function() {
+    this.setSize(document.body.clientWidth, document.body.clientHeight);
+  },
+
   init: function() {
     this.particles = [];
     this.lastPosition = { x: null, y: null };
-  },
-
-  resize: function() {
-    this.width = document.body.clientWidth;
-    this.height = document.body.clientHeight;
   },
 
   mousemove: function(x, y) {

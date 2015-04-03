@@ -1,3 +1,5 @@
+var Potion = require('potion');
+
 var VideoMixins = {
   circle: function(x, y, r) {
     this.ctx.beginPath();

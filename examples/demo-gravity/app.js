@@ -1,3 +1,5 @@
+var Potion = require('potion');
+
 var app;
 
 var Particle = function(x, y) {
@@ -33,9 +35,8 @@ Particle.prototype.render = function() {
 };
 
 app = Potion.init(document.querySelector('.game'), {
-  resize: function() {
-    this.width = document.body.clientWidth;
-    this.height = document.body.clientHeight;
+  configure: function() {
+    this.setSize(document.body.clientWidth, document.body.clientHeight);
 
     this.centerX = this.width/2;
     this.centerY = this.height/2;

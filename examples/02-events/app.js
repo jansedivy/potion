@@ -1,3 +1,5 @@
+var Potion = require('potion');
+
 Potion.init(document.querySelector('.game'), {
   /**
    * keyboard events
