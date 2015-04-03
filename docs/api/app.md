@@ -38,7 +38,7 @@ this.config.fixedStep = true;
   fixedStep: false,
   stepTime: 0.01666,
   maxStepTime: 0.01666
-};
+}
 ```
 
 ### `assets`
