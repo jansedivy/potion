@@ -61,8 +61,6 @@ Instance of [`Video`](/docs/api/video.md)
 
 Instance of [`Debugger`](https://github.com/jansedivy/potion-debugger)
 
-Instance of [`Video`](/docs/api/video.md)
-
 Methods
 -------
 
