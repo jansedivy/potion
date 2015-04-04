@@ -297,8 +297,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var Video = __webpack_require__(9);
-	var Assets = __webpack_require__(10);
+	var Video = __webpack_require__(8);
+	var Assets = __webpack_require__(9);
 
 	/**
 	 * Game class that is subclassed by actual game code
@@ -540,7 +540,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var keys = __webpack_require__(8);
+	var keys = __webpack_require__(10);
 
 	/**
 	 * Input wrapper
@@ -814,6 +814,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
+	StateManager.prototype.hide = function (name) {
+	  var holder = this.get(name);
+	  if (holder) {
+	    if (holder.enabled) {
+	      holder.changed = true;
+	      holder.render = false;
+	    }
+	  }
+	};
+
+	StateManager.prototype.show = function (name) {
+	  var holder = this.get(name);
+	  if (holder) {
+	    if (holder.enabled) {
+	      holder.changed = true;
+	      holder.render = true;
+	    }
+	  }
+	};
+
 	StateManager.prototype.pause = function (name) {
 	  var holder = this.get(name);
 	  if (holder) {
@@ -940,12 +960,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (state && state.enabled) {
 	      state.changed = false;
 
-	      if (state.state.update && !state.paused) {
-	        if (!state.initialized && state.state.init) {
-	          state.initialized = true;
-	          state.state.init();
-	        }
+	      if (!state.initialized && state.state.init) {
+	        state.initialized = true;
+	        state.state.init();
+	      }
 
+	      if (state.state.update && !state.paused) {
 	        state.state.update(time);
 	        state.updated = true;
 	      }
@@ -1207,6 +1227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	Debugger.prototype.keydown = function (key, e) {
+	  console.log("tet");
 	  if (this.disabled) {
 	    return;
 	  }
@@ -1430,106 +1451,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	module.exports = {
-	  MOUSE1: -1,
-	  MOUSE2: -3,
-	  MWHEEL_UP: -4,
-	  MWHEEL_DOWN: -5,
-	  BACKSPACE: 8,
-	  TAB: 9,
-	  ENTER: 13,
-	  PAUSE: 19,
-	  CAPS: 20,
-	  ESC: 27,
-	  SPACE: 32,
-	  PAGE_UP: 33,
-	  PAGE_DOWN: 34,
-	  END: 35,
-	  HOME: 36,
-	  LEFT: 37,
-	  UP: 38,
-	  RIGHT: 39,
-	  DOWN: 40,
-	  INSERT: 45,
-	  DELETE: 46,
-	  _0: 48,
-	  _1: 49,
-	  _2: 50,
-	  _3: 51,
-	  _4: 52,
-	  _5: 53,
-	  _6: 54,
-	  _7: 55,
-	  _8: 56,
-	  _9: 57,
-	  A: 65,
-	  B: 66,
-	  C: 67,
-	  D: 68,
-	  E: 69,
-	  F: 70,
-	  G: 71,
-	  H: 72,
-	  I: 73,
-	  J: 74,
-	  K: 75,
-	  L: 76,
-	  M: 77,
-	  N: 78,
-	  O: 79,
-	  P: 80,
-	  Q: 81,
-	  R: 82,
-	  S: 83,
-	  T: 84,
-	  U: 85,
-	  V: 86,
-	  W: 87,
-	  X: 88,
-	  Y: 89,
-	  Z: 90,
-	  NUMPAD_0: 96,
-	  NUMPAD_1: 97,
-	  NUMPAD_2: 98,
-	  NUMPAD_3: 99,
-	  NUMPAD_4: 100,
-	  NUMPAD_5: 101,
-	  NUMPAD_6: 102,
-	  NUMPAD_7: 103,
-	  NUMPAD_8: 104,
-	  NUMPAD_9: 105,
-	  MULTIPLY: 106,
-	  ADD: 107,
-	  SUBSTRACT: 109,
-	  DECIMAL: 110,
-	  DIVIDE: 111,
-	  F1: 112,
-	  F2: 113,
-	  F3: 114,
-	  F4: 115,
-	  F5: 116,
-	  F6: 117,
-	  F7: 118,
-	  F8: 119,
-	  F9: 120,
-	  F10: 121,
-	  F11: 122,
-	  F12: 123,
-	  SHIFT: 16,
-	  CTRL: 17,
-	  ALT: 18,
-	  PLUS: 187,
-	  COMMA: 188,
-	  MINUS: 189,
-	  PERIOD: 190
-	};
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
 	var isRetina = __webpack_require__(13)();
 
 	/**
@@ -1538,29 +1459,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	var Video = function Video(game, canvas, config) {
 	  this.game = game;
+
 	  this.config = config;
-	  /**
-	   * Canvas DOM element
-	   * @type {HTMLCanvasElement}
-	   */
+
 	  this.canvas = canvas;
 
-	  /**
-	   * Game width in pixels
-	   * @type {number}
-	   */
 	  this.width = game.width;
 
-	  /**
-	   * Game height in pixels
-	   * @type {number}
-	   */
 	  this.height = game.height;
 
-	  /**
-	   * canvas context
-	   * @type {CanvasRenderingContext2D}
-	   */
 	  if (config.initializeCanvas) {
 	    this.ctx = canvas.getContext("2d");
 	  }
@@ -1578,20 +1485,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	/**
-	 * Called at the beginning of each frame
-	 */
 	Video.prototype.beginFrame = function () {};
 
-	/**
-	 * Called at the end of each frame
-	 */
 	Video.prototype.endFrame = function () {};
 
-	/**
-	 * Scale canvas buffer, used for retina screens
-	 * @param {number} scale
-	 */
 	Video.prototype.scaleCanvas = function (scale) {
 	  this.canvas.style.width = this.canvas.width + "px";
 	  this.canvas.style.height = this.canvas.height + "px";
@@ -1604,9 +1501,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	/**
-	 * Resize canvas element
-	 */
 	Video.prototype.setSize = function (width, height) {
 	  this.width = width;
 	  this.height = height;
@@ -1627,18 +1521,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	/**
-	 * clear canvas screen
-	 */
 	Video.prototype.clear = function () {
 	  if (this.ctx) {
 	    this.ctx.clearRect(0, 0, this.width, this.height);
 	  }
 	};
 
-	/**
-	 * Create another canvas element on top of the previous one
-	 */
 	Video.prototype.createLayer = function (config) {
 	  config = config || {};
 
@@ -1659,14 +1547,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Video;
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
 	var utils = __webpack_require__(14);
+	var path = __webpack_require__(15);
 
-	var PotionAudio = __webpack_require__(15);
+	var PotionAudio = __webpack_require__(16);
 
 	/**
 	 * Class for managing and loading asset files
@@ -1717,7 +1606,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {string} name - url of stored asset
 	 */
 	Assets.prototype.get = function (name) {
-	  return this._data[name];
+	  return this._data[path.normalize(name)];
 	};
 
 	/**
@@ -1727,7 +1616,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {any} value - value to be stored
 	 */
 	Assets.prototype.set = function (name, value) {
-	  this._data[name] = value;
+	  this._data[path.normalize(name)] = value;
 	};
 
 	/**
@@ -1741,7 +1630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.itemsCount += 1;
 	  this._thingsToLoad += 1;
 
-	  this._toLoad.push({ type: type, url: url, callback: callback });
+	  this._toLoad.push({ type: type, url: path.normalize(url), callback: callback });
 	};
 
 	Assets.prototype._finishedOneFile = function () {
@@ -1851,7 +1740,107 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = Assets;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = {
+	  MOUSE1: -1,
+	  MOUSE2: -3,
+	  MWHEEL_UP: -4,
+	  MWHEEL_DOWN: -5,
+	  BACKSPACE: 8,
+	  TAB: 9,
+	  ENTER: 13,
+	  PAUSE: 19,
+	  CAPS: 20,
+	  ESC: 27,
+	  SPACE: 32,
+	  PAGE_UP: 33,
+	  PAGE_DOWN: 34,
+	  END: 35,
+	  HOME: 36,
+	  LEFT: 37,
+	  UP: 38,
+	  RIGHT: 39,
+	  DOWN: 40,
+	  INSERT: 45,
+	  DELETE: 46,
+	  _0: 48,
+	  _1: 49,
+	  _2: 50,
+	  _3: 51,
+	  _4: 52,
+	  _5: 53,
+	  _6: 54,
+	  _7: 55,
+	  _8: 56,
+	  _9: 57,
+	  A: 65,
+	  B: 66,
+	  C: 67,
+	  D: 68,
+	  E: 69,
+	  F: 70,
+	  G: 71,
+	  H: 72,
+	  I: 73,
+	  J: 74,
+	  K: 75,
+	  L: 76,
+	  M: 77,
+	  N: 78,
+	  O: 79,
+	  P: 80,
+	  Q: 81,
+	  R: 82,
+	  S: 83,
+	  T: 84,
+	  U: 85,
+	  V: 86,
+	  W: 87,
+	  X: 88,
+	  Y: 89,
+	  Z: 90,
+	  NUMPAD_0: 96,
+	  NUMPAD_1: 97,
+	  NUMPAD_2: 98,
+	  NUMPAD_3: 99,
+	  NUMPAD_4: 100,
+	  NUMPAD_5: 101,
+	  NUMPAD_6: 102,
+	  NUMPAD_7: 103,
+	  NUMPAD_8: 104,
+	  NUMPAD_9: 105,
+	  MULTIPLY: 106,
+	  ADD: 107,
+	  SUBSTRACT: 109,
+	  DECIMAL: 110,
+	  DIVIDE: 111,
+	  F1: 112,
+	  F2: 113,
+	  F3: 114,
+	  F4: 115,
+	  F5: 116,
+	  F6: 117,
+	  F7: 118,
+	  F8: 119,
+	  F9: 120,
+	  F10: 121,
+	  F11: 122,
+	  F12: 123,
+	  SHIFT: 16,
+	  CTRL: 17,
+	  ALT: 18,
+	  PLUS: 187,
+	  COMMA: 188,
+	  MINUS: 189,
+	  PERIOD: 190
+	};
 
 /***/ },
 /* 11 */
@@ -2401,7 +2390,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(17);
+	exports.isBuffer = __webpack_require__(18);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -2438,7 +2427,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(19);
+	exports.inherits = __webpack_require__(20);
 
 	exports._extend = function (origin, add) {
 	  // Don't do anything if add isn't an object
@@ -2455,7 +2444,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function hasOwnProperty(obj, prop) {
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(16)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(17)))
 
 /***/ },
 /* 13 */
@@ -2506,12 +2495,241 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	// resolves . and .. elements in a path array with directory names there
+	// must be no slashes, empty elements, or device names (c:\) in the array
+	// (so also no leading and trailing slashes - it does not distinguish
+	// relative and absolute paths)
 	"use strict";
 
-	module.exports = __webpack_require__(18);
+	function normalizeArray(parts, allowAboveRoot) {
+	  // if the path tries to go above the root, `up` ends up > 0
+	  var up = 0;
+	  for (var i = parts.length - 1; i >= 0; i--) {
+	    var last = parts[i];
+	    if (last === ".") {
+	      parts.splice(i, 1);
+	    } else if (last === "..") {
+	      parts.splice(i, 1);
+	      up++;
+	    } else if (up) {
+	      parts.splice(i, 1);
+	      up--;
+	    }
+	  }
+
+	  // if the path is allowed to go above the root, restore leading ..s
+	  if (allowAboveRoot) {
+	    for (; up--; up) {
+	      parts.unshift("..");
+	    }
+	  }
+
+	  return parts;
+	}
+
+	// Split a filename into [root, dir, basename, ext], unix version
+	// 'root' is just a slash, or nothing.
+	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+	var splitPath = function splitPath(filename) {
+	  return splitPathRe.exec(filename).slice(1);
+	};
+
+	// path.resolve([from ...], to)
+	// posix version
+	exports.resolve = function () {
+	  var resolvedPath = "",
+	      resolvedAbsolute = false;
+
+	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+	    var path = i >= 0 ? arguments[i] : process.cwd();
+
+	    // Skip empty and invalid entries
+	    if (typeof path !== "string") {
+	      throw new TypeError("Arguments to path.resolve must be strings");
+	    } else if (!path) {
+	      continue;
+	    }
+
+	    resolvedPath = path + "/" + resolvedPath;
+	    resolvedAbsolute = path.charAt(0) === "/";
+	  }
+
+	  // At this point the path should be resolved to a full absolute path, but
+	  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+	  // Normalize the path
+	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
+	    return !!p;
+	  }), !resolvedAbsolute).join("/");
+
+	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
+	};
+
+	// path.normalize(path)
+	// posix version
+	exports.normalize = function (path) {
+	  var isAbsolute = exports.isAbsolute(path),
+	      trailingSlash = substr(path, -1) === "/";
+
+	  // Normalize the path
+	  path = normalizeArray(filter(path.split("/"), function (p) {
+	    return !!p;
+	  }), !isAbsolute).join("/");
+
+	  if (!path && !isAbsolute) {
+	    path = ".";
+	  }
+	  if (path && trailingSlash) {
+	    path += "/";
+	  }
+
+	  return (isAbsolute ? "/" : "") + path;
+	};
+
+	// posix version
+	exports.isAbsolute = function (path) {
+	  return path.charAt(0) === "/";
+	};
+
+	// posix version
+	exports.join = function () {
+	  var paths = Array.prototype.slice.call(arguments, 0);
+	  return exports.normalize(filter(paths, function (p, index) {
+	    if (typeof p !== "string") {
+	      throw new TypeError("Arguments to path.join must be strings");
+	    }
+	    return p;
+	  }).join("/"));
+	};
+
+	// path.relative(from, to)
+	// posix version
+	exports.relative = function (from, to) {
+	  from = exports.resolve(from).substr(1);
+	  to = exports.resolve(to).substr(1);
+
+	  function trim(arr) {
+	    var start = 0;
+	    for (; start < arr.length; start++) {
+	      if (arr[start] !== "") break;
+	    }
+
+	    var end = arr.length - 1;
+	    for (; end >= 0; end--) {
+	      if (arr[end] !== "") break;
+	    }
+
+	    if (start > end) {
+	      return [];
+	    }return arr.slice(start, end - start + 1);
+	  }
+
+	  var fromParts = trim(from.split("/"));
+	  var toParts = trim(to.split("/"));
+
+	  var length = Math.min(fromParts.length, toParts.length);
+	  var samePartsLength = length;
+	  for (var i = 0; i < length; i++) {
+	    if (fromParts[i] !== toParts[i]) {
+	      samePartsLength = i;
+	      break;
+	    }
+	  }
+
+	  var outputParts = [];
+	  for (var i = samePartsLength; i < fromParts.length; i++) {
+	    outputParts.push("..");
+	  }
+
+	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+	  return outputParts.join("/");
+	};
+
+	exports.sep = "/";
+	exports.delimiter = ":";
+
+	exports.dirname = function (path) {
+	  var result = splitPath(path),
+	      root = result[0],
+	      dir = result[1];
+
+	  if (!root && !dir) {
+	    // No dirname whatsoever
+	    return ".";
+	  }
+
+	  if (dir) {
+	    // It has a dirname, strip trailing slash
+	    dir = dir.substr(0, dir.length - 1);
+	  }
+
+	  return root + dir;
+	};
+
+	exports.basename = function (path, ext) {
+	  var f = splitPath(path)[2];
+	  // TODO: make this comparison case-insensitive on windows?
+	  if (ext && f.substr(-1 * ext.length) === ext) {
+	    f = f.substr(0, f.length - ext.length);
+	  }
+	  return f;
+	};
+
+	exports.extname = function (path) {
+	  return splitPath(path)[3];
+	};
+
+	function filter(xs, f) {
+	  if (xs.filter) {
+	    return xs.filter(f);
+	  }var res = [];
+	  for (var i = 0; i < xs.length; i++) {
+	    if (f(xs[i], i, xs)) res.push(xs[i]);
+	  }
+	  return res;
+	}
+
+	// String.prototype.substr - negative index don't work in IE8
+	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
+	  return str.substr(start, len);
+	} : function (str, start, len) {
+	  if (start < 0) start = str.length + start;
+	  return str.substr(start, len);
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ },
 /* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = __webpack_require__(19);
+
+/***/ },
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser
@@ -2580,7 +2798,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2590,12 +2808,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var LoadedAudio = __webpack_require__(20);
+	var LoadedAudio = __webpack_require__(21);
 
 	var AudioManager = function AudioManager() {
 	  var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -2668,7 +2886,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = AudioManager;
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2698,12 +2916,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var PlayingAudio = __webpack_require__(21);
+	var PlayingAudio = __webpack_require__(22);
 
 	var LoadedAudio = function LoadedAudio(ctx, buffer, masterGain) {
 	  this._ctx = ctx;
@@ -2762,7 +2980,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = LoadedAudio;
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
