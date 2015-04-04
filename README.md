@@ -2,6 +2,10 @@
 
 HTML5 canvas game engine
 
+## Documentation
+
+- [API](/docs/api/)
+
 ## Installation
 
 ### Include potion.js file
