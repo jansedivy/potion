@@ -2930,51 +2930,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this._buffer.loop = false;
 	};
 
-	LoadedAudio.prototype.play = function () {
+	LoadedAudio.prototype._createSound = function (gain) {
 	  var source = this._ctx.createBufferSource();
 	  source.buffer = this._buffer;
 
+	  this._masterGain.connect(this._ctx.destination);
+
+	  gain.connect(this._masterGain);
+
+	  source.connect(gain);
+
+	  return source;
+	};
+
+	LoadedAudio.prototype.play = function () {
 	  var gain = this._ctx.createGain();
-	  source.connect(this._masterGain);
-	  this._masterGain.connect(gain);
-	  gain.connect(this._ctx.destination);
 
-	  source.start(0);
+	  var sound = this._createSound(gain);
 
-	  return new PlayingAudio(source, gain);
+	  sound.start(0);
+
+	  return new PlayingAudio(sound, gain);
 	};
 
 	LoadedAudio.prototype.fadeIn = function (value, time) {
-	  var source = this._ctx.createBufferSource();
-	  source.buffer = this._buffer;
-
 	  var gain = this._ctx.createGain();
+
+	  var sound = this._createSound(gain);
 
 	  gain.gain.setValueAtTime(0, 0);
 	  gain.gain.linearRampToValueAtTime(0.01, 0);
 	  gain.gain.linearRampToValueAtTime(value, time);
 
-	  source.connect(this._masterGain);
-	  this._masterGain.connect(gain);
-	  gain.connect(this._ctx.destination);
+	  sound.start(0);
 
-	  source.start(0);
-
-	  return new PlayingAudio(source, gain);
+	  return new PlayingAudio(sound, gain);
 	};
 
 	LoadedAudio.prototype.loop = function () {
-	  var source = this._ctx.createBufferSource();
-	  source.buffer = this._buffer;
-
 	  var gain = this._ctx.createGain();
-	  source.connect(gain);
-	  gain.connect(this._ctx.destination);
 
-	  source.loop = true;
-	  source.start(0);
+	  var sound = this._createSound(gain);
 
-	  return new PlayingAudio(source, gain);
+	  sound.loop = true;
+	  sound.start(0);
+
+	  return new PlayingAudio(sound, gain);
 	};
 
 	module.exports = LoadedAudio;
