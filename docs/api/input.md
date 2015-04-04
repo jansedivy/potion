@@ -25,7 +25,7 @@ Methods
 
 Function used for testing if some key is pressed right now. This method is good for doing something every frame, like moving a player.
 
-`key` - could be either string name of the key or number representing the keyCode defined in (keys)[/src/keys.js]
+`key` - could be either string name of the key or number representing the keyCode defined in [keys](/src/keys.js)
 
 ##### Example
 
