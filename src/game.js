@@ -89,6 +89,20 @@ Game.prototype.preloading = function(time) {
     this.video.ctx.closePath();
     this.video.ctx.stroke();
 
+    this.video.ctx.strokeStyle = this.video.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height + 2);
+
+    this.video.ctx.lineWidth = 2;
+    this.video.ctx.beginPath();
+
+    this.video.ctx.moveTo(x + this._preloaderWidth, y + 12);
+    this.video.ctx.lineTo(x - 5, y + 12);
+    this.video.ctx.lineTo(x - 5, y + 10 + height + 12);
+    this.video.ctx.lineTo(x + this._preloaderWidth, y + 10 + height + 12);
+
+    this.video.ctx.stroke();
+    this.video.ctx.closePath();
+
     this.video.ctx.strokeStyle = this.video.ctx.fillStyle = color1;
     this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height);
 
