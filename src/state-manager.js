@@ -193,17 +193,19 @@ StateManager.prototype.update = function(time) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
 
-    if (state && state.enabled) {
+    if (state) {
       state.changed = false;
 
-      if (!state.initialized && state.state.init) {
-        state.initialized = true;
-        state.state.init();
-      }
+      if (state.enabled) {
+        if (!state.initialized && state.state.init) {
+          state.initialized = true;
+          state.state.init();
+        }
 
-      if (state.state.update && !state.paused) {
-        state.state.update(time);
-        state.updated = true;
+        if (state.state.update && !state.paused) {
+          state.state.update(time);
+          state.updated = true;
+        }
       }
     }
   }
