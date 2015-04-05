@@ -1,6 +1,6 @@
 var Potion = require('potion');
 
-Potion.init(document.querySelector('.game'), {
+var app = Potion.init(document.querySelector('.game'), {
   init: function() {
     this.size = 10;
   },
@@ -10,7 +10,7 @@ Potion.init(document.querySelector('.game'), {
   },
 
   render: function() {
-    this.video.ctx.fillStyle = '#bada55';
-    this.video.ctx.fillRect(10, 10, this.size, this.size);
+    app.video.ctx.fillStyle = '#bada55';
+    app.video.ctx.fillRect(10, 10, this.size, this.size);
   }
 });

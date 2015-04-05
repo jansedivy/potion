@@ -8,14 +8,14 @@ var VideoMixins = {
   }
 };
 
-Potion.init(document.querySelector('.game'), {
+var app = Potion.init(document.querySelector('.game'), {
   init: function() {
-    this.video.include(VideoMixins);
+    app.video.include(VideoMixins);
   },
 
   render: function() {
-    this.video.ctx.fillStyle = 'black';
-    this.video.circle(this.width/2, this.height/2, 40);
-    this.video.ctx.fill();
+    app.video.ctx.fillStyle = 'black';
+    app.video.circle(app.width/2, app.height/2, 40);
+    app.video.ctx.fill();
   }
 });
