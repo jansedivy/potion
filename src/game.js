@@ -67,39 +67,6 @@ var Game = function(canvas) {
   }
 };
 
-/**
- * Is called when all assets are loaded
- * @abstract
- */
-Game.prototype.init = function() {};
-
-/**
- * Runs before loading assets. Can be used for configuring Potion and settings assets loader
- * @abstract
- */
-Game.prototype.configure = function() {};
-
-/**
- * Runs every frame for rendering the game
- * @abstract
- */
-Game.prototype.render = function() {};
-
-/**
- * Runs every frame for updating the game
- * limits time to value set in config.maxStepTime
- * @param {number} time - time in seconds since last frame
- * @abstract
- */
-Game.prototype.update = function(time) {};
-
-/**
- * Runs every frame after update method, but it doesn't limit time
- * @param {number} time - time in seconds since last frame
- * @abstract
- */
-Game.prototype.exitUpdate = function(time) {};
-
 Game.prototype.setSize = function(width, height) {
   this.width = width;
   this.height = height;
@@ -160,74 +127,10 @@ Game.prototype.preloading = function(time) {
   }
 };
 
-/**
- * Window Focus event
- * @abstract
- */
+Game.prototype.configure = function() {};
+
 Game.prototype.focus = function() {};
 
-/**
- * Window Blur event
- * @abstract
- */
 Game.prototype.blur = function() {};
-
-/**
- * Click event
- * @param {number} x - x position
- * @param {number} y - y position
- * @param {number} button - number of button which is pressed
- * @abstract
- */
-Game.prototype.click = function() {};
-
-/**
- * Mousemove event
- * @param {number} x - x position
- * @param {number} y - y position
- * @abstract
- */
-Game.prototype.mousemove = function(x, y) {};
-
-/**
- * Mousedown event
- * @param {number} x - x position
- * @param {number} y - y position
- * @param {number} button - number of button which is pressed
- * @abstract
- */
-Game.prototype.mousedown = function() {};
-
-/**
- * Mouseup event
- * @param {number} x - x position
- * @param {number} y - y position
- * @param {number} button - number of button which is pressed
- * @abstract
- */
-Game.prototype.mouseup = function() {};
-
-/**
- * Keydown event
- * @param {number} key - keyCode for pressed key
- * @param {object} e - event object
- * @abstract
- */
-Game.prototype.keydown = function() {};
-
-
-/**
- * Keyup event
- * @param {number} key - keyCode for pressed key
- * @param {object} e - event object
- * @abstract
- */
-Game.prototype.keyup = function() {};
-
-/**
- * Window resize event
- * @abstract
- */
-Game.prototype.resize = function() {};
 
 module.exports = Game;
