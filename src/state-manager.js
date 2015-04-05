@@ -26,6 +26,7 @@ StateManager.prototype.enable = function(name) {
         holder.state.enable();
       }
       holder.enabled = true;
+      holder.changed = true;
 
       if (holder.paused) {
         this.unpause(name);
@@ -74,6 +75,7 @@ StateManager.prototype.pause = function(name) {
       holder.state.pause();
     }
 
+    holder.changed = true;
     holder.paused = true;
   }
 };
@@ -85,6 +87,7 @@ StateManager.prototype.unpause = function(name) {
       holder.state.unpause();
     }
 
+    holder.changed = true;
     holder.paused = false;
   }
 };
