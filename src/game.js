@@ -75,15 +75,27 @@ Game.prototype.preloading = function(time) {
     this.video.ctx.fillStyle = '#88a237';
     this.video.ctx.fillRect(x, y + 15, width, height);
 
+    this.video.ctx.strokeStyle = '#88a237';
+    this.video.ctx.lineWidth = 2;
+    this.video.ctx.beginPath();
+    this.video.ctx.rect(x - 5, y + 10, width + 10, height + 10);
+    this.video.ctx.closePath();
+    this.video.ctx.stroke();
+
     this.video.ctx.fillStyle = '#f6ffda';
     this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height);
 
     this.video.ctx.strokeStyle = '#f6ffda';
     this.video.ctx.lineWidth = 2;
     this.video.ctx.beginPath();
-    this.video.ctx.rect(x - 5, y + 10, this._preloaderWidth + 10, height + 10);
-    this.video.ctx.closePath();
+
+    this.video.ctx.moveTo(x + this._preloaderWidth, y + 10);
+    this.video.ctx.lineTo(x - 5, y + 10);
+    this.video.ctx.lineTo(x - 5, y + 10 + height + 10);
+    this.video.ctx.lineTo(x + this._preloaderWidth, y + 10 + height + 10);
+
     this.video.ctx.stroke();
+    this.video.ctx.closePath();
 
     this.video.ctx.restore();
   }
