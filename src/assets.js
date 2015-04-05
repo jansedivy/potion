@@ -76,7 +76,7 @@ Assets.prototype.load = function(type, url, callback) {
   this.itemsCount += 1;
   this._thingsToLoad += 1;
 
-  this._toLoad.push({ type: type, url: path.normalize(url), callback: callback });
+  this._toLoad.push({ type: type, url: url != null ? path.normalize(url) : null, callback: callback });
 };
 
 Assets.prototype._finishedOneFile = function() {
