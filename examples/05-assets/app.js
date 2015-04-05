@@ -2,9 +2,9 @@ var Potion = require('potion');
 
 var app = Potion.init(document.querySelector('.game'), {
   configure: function() {
-    app.assets.load('text', 'textfile.txt');
-    app.assets.load('image', 'bunny.png');
-    app.assets.load('json', 'data.json');
+    this.assets.load('text', 'textfile.txt');
+    this.assets.load('image', 'bunny.png');
+    this.assets.load('json', 'data.json');
   },
 
   render: function() {
