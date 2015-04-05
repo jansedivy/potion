@@ -300,44 +300,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Video = __webpack_require__(8);
 	var Assets = __webpack_require__(9);
 
-	/**
-	 * Game class that is subclassed by actual game code
-	 * @constructor
-	 * @param {HTMLCanvasElement} canvas - canvas DOM element
-	 */
 	var Game = function Game(canvas) {
-	  /**
-	   * Canvas DOM element
-	   * @type {HTMLCanvasElement}
-	   */
 	  this.canvas = canvas;
 
-	  /**
-	   * Game width in pixels
-	   * @type {number}
-	   */
 	  this.width = 300;
 
-	  /**
-	   * Game highs in pixels
-	   * @type {number}
-	   */
 	  this.height = 300;
 
-	  /**
-	   * Instance of Assets for loading assets for the game
-	   * @type {Assets}
-	   */
 	  this.assets = new Assets();
 
 	  this.states = null;
-
 	  this.debug = null;
+	  this.input = null;
+	  this.video = null;
 
-	  /**
-	   * Object for configuring Potion
-	   * @type {object}
-	   */
 	  this.config = {
 	    useRetina: true,
 	    initializeCanvas: true,
@@ -351,53 +327,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this.configure();
 
-	  /**
-	   * Input instance for mouse and keyboard events
-	   * @type {Input}
-	   */
-	  this.input = null;
-
-	  /**
-	   * Video instance for rendering into canvas
-	   * @type {Video}
-	   */
 	  if (this.config.initializeVideo) {
 	    this.video = new Video(this, canvas, this.config);
 	  }
 	};
-
-	/**
-	 * Is called when all assets are loaded
-	 * @abstract
-	 */
-	Game.prototype.init = function () {};
-
-	/**
-	 * Runs before loading assets. Can be used for configuring Potion and settings assets loader
-	 * @abstract
-	 */
-	Game.prototype.configure = function () {};
-
-	/**
-	 * Runs every frame for rendering the game
-	 * @abstract
-	 */
-	Game.prototype.render = function () {};
-
-	/**
-	 * Runs every frame for updating the game
-	 * limits time to value set in config.maxStepTime
-	 * @param {number} time - time in seconds since last frame
-	 * @abstract
-	 */
-	Game.prototype.update = function (time) {};
-
-	/**
-	 * Runs every frame after update method, but it doesn't limit time
-	 * @param {number} time - time in seconds since last frame
-	 * @abstract
-	 */
-	Game.prototype.exitUpdate = function (time) {};
 
 	Game.prototype.setSize = function (width, height) {
 	  this.width = width;
@@ -412,16 +345,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	/**
-	 * Runs every frame in the loading phase. It's used for rendering the loading bar
-	 * @param {number} time - time in seconds since last frame
-	 */
 	Game.prototype.preloading = function (time) {
 	  if (!this.config.showPreloader && !(this.video && this.video.ctx)) {
 	    return;
 	  }
 
 	  if (this.video.ctx) {
+	    var color1 = "#b9ff71";
+	    var color2 = "#8ac250";
+	    var color3 = "#648e38";
+
 	    if (this._preloaderWidth === undefined) {
 	      this._preloaderWidth = 0;
 	    }
@@ -437,100 +370,65 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this.video.ctx.save();
 
-	    this.video.ctx.fillStyle = "#a9c848";
+	    this.video.ctx.fillStyle = color2;
 	    this.video.ctx.fillRect(0, 0, this.width, this.height);
 
-	    this.video.ctx.fillStyle = "#f6ffda";
-	    this.video.ctx.font = "300 40px sans-serif";
+	    this.video.ctx.font = "400 40px sans-serif";
 	    this.video.ctx.textAlign = "center";
 	    this.video.ctx.textBaseline = "bottom";
+
+	    this.video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+	    this.video.ctx.fillText("Potion.js", this.width / 2, y + 2);
+
+	    this.video.ctx.fillStyle = "#d1ffa1";
 	    this.video.ctx.fillText("Potion.js", this.width / 2, y);
 
-	    this.video.ctx.fillStyle = "#88a237";
+	    this.video.ctx.strokeStyle = this.video.ctx.fillStyle = color3;
 	    this.video.ctx.fillRect(x, y + 15, width, height);
 
-	    this.video.ctx.fillStyle = "#f6ffda";
-	    this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height);
-
-	    this.video.ctx.strokeStyle = "#f6ffda";
 	    this.video.ctx.lineWidth = 2;
 	    this.video.ctx.beginPath();
-	    this.video.ctx.rect(x - 5, y + 10, this._preloaderWidth + 10, height + 10);
+	    this.video.ctx.rect(x - 5, y + 10, width + 10, height + 10);
 	    this.video.ctx.closePath();
 	    this.video.ctx.stroke();
+
+	    this.video.ctx.strokeStyle = this.video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+	    this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height + 2);
+
+	    this.video.ctx.lineWidth = 2;
+	    this.video.ctx.beginPath();
+
+	    this.video.ctx.moveTo(x + this._preloaderWidth, y + 12);
+	    this.video.ctx.lineTo(x - 5, y + 12);
+	    this.video.ctx.lineTo(x - 5, y + 10 + height + 12);
+	    this.video.ctx.lineTo(x + this._preloaderWidth, y + 10 + height + 12);
+
+	    this.video.ctx.stroke();
+	    this.video.ctx.closePath();
+
+	    this.video.ctx.strokeStyle = this.video.ctx.fillStyle = color1;
+	    this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height);
+
+	    this.video.ctx.lineWidth = 2;
+	    this.video.ctx.beginPath();
+
+	    this.video.ctx.moveTo(x + this._preloaderWidth, y + 10);
+	    this.video.ctx.lineTo(x - 5, y + 10);
+	    this.video.ctx.lineTo(x - 5, y + 10 + height + 10);
+	    this.video.ctx.lineTo(x + this._preloaderWidth, y + 10 + height + 10);
+
+	    this.video.ctx.stroke();
+	    this.video.ctx.closePath();
 
 	    this.video.ctx.restore();
 	  }
 	};
 
-	/**
-	 * Window Focus event
-	 * @abstract
-	 */
+	Game.prototype.configure = function () {};
+
 	Game.prototype.focus = function () {};
 
-	/**
-	 * Window Blur event
-	 * @abstract
-	 */
 	Game.prototype.blur = function () {};
-
-	/**
-	 * Click event
-	 * @param {number} x - x position
-	 * @param {number} y - y position
-	 * @param {number} button - number of button which is pressed
-	 * @abstract
-	 */
-	Game.prototype.click = function () {};
-
-	/**
-	 * Mousemove event
-	 * @param {number} x - x position
-	 * @param {number} y - y position
-	 * @abstract
-	 */
-	Game.prototype.mousemove = function (x, y) {};
-
-	/**
-	 * Mousedown event
-	 * @param {number} x - x position
-	 * @param {number} y - y position
-	 * @param {number} button - number of button which is pressed
-	 * @abstract
-	 */
-	Game.prototype.mousedown = function () {};
-
-	/**
-	 * Mouseup event
-	 * @param {number} x - x position
-	 * @param {number} y - y position
-	 * @param {number} button - number of button which is pressed
-	 * @abstract
-	 */
-	Game.prototype.mouseup = function () {};
-
-	/**
-	 * Keydown event
-	 * @param {number} key - keyCode for pressed key
-	 * @param {object} e - event object
-	 * @abstract
-	 */
-	Game.prototype.keydown = function () {};
-
-	/**
-	 * Keyup event
-	 * @param {number} key - keyCode for pressed key
-	 * @param {object} e - event object
-	 * @abstract
-	 */
-	Game.prototype.keyup = function () {};
-
-	/**
-	 * Window resize event
-	 * @abstract
-	 */
-	Game.prototype.resize = function () {};
 
 	module.exports = Game;
 
@@ -740,10 +638,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  document.addEventListener("keyup", function (e) {
 	    game.input.keys[e.keyCode] = false;
 	    game.states.keyup(e.which, e);
-	  });
-
-	  document.addEventListener("keypress", function (e) {
-	    game.states.keypress(e.which, e);
 	  });
 	};
 
@@ -1032,15 +926,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	StateManager.prototype.keypress = function (key, e) {
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (state.enabled && !state.changed && state.state.keypress && !state.paused) {
-	      state.state.keypress(key, e);
-	    }
-	  }
-	};
-
 	StateManager.prototype.keyup = function (key, e) {
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
@@ -1076,8 +961,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var util = __webpack_require__(12);
-	var DirtyManager = __webpack_require__(11);
+	var util = __webpack_require__(17);
+	var DirtyManager = __webpack_require__(13);
 
 	var ObjectPool = [];
 
@@ -1455,7 +1340,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = __webpack_require__(13)();
+	var isRetina = __webpack_require__(11)();
 
 	/**
 	 * @constructor
@@ -1556,10 +1441,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var utils = __webpack_require__(14);
-	var path = __webpack_require__(15);
+	var utils = __webpack_require__(12);
+	var path = __webpack_require__(14);
 
-	var PotionAudio = __webpack_require__(16);
+	var PotionAudio = __webpack_require__(15);
 
 	/**
 	 * Class for managing and loading asset files
@@ -1634,7 +1519,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.itemsCount += 1;
 	  this._thingsToLoad += 1;
 
-	  this._toLoad.push({ type: type, url: path.normalize(url), callback: callback });
+	  this._toLoad.push({ type: type, url: url != null ? path.normalize(url) : null, callback: callback });
 	};
 
 	Assets.prototype._finishedOneFile = function () {
@@ -1744,7 +1629,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = Assets;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)))
 
 /***/ },
 /* 10 */
@@ -1852,6 +1737,51 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var get = exports.get = function (url, callback) {
+	  var request = new XMLHttpRequest();
+	  request.open("GET", url, true);
+
+	  request.onload = function () {
+	    callback(this.response);
+	  };
+
+	  request.send();
+	};
+
+	var getJSON = exports.getJSON = function (url, callback) {
+	  get(url, function (text) {
+	    callback(JSON.parse(text));
+	  });
+	};
+
+	exports.isFunction = function (obj) {
+	  return !!(obj && obj.constructor && obj.call && obj.apply);
+	};
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
 	var DirtyManager = function DirtyManager(canvas, ctx) {
 	  this.ctx = ctx;
 	  this.canvas = canvas;
@@ -1894,7 +1824,313 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DirtyManager;
 
 /***/ },
-/* 12 */
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	// resolves . and .. elements in a path array with directory names there
+	// must be no slashes, empty elements, or device names (c:\) in the array
+	// (so also no leading and trailing slashes - it does not distinguish
+	// relative and absolute paths)
+	"use strict";
+
+	function normalizeArray(parts, allowAboveRoot) {
+	  // if the path tries to go above the root, `up` ends up > 0
+	  var up = 0;
+	  for (var i = parts.length - 1; i >= 0; i--) {
+	    var last = parts[i];
+	    if (last === ".") {
+	      parts.splice(i, 1);
+	    } else if (last === "..") {
+	      parts.splice(i, 1);
+	      up++;
+	    } else if (up) {
+	      parts.splice(i, 1);
+	      up--;
+	    }
+	  }
+
+	  // if the path is allowed to go above the root, restore leading ..s
+	  if (allowAboveRoot) {
+	    for (; up--; up) {
+	      parts.unshift("..");
+	    }
+	  }
+
+	  return parts;
+	}
+
+	// Split a filename into [root, dir, basename, ext], unix version
+	// 'root' is just a slash, or nothing.
+	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+	var splitPath = function splitPath(filename) {
+	  return splitPathRe.exec(filename).slice(1);
+	};
+
+	// path.resolve([from ...], to)
+	// posix version
+	exports.resolve = function () {
+	  var resolvedPath = "",
+	      resolvedAbsolute = false;
+
+	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+	    var path = i >= 0 ? arguments[i] : process.cwd();
+
+	    // Skip empty and invalid entries
+	    if (typeof path !== "string") {
+	      throw new TypeError("Arguments to path.resolve must be strings");
+	    } else if (!path) {
+	      continue;
+	    }
+
+	    resolvedPath = path + "/" + resolvedPath;
+	    resolvedAbsolute = path.charAt(0) === "/";
+	  }
+
+	  // At this point the path should be resolved to a full absolute path, but
+	  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+	  // Normalize the path
+	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
+	    return !!p;
+	  }), !resolvedAbsolute).join("/");
+
+	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
+	};
+
+	// path.normalize(path)
+	// posix version
+	exports.normalize = function (path) {
+	  var isAbsolute = exports.isAbsolute(path),
+	      trailingSlash = substr(path, -1) === "/";
+
+	  // Normalize the path
+	  path = normalizeArray(filter(path.split("/"), function (p) {
+	    return !!p;
+	  }), !isAbsolute).join("/");
+
+	  if (!path && !isAbsolute) {
+	    path = ".";
+	  }
+	  if (path && trailingSlash) {
+	    path += "/";
+	  }
+
+	  return (isAbsolute ? "/" : "") + path;
+	};
+
+	// posix version
+	exports.isAbsolute = function (path) {
+	  return path.charAt(0) === "/";
+	};
+
+	// posix version
+	exports.join = function () {
+	  var paths = Array.prototype.slice.call(arguments, 0);
+	  return exports.normalize(filter(paths, function (p, index) {
+	    if (typeof p !== "string") {
+	      throw new TypeError("Arguments to path.join must be strings");
+	    }
+	    return p;
+	  }).join("/"));
+	};
+
+	// path.relative(from, to)
+	// posix version
+	exports.relative = function (from, to) {
+	  from = exports.resolve(from).substr(1);
+	  to = exports.resolve(to).substr(1);
+
+	  function trim(arr) {
+	    var start = 0;
+	    for (; start < arr.length; start++) {
+	      if (arr[start] !== "") break;
+	    }
+
+	    var end = arr.length - 1;
+	    for (; end >= 0; end--) {
+	      if (arr[end] !== "") break;
+	    }
+
+	    if (start > end) {
+	      return [];
+	    }return arr.slice(start, end - start + 1);
+	  }
+
+	  var fromParts = trim(from.split("/"));
+	  var toParts = trim(to.split("/"));
+
+	  var length = Math.min(fromParts.length, toParts.length);
+	  var samePartsLength = length;
+	  for (var i = 0; i < length; i++) {
+	    if (fromParts[i] !== toParts[i]) {
+	      samePartsLength = i;
+	      break;
+	    }
+	  }
+
+	  var outputParts = [];
+	  for (var i = samePartsLength; i < fromParts.length; i++) {
+	    outputParts.push("..");
+	  }
+
+	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+	  return outputParts.join("/");
+	};
+
+	exports.sep = "/";
+	exports.delimiter = ":";
+
+	exports.dirname = function (path) {
+	  var result = splitPath(path),
+	      root = result[0],
+	      dir = result[1];
+
+	  if (!root && !dir) {
+	    // No dirname whatsoever
+	    return ".";
+	  }
+
+	  if (dir) {
+	    // It has a dirname, strip trailing slash
+	    dir = dir.substr(0, dir.length - 1);
+	  }
+
+	  return root + dir;
+	};
+
+	exports.basename = function (path, ext) {
+	  var f = splitPath(path)[2];
+	  // TODO: make this comparison case-insensitive on windows?
+	  if (ext && f.substr(-1 * ext.length) === ext) {
+	    f = f.substr(0, f.length - ext.length);
+	  }
+	  return f;
+	};
+
+	exports.extname = function (path) {
+	  return splitPath(path)[3];
+	};
+
+	function filter(xs, f) {
+	  if (xs.filter) {
+	    return xs.filter(f);
+	  }var res = [];
+	  for (var i = 0; i < xs.length; i++) {
+	    if (f(xs[i], i, xs)) res.push(xs[i]);
+	  }
+	  return res;
+	}
+
+	// String.prototype.substr - negative index don't work in IE8
+	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
+	  return str.substr(start, len);
+	} : function (str, start, len) {
+	  if (start < 0) start = str.length + start;
+	  return str.substr(start, len);
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)))
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = __webpack_require__(18);
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// shim for using process in browser
+
+	"use strict";
+
+	var process = module.exports = {};
+	var queue = [];
+	var draining = false;
+
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    draining = true;
+	    var currentQueue;
+	    var len = queue.length;
+	    while (len) {
+	        currentQueue = queue;
+	        queue = [];
+	        var i = -1;
+	        while (++i < len) {
+	            currentQueue[i]();
+	        }
+	        len = queue.length;
+	    }
+	    draining = false;
+	}
+	process.nextTick = function (fun) {
+	    queue.push(fun);
+	    if (!draining) {
+	        setTimeout(drainQueue, 0);
+	    }
+	};
+
+	process.title = "browser";
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ""; // empty string to avoid regexp issues
+	process.versions = {};
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+
+	process.binding = function (name) {
+	    throw new Error("process.binding is not supported");
+	};
+
+	// TODO(shtylman)
+	process.cwd = function () {
+	    return "/";
+	};
+	process.chdir = function (dir) {
+	    throw new Error("process.chdir is not supported");
+	};
+	process.umask = function () {
+	    return 0;
+	};
+
+/***/ },
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2394,7 +2630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(18);
+	exports.isBuffer = __webpack_require__(19);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -2448,371 +2684,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	function hasOwnProperty(obj, prop) {
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(17)))
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var get = exports.get = function (url, callback) {
-	  var request = new XMLHttpRequest();
-	  request.open("GET", url, true);
-
-	  request.onload = function () {
-	    callback(this.response);
-	  };
-
-	  request.send();
-	};
-
-	var getJSON = exports.getJSON = function (url, callback) {
-	  get(url, function (text) {
-	    callback(JSON.parse(text));
-	  });
-	};
-
-	exports.isFunction = function (obj) {
-	  return !!(obj && obj.constructor && obj.call && obj.apply);
-	};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-	// resolves . and .. elements in a path array with directory names there
-	// must be no slashes, empty elements, or device names (c:\) in the array
-	// (so also no leading and trailing slashes - it does not distinguish
-	// relative and absolute paths)
-	"use strict";
-
-	function normalizeArray(parts, allowAboveRoot) {
-	  // if the path tries to go above the root, `up` ends up > 0
-	  var up = 0;
-	  for (var i = parts.length - 1; i >= 0; i--) {
-	    var last = parts[i];
-	    if (last === ".") {
-	      parts.splice(i, 1);
-	    } else if (last === "..") {
-	      parts.splice(i, 1);
-	      up++;
-	    } else if (up) {
-	      parts.splice(i, 1);
-	      up--;
-	    }
-	  }
-
-	  // if the path is allowed to go above the root, restore leading ..s
-	  if (allowAboveRoot) {
-	    for (; up--; up) {
-	      parts.unshift("..");
-	    }
-	  }
-
-	  return parts;
-	}
-
-	// Split a filename into [root, dir, basename, ext], unix version
-	// 'root' is just a slash, or nothing.
-	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-	var splitPath = function splitPath(filename) {
-	  return splitPathRe.exec(filename).slice(1);
-	};
-
-	// path.resolve([from ...], to)
-	// posix version
-	exports.resolve = function () {
-	  var resolvedPath = "",
-	      resolvedAbsolute = false;
-
-	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-	    var path = i >= 0 ? arguments[i] : process.cwd();
-
-	    // Skip empty and invalid entries
-	    if (typeof path !== "string") {
-	      throw new TypeError("Arguments to path.resolve must be strings");
-	    } else if (!path) {
-	      continue;
-	    }
-
-	    resolvedPath = path + "/" + resolvedPath;
-	    resolvedAbsolute = path.charAt(0) === "/";
-	  }
-
-	  // At this point the path should be resolved to a full absolute path, but
-	  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-	  // Normalize the path
-	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
-	    return !!p;
-	  }), !resolvedAbsolute).join("/");
-
-	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
-	};
-
-	// path.normalize(path)
-	// posix version
-	exports.normalize = function (path) {
-	  var isAbsolute = exports.isAbsolute(path),
-	      trailingSlash = substr(path, -1) === "/";
-
-	  // Normalize the path
-	  path = normalizeArray(filter(path.split("/"), function (p) {
-	    return !!p;
-	  }), !isAbsolute).join("/");
-
-	  if (!path && !isAbsolute) {
-	    path = ".";
-	  }
-	  if (path && trailingSlash) {
-	    path += "/";
-	  }
-
-	  return (isAbsolute ? "/" : "") + path;
-	};
-
-	// posix version
-	exports.isAbsolute = function (path) {
-	  return path.charAt(0) === "/";
-	};
-
-	// posix version
-	exports.join = function () {
-	  var paths = Array.prototype.slice.call(arguments, 0);
-	  return exports.normalize(filter(paths, function (p, index) {
-	    if (typeof p !== "string") {
-	      throw new TypeError("Arguments to path.join must be strings");
-	    }
-	    return p;
-	  }).join("/"));
-	};
-
-	// path.relative(from, to)
-	// posix version
-	exports.relative = function (from, to) {
-	  from = exports.resolve(from).substr(1);
-	  to = exports.resolve(to).substr(1);
-
-	  function trim(arr) {
-	    var start = 0;
-	    for (; start < arr.length; start++) {
-	      if (arr[start] !== "") break;
-	    }
-
-	    var end = arr.length - 1;
-	    for (; end >= 0; end--) {
-	      if (arr[end] !== "") break;
-	    }
-
-	    if (start > end) {
-	      return [];
-	    }return arr.slice(start, end - start + 1);
-	  }
-
-	  var fromParts = trim(from.split("/"));
-	  var toParts = trim(to.split("/"));
-
-	  var length = Math.min(fromParts.length, toParts.length);
-	  var samePartsLength = length;
-	  for (var i = 0; i < length; i++) {
-	    if (fromParts[i] !== toParts[i]) {
-	      samePartsLength = i;
-	      break;
-	    }
-	  }
-
-	  var outputParts = [];
-	  for (var i = samePartsLength; i < fromParts.length; i++) {
-	    outputParts.push("..");
-	  }
-
-	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-	  return outputParts.join("/");
-	};
-
-	exports.sep = "/";
-	exports.delimiter = ":";
-
-	exports.dirname = function (path) {
-	  var result = splitPath(path),
-	      root = result[0],
-	      dir = result[1];
-
-	  if (!root && !dir) {
-	    // No dirname whatsoever
-	    return ".";
-	  }
-
-	  if (dir) {
-	    // It has a dirname, strip trailing slash
-	    dir = dir.substr(0, dir.length - 1);
-	  }
-
-	  return root + dir;
-	};
-
-	exports.basename = function (path, ext) {
-	  var f = splitPath(path)[2];
-	  // TODO: make this comparison case-insensitive on windows?
-	  if (ext && f.substr(-1 * ext.length) === ext) {
-	    f = f.substr(0, f.length - ext.length);
-	  }
-	  return f;
-	};
-
-	exports.extname = function (path) {
-	  return splitPath(path)[3];
-	};
-
-	function filter(xs, f) {
-	  if (xs.filter) {
-	    return xs.filter(f);
-	  }var res = [];
-	  for (var i = 0; i < xs.length; i++) {
-	    if (f(xs[i], i, xs)) res.push(xs[i]);
-	  }
-	  return res;
-	}
-
-	// String.prototype.substr - negative index don't work in IE8
-	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
-	  return str.substr(start, len);
-	} : function (str, start, len) {
-	  if (start < 0) start = str.length + start;
-	  return str.substr(start, len);
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = __webpack_require__(19);
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-
-	"use strict";
-
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    draining = true;
-	    var currentQueue;
-	    var len = queue.length;
-	    while (len) {
-	        currentQueue = queue;
-	        queue = [];
-	        var i = -1;
-	        while (++i < len) {
-	            currentQueue[i]();
-	        }
-	        len = queue.length;
-	    }
-	    draining = false;
-	}
-	process.nextTick = function (fun) {
-	    queue.push(fun);
-	    if (!draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-
-	process.title = "browser";
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ""; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error("process.binding is not supported");
-	};
-
-	// TODO(shtylman)
-	process.cwd = function () {
-	    return "/";
-	};
-	process.chdir = function (dir) {
-	    throw new Error("process.chdir is not supported");
-	};
-	process.umask = function () {
-	    return 0;
-	};
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(16)))
 
 /***/ },
 /* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function isBuffer(arg) {
-	  return arg && typeof arg === "object" && typeof arg.copy === "function" && typeof arg.fill === "function" && typeof arg.readUInt8 === "function";
-	};
-
-/***/ },
-/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2888,6 +2763,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = AudioManager;
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function isBuffer(arg) {
+	  return arg && typeof arg === "object" && typeof arg.copy === "function" && typeof arg.fill === "function" && typeof arg.readUInt8 === "function";
+	};
 
 /***/ },
 /* 20 */
