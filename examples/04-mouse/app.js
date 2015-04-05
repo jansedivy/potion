@@ -1,26 +1,29 @@
 var Potion = require('potion');
 
-Potion.init(document.querySelector('.game'), {
+var app = Potion.init(document.querySelector('.game'), {
   render: function() {
-    if (this.input.mouse.isDown) {
-      this.video.ctx.fillStyle = '#8298a6';
-    } else {
-      this.video.ctx.fillStyle = '#B4CBD9';
+    app.video.ctx.fillStyle = 'black';
+    app.video.ctx.font = '20px sans-serif';
+    app.video.ctx.textAlign = 'left';
+    app.video.ctx.textBaseline = 'top';
+
+    if (app.input.mouse.isDown) {
+      app.video.ctx.fillText('Any button is down', 10, 10);
     }
 
-    this.video.ctx.fillRect(0, 0, this.width, 50);
-
-    var color = 'black';
-
-    if (this.input.mouse.isLeftDown) {
-      color = '#048ABF';
-    } else if (this.input.mouse.isMiddleDown) {
-      color = '#03738C';
-    } else if (this.input.mouse.isRightDown) {
-      color = '#F2B366';
+    if (app.input.mouse.isLeftDown) {
+      app.video.ctx.fillText('Left button is down', 10, 30);
     }
 
-    this.video.ctx.fillStyle = color;
-    this.video.ctx.fillRect(this.input.mouse.x, this.input.mouse.y, 30, 30);
+    if (app.input.mouse.isMiddleDown) {
+      app.video.ctx.fillText('Middle button is down', 10, 50);
+    }
+
+    if (app.input.mouse.isRightDown) {
+      app.video.ctx.fillText('Right button is down', 10, 70);
+    }
+
+    app.video.ctx.fillStyle = 'red';
+    app.video.ctx.fillRect(app.input.mouse.x - 15, app.input.mouse.y - 15, 30, 30);
   }
 });
