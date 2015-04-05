@@ -12,10 +12,6 @@ Potion.init(document.querySelector('.game'), {
     this.log('keyup key: ' + key);
   },
 
-  keypress: function(key) {
-    this.log('keypress key: ' + key);
-  },
-
   /**
    * Mouse events
    */

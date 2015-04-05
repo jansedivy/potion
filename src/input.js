@@ -197,10 +197,6 @@ Input.prototype._addEvents = function(game) {
     game.input.keys[e.keyCode] = false;
     game.states.keyup(e.which, e);
   });
-
-  document.addEventListener('keypress', function(e) {
-    game.states.keypress(e.which, e);
-  });
 };
 
 module.exports = Input;

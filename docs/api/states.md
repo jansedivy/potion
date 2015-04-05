@@ -145,14 +145,6 @@ Event which is called when the user do releases some key
 
 `e` - event object
 
-#### `keypress(keyCode, e)`
-
-Event which is called when the user do presses some key
-
-`keyCode` - code number of the pressed key
-
-`e` - event object
-
 #### `focus()`
 
 Event which is called when browser gets focus
