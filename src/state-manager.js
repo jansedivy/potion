@@ -256,15 +256,6 @@ StateManager.prototype.mousedown = function(x, y, button) {
   }
 };
 
-StateManager.prototype.click = function(x, y, button) {
-  for (var i=0, len=this.updateOrder.length; i<len; i++) {
-    var state = this.updateOrder[i];
-    if (state.enabled && !state.changed && state.state.click && !state.paused) {
-      state.state.click(x, y, button);
-    }
-  }
-};
-
 StateManager.prototype.keyup = function(key, e) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];

@@ -23,10 +23,6 @@ Potion.init(document.querySelector('.game'), {
     this.log('mouseup x: ' + x + ', y: ' + y + ', button: ' + button);
   },
 
-  click: function(x, y, button) {
-    this.log('click x: ' + x + ', y: ' + y + ', button: ' + button);
-  },
-
   mousemove: function(x, y) {
     this.log('mouseup x: ' + x + ', y: ' + y);
   },
