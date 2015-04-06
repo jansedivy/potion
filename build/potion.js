@@ -465,7 +465,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   */
 	  this.mouse = {
 	    isDown: false,
-	    button: null,
+	    isLeftDown: false,
+	    isMiddleDown: false,
+	    isRightDown: false,
 	    x: null,
 	    y: null
 	  };
@@ -512,22 +514,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    self.mouse.y = y;
 	  });
 
-	  self._container.addEventListener("click", function (e) {
-	    e.preventDefault();
-
-	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
-
-	    game.states.click(x, y, e.button);
-	  });
-
 	  self._container.addEventListener("mouseup", function (e) {
 	    e.preventDefault();
 
 	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
 	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
-	    self.mouse.button = e.button;
 	    self.mouse.isDown = false;
 
 	    switch (e.button) {
@@ -553,7 +545,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    self.mouse.x = x;
 	    self.mouse.y = y;
-	    self.mouse.button = e.button;
 	    self.mouse.isDown = true;
 
 	    switch (e.button) {
@@ -621,7 +612,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        self.mouse.x = x;
 	        self.mouse.y = y;
 
-	        game.states.click(x, y, button);
+	        game.states.mouseup(x, y, button);
 	      }
 	    }
 	  });
@@ -913,15 +904,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var state = this.updateOrder[i];
 	    if (state.enabled && !state.changed && state.state.mousedown && !state.paused) {
 	      state.state.mousedown(x, y, button);
-	    }
-	  }
-	};
-
-	StateManager.prototype.click = function (x, y, button) {
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (state.enabled && !state.changed && state.state.click && !state.paused) {
-	      state.state.click(x, y, button);
 	    }
 	  }
 	};
