@@ -36,3 +36,7 @@ if (app.input.isKeyDown('space')) {
 if (app.input.isKeyDown(32)) { // 32 is keyCode for space
 }
 ```
+
+#### 'resetKeys()'
+
+Resets currently pressed keys.
