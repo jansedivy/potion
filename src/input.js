@@ -25,6 +25,9 @@ var Input = function(game, container) {
    */
   this.mouse = {
     isDown: false,
+    isLeftDown: false,
+    isMiddleDown: false,
+    isRightDown: false,
     x: null,
     y: null
   };
