@@ -2,7 +2,6 @@ require('./raf-polyfill')();
 
 var Game = require('./game');
 
-var Input = require('./input');
 var Time = require('./time');
 
 var Debugger = require('potion-debugger');
@@ -26,10 +25,6 @@ var Engine = function(container, methods) {
   this.game.debug = new Debugger(this.game);
 
   this._setDefaultStates();
-
-  if (this.game.config.addInputEvents) {
-    this.game.input = new Input(this.game, container);
-  }
 
   this.tickFunc = (function (self) { return function() { self.tick(); }; })(this);
   this.preloaderTickFunc = (function (self) { return function() { self._preloaderTick(); }; })(this);

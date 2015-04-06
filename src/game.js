@@ -1,5 +1,6 @@
 var Video = require('./video');
 var Assets = require('./assets');
+var Input = require('./input');
 
 var Game = function(canvas) {
   this.canvas = canvas;
@@ -30,6 +31,10 @@ var Game = function(canvas) {
 
   if (this.config.initializeVideo) {
     this.video = new Video(this, canvas, this.config);
+  }
+
+  if (this.config.addInputEvents) {
+    this.input = new Input(this, canvas);
   }
 };
 
