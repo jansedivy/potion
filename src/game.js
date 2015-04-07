@@ -45,10 +45,6 @@ Game.prototype.setSize = function(width, height) {
   if (this.video) {
     this.video.setSize(width, height);
   }
-
-  if (this.states) {
-    this.states.resize();
-  }
 };
 
 Game.prototype.preloading = function(time) {
