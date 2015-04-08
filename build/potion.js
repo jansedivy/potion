@@ -75,12 +75,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var Game = __webpack_require__(3);
 
-	var Input = __webpack_require__(4);
-	var Time = __webpack_require__(5);
+	var Time = __webpack_require__(4);
 
-	var Debugger = __webpack_require__(7);
+	var Debugger = __webpack_require__(6);
 
-	var StateManager = __webpack_require__(6);
+	var StateManager = __webpack_require__(5);
 
 	/**
 	 * Main Engine class which calls the game methods
@@ -99,10 +98,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.game.debug = new Debugger(this.game);
 
 	  this._setDefaultStates();
-
-	  if (this.game.config.addInputEvents) {
-	    this.game.input = new Input(this.game, container);
-	  }
 
 	  this.tickFunc = (function (self) {
 	    return function () {
@@ -297,8 +292,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var Video = __webpack_require__(8);
-	var Assets = __webpack_require__(9);
+	var Video = __webpack_require__(7);
+	var Assets = __webpack_require__(8);
+	var Input = __webpack_require__(9);
 
 	var Game = function Game(canvas) {
 	  this.canvas = canvas;
@@ -330,6 +326,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.config.initializeVideo) {
 	    this.video = new Video(this, canvas, this.config);
 	  }
+
+	  if (this.config.addInputEvents) {
+	    this.input = new Input(this, canvas.parentElement);
+	  }
 	};
 
 	Game.prototype.setSize = function (width, height) {
@@ -338,10 +338,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if (this.video) {
 	    this.video.setSize(width, height);
-	  }
-
-	  if (this.states) {
-	    this.states.resize();
 	  }
 	};
 
@@ -438,214 +434,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var keys = __webpack_require__(10);
-
-	/**
-	 * Input wrapper
-	 * @constructor
-	 * @param {Game} game - Game object
-	 */
-	var Input = function Input(game, container) {
-	  this._container = container;
-	  /**
-	   * Pressed keys object
-	   * @type {object}
-	   */
-	  this.keys = {};
-
-	  /**
-	   * Controls if you can press keys
-	   * @type {boolean}
-	   */
-	  this.canControlKeys = true;
-
-	  /**
-	   * Mouse object with positions and if is mouse button pressed
-	   * @type {object}
-	   */
-	  this.mouse = {
-	    isDown: false,
-	    isLeftDown: false,
-	    isMiddleDown: false,
-	    isRightDown: false,
-	    x: null,
-	    y: null
-	  };
-
-	  this._addEvents(game);
-	};
-
-	/**
-	 * Clears the pressed keys object
-	 */
-	Input.prototype.resetKeys = function () {
-	  this.keys = {};
-	};
-
-	/**
-	 * Return true or false if key is pressed
-	 * @param {string} key
-	 * @return {boolean}
-	 */
-	Input.prototype.isKeyDown = function (key) {
-	  if (key == null) {
-	    return false;
-	  }
-
-	  if (this.canControlKeys) {
-	    var code = typeof key === "number" ? key : keys[key.toUpperCase()];
-	    return this.keys[code];
-	  }
-	};
-
-	/**
-	 * Add canvas event listener
-	 * @private
-	 */
-	Input.prototype._addEvents = function (game) {
-	  var self = this;
-
-	  self._container.addEventListener("mousemove", function (e) {
-	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
-
-	    game.states.mousemove(x, y, e);
-	    self.mouse.x = x;
-	    self.mouse.y = y;
-	  });
-
-	  self._container.addEventListener("mouseup", function (e) {
-	    e.preventDefault();
-
-	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
-
-	    self.mouse.isDown = false;
-
-	    switch (e.button) {
-	      case 0:
-	        self.mouse.isLeftDown = false;
-	        break;
-	      case 1:
-	        self.mouse.isMiddleDown = false;
-	        break;
-	      case 2:
-	        self.mouse.isRightDown = false;
-	        break;
-	    }
-
-	    game.states.mouseup(x, y, e.button);
-	  }, false);
-
-	  self._container.addEventListener("mousedown", function (e) {
-	    e.preventDefault();
-
-	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
-
-	    self.mouse.x = x;
-	    self.mouse.y = y;
-	    self.mouse.isDown = true;
-
-	    switch (e.button) {
-	      case 0:
-	        self.mouse.isLeftDown = true;
-	        break;
-	      case 1:
-	        self.mouse.isMiddleDown = true;
-	        break;
-	      case 2:
-	        self.mouse.isRightDown = true;
-	        break;
-	    }
-
-	    game.states.mousedown(x, y, e.button);
-	  }, false);
-
-	  var touchX = null;
-	  var touchY = null;
-
-	  self._container.addEventListener("touchstart", function (e) {
-	    var x = e.layerX;
-	    var y = e.layerY;
-
-	    touchX = x;
-	    touchY = y;
-
-	    self.mouse.x = x;
-	    self.mouse.y = y;
-	    self.mouse.isDown = true;
-
-	    game.states.mousedown(x, y, e);
-	  });
-
-	  self._container.addEventListener("touchmove", function (e) {
-	    e.preventDefault();
-
-	    var x = e.layerX;
-	    var y = e.layerY;
-
-	    game.states.mousemove(x, y, e);
-
-	    self.mouse.x = x;
-	    self.mouse.y = y;
-	  });
-
-	  self._container.addEventListener("touchend", function (e) {
-	    e.preventDefault();
-
-	    self.mouse.isDown = false;
-
-	    for (var i = 0, len = e.changedTouches.length; i < len; i++) {
-	      var touch = e.changedTouches[i];
-
-	      var x = touch.pageX - self._container.offsetLeft;
-	      var y = touch.pageY - self._container.offsetTop;
-	      var button = 0;
-
-	      var dx = Math.abs(touchX - x);
-	      var dy = Math.abs(touchY - y);
-
-	      var threshold = 5;
-
-	      if (dx < threshold && dy < threshold) {
-	        self.mouse.x = x;
-	        self.mouse.y = y;
-
-	        game.states.mouseup(x, y, button);
-	      }
-	    }
-	  });
-
-	  self._container.addEventListener("contextmenu", function (e) {
-	    e.preventDefault();
-	  });
-
-	  document.addEventListener("keydown", function (e) {
-	    game.input.keys[e.keyCode] = true;
-	    game.states.keydown(e.which, e);
-	  });
-
-	  document.addEventListener("keyup", function (e) {
-	    game.input.keys[e.keyCode] = false;
-	    game.states.keyup(e.which, e);
-	  });
-	};
-
-	module.exports = Input;
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
 	module.exports = (function () {
 	  return window.performance || Date;
 	})();
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -926,25 +720,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	StateManager.prototype.resize = function () {
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (state.enabled && !state.changed && state.render && state.state.resize) {
-	      state.state.resize();
-	    }
-	  }
-	};
-
 	module.exports = StateManager;
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var util = __webpack_require__(17);
-	var DirtyManager = __webpack_require__(13);
+	var util = __webpack_require__(11);
+	var DirtyManager = __webpack_require__(10);
 
 	var ObjectPool = [];
 
@@ -1317,12 +1102,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Debugger;
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var isRetina = __webpack_require__(11)();
+	var isRetina = __webpack_require__(12)();
 
 	/**
 	 * @constructor
@@ -1418,15 +1203,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Video;
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var utils = __webpack_require__(12);
-	var path = __webpack_require__(14);
+	var utils = __webpack_require__(13);
+	var path = __webpack_require__(15);
 
-	var PotionAudio = __webpack_require__(15);
+	var PotionAudio = __webpack_require__(16);
 
 	/**
 	 * Class for managing and loading asset files
@@ -1611,155 +1396,207 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = Assets;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	module.exports = {
-	  MOUSE1: -1,
-	  MOUSE2: -3,
-	  MWHEEL_UP: -4,
-	  MWHEEL_DOWN: -5,
-	  BACKSPACE: 8,
-	  TAB: 9,
-	  ENTER: 13,
-	  PAUSE: 19,
-	  CAPS: 20,
-	  ESC: 27,
-	  SPACE: 32,
-	  PAGE_UP: 33,
-	  PAGE_DOWN: 34,
-	  END: 35,
-	  HOME: 36,
-	  LEFT: 37,
-	  UP: 38,
-	  RIGHT: 39,
-	  DOWN: 40,
-	  INSERT: 45,
-	  DELETE: 46,
-	  _0: 48,
-	  _1: 49,
-	  _2: 50,
-	  _3: 51,
-	  _4: 52,
-	  _5: 53,
-	  _6: 54,
-	  _7: 55,
-	  _8: 56,
-	  _9: 57,
-	  A: 65,
-	  B: 66,
-	  C: 67,
-	  D: 68,
-	  E: 69,
-	  F: 70,
-	  G: 71,
-	  H: 72,
-	  I: 73,
-	  J: 74,
-	  K: 75,
-	  L: 76,
-	  M: 77,
-	  N: 78,
-	  O: 79,
-	  P: 80,
-	  Q: 81,
-	  R: 82,
-	  S: 83,
-	  T: 84,
-	  U: 85,
-	  V: 86,
-	  W: 87,
-	  X: 88,
-	  Y: 89,
-	  Z: 90,
-	  NUMPAD_0: 96,
-	  NUMPAD_1: 97,
-	  NUMPAD_2: 98,
-	  NUMPAD_3: 99,
-	  NUMPAD_4: 100,
-	  NUMPAD_5: 101,
-	  NUMPAD_6: 102,
-	  NUMPAD_7: 103,
-	  NUMPAD_8: 104,
-	  NUMPAD_9: 105,
-	  MULTIPLY: 106,
-	  ADD: 107,
-	  SUBSTRACT: 109,
-	  DECIMAL: 110,
-	  DIVIDE: 111,
-	  F1: 112,
-	  F2: 113,
-	  F3: 114,
-	  F4: 115,
-	  F5: 116,
-	  F6: 117,
-	  F7: 118,
-	  F8: 119,
-	  F9: 120,
-	  F10: 121,
-	  F11: 122,
-	  F12: 123,
-	  SHIFT: 16,
-	  CTRL: 17,
-	  ALT: 18,
-	  PLUS: 187,
-	  COMMA: 188,
-	  MINUS: 189,
-	  PERIOD: 190
-	};
+	var keys = __webpack_require__(14);
 
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
+	/**
+	 * Input wrapper
+	 * @constructor
+	 * @param {Game} game - Game object
+	 */
+	var Input = function Input(game, container) {
+	  this._container = container;
+	  /**
+	   * Pressed keys object
+	   * @type {object}
+	   */
+	  this.keys = {};
 
-	"use strict";
+	  /**
+	   * Controls if you can press keys
+	   * @type {boolean}
+	   */
+	  this.canControlKeys = true;
 
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var get = exports.get = function (url, callback) {
-	  var request = new XMLHttpRequest();
-	  request.open("GET", url, true);
-
-	  request.onload = function () {
-	    callback(this.response);
+	  /**
+	   * Mouse object with positions and if is mouse button pressed
+	   * @type {object}
+	   */
+	  this.mouse = {
+	    isDown: false,
+	    isLeftDown: false,
+	    isMiddleDown: false,
+	    isRightDown: false,
+	    x: null,
+	    y: null
 	  };
 
-	  request.send();
+	  this._addEvents(game);
 	};
 
-	var getJSON = exports.getJSON = function (url, callback) {
-	  get(url, function (text) {
-	    callback(JSON.parse(text));
+	/**
+	 * Clears the pressed keys object
+	 */
+	Input.prototype.resetKeys = function () {
+	  this.keys = {};
+	};
+
+	/**
+	 * Return true or false if key is pressed
+	 * @param {string} key
+	 * @return {boolean}
+	 */
+	Input.prototype.isKeyDown = function (key) {
+	  if (key == null) {
+	    return false;
+	  }
+
+	  if (this.canControlKeys) {
+	    var code = typeof key === "number" ? key : keys[key.toUpperCase()];
+	    return this.keys[code];
+	  }
+	};
+
+	/**
+	 * Add canvas event listener
+	 * @private
+	 */
+	Input.prototype._addEvents = function (game) {
+	  var self = this;
+
+	  self._container.addEventListener("mousemove", function (e) {
+	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
+	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+
+	    self.mouse.x = x;
+	    self.mouse.y = y;
+
+	    game.states.mousemove(x, y, e);
+	  });
+
+	  self._container.addEventListener("mouseup", function (e) {
+	    e.preventDefault();
+
+	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
+	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+
+	    self.mouse.isDown = false;
+
+	    switch (e.button) {
+	      case 0:
+	        self.mouse.isLeftDown = false;
+	        break;
+	      case 1:
+	        self.mouse.isMiddleDown = false;
+	        break;
+	      case 2:
+	        self.mouse.isRightDown = false;
+	        break;
+	    }
+
+	    game.states.mouseup(x, y, e.button);
+	  }, false);
+
+	  self._container.addEventListener("mousedown", function (e) {
+	    e.preventDefault();
+
+	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
+	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+
+	    self.mouse.x = x;
+	    self.mouse.y = y;
+	    self.mouse.isDown = true;
+
+	    switch (e.button) {
+	      case 0:
+	        self.mouse.isLeftDown = true;
+	        break;
+	      case 1:
+	        self.mouse.isMiddleDown = true;
+	        break;
+	      case 2:
+	        self.mouse.isRightDown = true;
+	        break;
+	    }
+
+	    game.states.mousedown(x, y, e.button);
+	  }, false);
+
+	  self._container.addEventListener("touchstart", function (e) {
+	    e.preventDefault();
+
+	    for (var i = 0; i < e.touches.length; i++) {
+	      var touch = e.touches[i];
+
+	      var x = touch.pageX - self._container.offsetLeft;
+	      var y = touch.pageY - self._container.offsetTop;
+
+	      self.mouse.x = x;
+	      self.mouse.y = y;
+	      self.mouse.isDown = true;
+
+	      game.states.mousedown(x, y, 1);
+	    }
+	  });
+
+	  self._container.addEventListener("touchmove", function (e) {
+	    e.preventDefault();
+
+	    for (var i = 0; i < e.touches.length; i++) {
+	      var touch = e.touches[i];
+
+	      var x = touch.pageX - self._container.offsetLeft;
+	      var y = touch.pageY - self._container.offsetTop;
+
+	      self.mouse.x = x;
+	      self.mouse.y = y;
+	      self.mouse.isDown = true;
+
+	      game.states.mousemove(x, y);
+	    }
+	  });
+
+	  self._container.addEventListener("touchend", function (e) {
+	    e.preventDefault();
+
+	    var touch = e.changedTouches[0];
+
+	    var x = touch.pageX - self._container.offsetLeft;
+	    var y = touch.pageY - self._container.offsetTop;
+
+	    self.mouse.x = x;
+	    self.mouse.y = y;
+	    self.mouse.isDown = true;
+
+	    game.states.mouseup(x, y, 1);
+	  });
+
+	  self._container.addEventListener("contextmenu", function (e) {
+	    e.preventDefault();
+	  });
+
+	  document.addEventListener("keydown", function (e) {
+	    game.input.keys[e.keyCode] = true;
+	    game.states.keydown(e.which, e);
+	  });
+
+	  document.addEventListener("keyup", function (e) {
+	    game.input.keys[e.keyCode] = false;
+	    game.states.keyup(e.which, e);
 	  });
 	};
 
-	exports.isFunction = function (obj) {
-	  return !!(obj && obj.constructor && obj.call && obj.apply);
-	};
+	module.exports = Input;
 
 /***/ },
-/* 13 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1806,313 +1643,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DirtyManager;
 
 /***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-	// resolves . and .. elements in a path array with directory names there
-	// must be no slashes, empty elements, or device names (c:\) in the array
-	// (so also no leading and trailing slashes - it does not distinguish
-	// relative and absolute paths)
-	"use strict";
-
-	function normalizeArray(parts, allowAboveRoot) {
-	  // if the path tries to go above the root, `up` ends up > 0
-	  var up = 0;
-	  for (var i = parts.length - 1; i >= 0; i--) {
-	    var last = parts[i];
-	    if (last === ".") {
-	      parts.splice(i, 1);
-	    } else if (last === "..") {
-	      parts.splice(i, 1);
-	      up++;
-	    } else if (up) {
-	      parts.splice(i, 1);
-	      up--;
-	    }
-	  }
-
-	  // if the path is allowed to go above the root, restore leading ..s
-	  if (allowAboveRoot) {
-	    for (; up--; up) {
-	      parts.unshift("..");
-	    }
-	  }
-
-	  return parts;
-	}
-
-	// Split a filename into [root, dir, basename, ext], unix version
-	// 'root' is just a slash, or nothing.
-	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-	var splitPath = function splitPath(filename) {
-	  return splitPathRe.exec(filename).slice(1);
-	};
-
-	// path.resolve([from ...], to)
-	// posix version
-	exports.resolve = function () {
-	  var resolvedPath = "",
-	      resolvedAbsolute = false;
-
-	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-	    var path = i >= 0 ? arguments[i] : process.cwd();
-
-	    // Skip empty and invalid entries
-	    if (typeof path !== "string") {
-	      throw new TypeError("Arguments to path.resolve must be strings");
-	    } else if (!path) {
-	      continue;
-	    }
-
-	    resolvedPath = path + "/" + resolvedPath;
-	    resolvedAbsolute = path.charAt(0) === "/";
-	  }
-
-	  // At this point the path should be resolved to a full absolute path, but
-	  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-	  // Normalize the path
-	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
-	    return !!p;
-	  }), !resolvedAbsolute).join("/");
-
-	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
-	};
-
-	// path.normalize(path)
-	// posix version
-	exports.normalize = function (path) {
-	  var isAbsolute = exports.isAbsolute(path),
-	      trailingSlash = substr(path, -1) === "/";
-
-	  // Normalize the path
-	  path = normalizeArray(filter(path.split("/"), function (p) {
-	    return !!p;
-	  }), !isAbsolute).join("/");
-
-	  if (!path && !isAbsolute) {
-	    path = ".";
-	  }
-	  if (path && trailingSlash) {
-	    path += "/";
-	  }
-
-	  return (isAbsolute ? "/" : "") + path;
-	};
-
-	// posix version
-	exports.isAbsolute = function (path) {
-	  return path.charAt(0) === "/";
-	};
-
-	// posix version
-	exports.join = function () {
-	  var paths = Array.prototype.slice.call(arguments, 0);
-	  return exports.normalize(filter(paths, function (p, index) {
-	    if (typeof p !== "string") {
-	      throw new TypeError("Arguments to path.join must be strings");
-	    }
-	    return p;
-	  }).join("/"));
-	};
-
-	// path.relative(from, to)
-	// posix version
-	exports.relative = function (from, to) {
-	  from = exports.resolve(from).substr(1);
-	  to = exports.resolve(to).substr(1);
-
-	  function trim(arr) {
-	    var start = 0;
-	    for (; start < arr.length; start++) {
-	      if (arr[start] !== "") break;
-	    }
-
-	    var end = arr.length - 1;
-	    for (; end >= 0; end--) {
-	      if (arr[end] !== "") break;
-	    }
-
-	    if (start > end) {
-	      return [];
-	    }return arr.slice(start, end - start + 1);
-	  }
-
-	  var fromParts = trim(from.split("/"));
-	  var toParts = trim(to.split("/"));
-
-	  var length = Math.min(fromParts.length, toParts.length);
-	  var samePartsLength = length;
-	  for (var i = 0; i < length; i++) {
-	    if (fromParts[i] !== toParts[i]) {
-	      samePartsLength = i;
-	      break;
-	    }
-	  }
-
-	  var outputParts = [];
-	  for (var i = samePartsLength; i < fromParts.length; i++) {
-	    outputParts.push("..");
-	  }
-
-	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-	  return outputParts.join("/");
-	};
-
-	exports.sep = "/";
-	exports.delimiter = ":";
-
-	exports.dirname = function (path) {
-	  var result = splitPath(path),
-	      root = result[0],
-	      dir = result[1];
-
-	  if (!root && !dir) {
-	    // No dirname whatsoever
-	    return ".";
-	  }
-
-	  if (dir) {
-	    // It has a dirname, strip trailing slash
-	    dir = dir.substr(0, dir.length - 1);
-	  }
-
-	  return root + dir;
-	};
-
-	exports.basename = function (path, ext) {
-	  var f = splitPath(path)[2];
-	  // TODO: make this comparison case-insensitive on windows?
-	  if (ext && f.substr(-1 * ext.length) === ext) {
-	    f = f.substr(0, f.length - ext.length);
-	  }
-	  return f;
-	};
-
-	exports.extname = function (path) {
-	  return splitPath(path)[3];
-	};
-
-	function filter(xs, f) {
-	  if (xs.filter) {
-	    return xs.filter(f);
-	  }var res = [];
-	  for (var i = 0; i < xs.length; i++) {
-	    if (f(xs[i], i, xs)) res.push(xs[i]);
-	  }
-	  return res;
-	}
-
-	// String.prototype.substr - negative index don't work in IE8
-	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
-	  return str.substr(start, len);
-	} : function (str, start, len) {
-	  if (start < 0) start = str.length + start;
-	  return str.substr(start, len);
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16)))
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = __webpack_require__(18);
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-
-	"use strict";
-
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    draining = true;
-	    var currentQueue;
-	    var len = queue.length;
-	    while (len) {
-	        currentQueue = queue;
-	        queue = [];
-	        var i = -1;
-	        while (++i < len) {
-	            currentQueue[i]();
-	        }
-	        len = queue.length;
-	    }
-	    draining = false;
-	}
-	process.nextTick = function (fun) {
-	    queue.push(fun);
-	    if (!draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-
-	process.title = "browser";
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ""; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error("process.binding is not supported");
-	};
-
-	// TODO(shtylman)
-	process.cwd = function () {
-	    return "/";
-	};
-	process.chdir = function (dir) {
-	    throw new Error("process.chdir is not supported");
-	};
-	process.umask = function () {
-	    return 0;
-	};
-
-/***/ },
-/* 17 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2612,7 +2143,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(19);
+	exports.isBuffer = __webpack_require__(18);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -2666,10 +2197,471 @@ return /******/ (function(modules) { // webpackBootstrap
 	function hasOwnProperty(obj, prop) {
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(16)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(17)))
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var get = exports.get = function (url, callback) {
+	  var request = new XMLHttpRequest();
+	  request.open("GET", url, true);
+
+	  request.onload = function () {
+	    callback(this.response);
+	  };
+
+	  request.send();
+	};
+
+	var getJSON = exports.getJSON = function (url, callback) {
+	  get(url, function (text) {
+	    callback(JSON.parse(text));
+	  });
+	};
+
+	exports.isFunction = function (obj) {
+	  return !!(obj && obj.constructor && obj.call && obj.apply);
+	};
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = {
+	  MOUSE1: -1,
+	  MOUSE2: -3,
+	  MWHEEL_UP: -4,
+	  MWHEEL_DOWN: -5,
+	  BACKSPACE: 8,
+	  TAB: 9,
+	  ENTER: 13,
+	  PAUSE: 19,
+	  CAPS: 20,
+	  ESC: 27,
+	  SPACE: 32,
+	  PAGE_UP: 33,
+	  PAGE_DOWN: 34,
+	  END: 35,
+	  HOME: 36,
+	  LEFT: 37,
+	  UP: 38,
+	  RIGHT: 39,
+	  DOWN: 40,
+	  INSERT: 45,
+	  DELETE: 46,
+	  _0: 48,
+	  _1: 49,
+	  _2: 50,
+	  _3: 51,
+	  _4: 52,
+	  _5: 53,
+	  _6: 54,
+	  _7: 55,
+	  _8: 56,
+	  _9: 57,
+	  A: 65,
+	  B: 66,
+	  C: 67,
+	  D: 68,
+	  E: 69,
+	  F: 70,
+	  G: 71,
+	  H: 72,
+	  I: 73,
+	  J: 74,
+	  K: 75,
+	  L: 76,
+	  M: 77,
+	  N: 78,
+	  O: 79,
+	  P: 80,
+	  Q: 81,
+	  R: 82,
+	  S: 83,
+	  T: 84,
+	  U: 85,
+	  V: 86,
+	  W: 87,
+	  X: 88,
+	  Y: 89,
+	  Z: 90,
+	  NUMPAD_0: 96,
+	  NUMPAD_1: 97,
+	  NUMPAD_2: 98,
+	  NUMPAD_3: 99,
+	  NUMPAD_4: 100,
+	  NUMPAD_5: 101,
+	  NUMPAD_6: 102,
+	  NUMPAD_7: 103,
+	  NUMPAD_8: 104,
+	  NUMPAD_9: 105,
+	  MULTIPLY: 106,
+	  ADD: 107,
+	  SUBSTRACT: 109,
+	  DECIMAL: 110,
+	  DIVIDE: 111,
+	  F1: 112,
+	  F2: 113,
+	  F3: 114,
+	  F4: 115,
+	  F5: 116,
+	  F6: 117,
+	  F7: 118,
+	  F8: 119,
+	  F9: 120,
+	  F10: 121,
+	  F11: 122,
+	  F12: 123,
+	  SHIFT: 16,
+	  CTRL: 17,
+	  ALT: 18,
+	  PLUS: 187,
+	  COMMA: 188,
+	  MINUS: 189,
+	  PERIOD: 190
+	};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	// resolves . and .. elements in a path array with directory names there
+	// must be no slashes, empty elements, or device names (c:\) in the array
+	// (so also no leading and trailing slashes - it does not distinguish
+	// relative and absolute paths)
+	"use strict";
+
+	function normalizeArray(parts, allowAboveRoot) {
+	  // if the path tries to go above the root, `up` ends up > 0
+	  var up = 0;
+	  for (var i = parts.length - 1; i >= 0; i--) {
+	    var last = parts[i];
+	    if (last === ".") {
+	      parts.splice(i, 1);
+	    } else if (last === "..") {
+	      parts.splice(i, 1);
+	      up++;
+	    } else if (up) {
+	      parts.splice(i, 1);
+	      up--;
+	    }
+	  }
+
+	  // if the path is allowed to go above the root, restore leading ..s
+	  if (allowAboveRoot) {
+	    for (; up--; up) {
+	      parts.unshift("..");
+	    }
+	  }
+
+	  return parts;
+	}
+
+	// Split a filename into [root, dir, basename, ext], unix version
+	// 'root' is just a slash, or nothing.
+	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+	var splitPath = function splitPath(filename) {
+	  return splitPathRe.exec(filename).slice(1);
+	};
+
+	// path.resolve([from ...], to)
+	// posix version
+	exports.resolve = function () {
+	  var resolvedPath = "",
+	      resolvedAbsolute = false;
+
+	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+	    var path = i >= 0 ? arguments[i] : process.cwd();
+
+	    // Skip empty and invalid entries
+	    if (typeof path !== "string") {
+	      throw new TypeError("Arguments to path.resolve must be strings");
+	    } else if (!path) {
+	      continue;
+	    }
+
+	    resolvedPath = path + "/" + resolvedPath;
+	    resolvedAbsolute = path.charAt(0) === "/";
+	  }
+
+	  // At this point the path should be resolved to a full absolute path, but
+	  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+	  // Normalize the path
+	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
+	    return !!p;
+	  }), !resolvedAbsolute).join("/");
+
+	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
+	};
+
+	// path.normalize(path)
+	// posix version
+	exports.normalize = function (path) {
+	  var isAbsolute = exports.isAbsolute(path),
+	      trailingSlash = substr(path, -1) === "/";
+
+	  // Normalize the path
+	  path = normalizeArray(filter(path.split("/"), function (p) {
+	    return !!p;
+	  }), !isAbsolute).join("/");
+
+	  if (!path && !isAbsolute) {
+	    path = ".";
+	  }
+	  if (path && trailingSlash) {
+	    path += "/";
+	  }
+
+	  return (isAbsolute ? "/" : "") + path;
+	};
+
+	// posix version
+	exports.isAbsolute = function (path) {
+	  return path.charAt(0) === "/";
+	};
+
+	// posix version
+	exports.join = function () {
+	  var paths = Array.prototype.slice.call(arguments, 0);
+	  return exports.normalize(filter(paths, function (p, index) {
+	    if (typeof p !== "string") {
+	      throw new TypeError("Arguments to path.join must be strings");
+	    }
+	    return p;
+	  }).join("/"));
+	};
+
+	// path.relative(from, to)
+	// posix version
+	exports.relative = function (from, to) {
+	  from = exports.resolve(from).substr(1);
+	  to = exports.resolve(to).substr(1);
+
+	  function trim(arr) {
+	    var start = 0;
+	    for (; start < arr.length; start++) {
+	      if (arr[start] !== "") break;
+	    }
+
+	    var end = arr.length - 1;
+	    for (; end >= 0; end--) {
+	      if (arr[end] !== "") break;
+	    }
+
+	    if (start > end) {
+	      return [];
+	    }return arr.slice(start, end - start + 1);
+	  }
+
+	  var fromParts = trim(from.split("/"));
+	  var toParts = trim(to.split("/"));
+
+	  var length = Math.min(fromParts.length, toParts.length);
+	  var samePartsLength = length;
+	  for (var i = 0; i < length; i++) {
+	    if (fromParts[i] !== toParts[i]) {
+	      samePartsLength = i;
+	      break;
+	    }
+	  }
+
+	  var outputParts = [];
+	  for (var i = samePartsLength; i < fromParts.length; i++) {
+	    outputParts.push("..");
+	  }
+
+	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+	  return outputParts.join("/");
+	};
+
+	exports.sep = "/";
+	exports.delimiter = ":";
+
+	exports.dirname = function (path) {
+	  var result = splitPath(path),
+	      root = result[0],
+	      dir = result[1];
+
+	  if (!root && !dir) {
+	    // No dirname whatsoever
+	    return ".";
+	  }
+
+	  if (dir) {
+	    // It has a dirname, strip trailing slash
+	    dir = dir.substr(0, dir.length - 1);
+	  }
+
+	  return root + dir;
+	};
+
+	exports.basename = function (path, ext) {
+	  var f = splitPath(path)[2];
+	  // TODO: make this comparison case-insensitive on windows?
+	  if (ext && f.substr(-1 * ext.length) === ext) {
+	    f = f.substr(0, f.length - ext.length);
+	  }
+	  return f;
+	};
+
+	exports.extname = function (path) {
+	  return splitPath(path)[3];
+	};
+
+	function filter(xs, f) {
+	  if (xs.filter) {
+	    return xs.filter(f);
+	  }var res = [];
+	  for (var i = 0; i < xs.length; i++) {
+	    if (f(xs[i], i, xs)) res.push(xs[i]);
+	  }
+	  return res;
+	}
+
+	// String.prototype.substr - negative index don't work in IE8
+	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
+	  return str.substr(start, len);
+	} : function (str, start, len) {
+	  if (start < 0) start = str.length + start;
+	  return str.substr(start, len);
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = __webpack_require__(19);
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// shim for using process in browser
+
+	"use strict";
+
+	var process = module.exports = {};
+	var queue = [];
+	var draining = false;
+
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    draining = true;
+	    var currentQueue;
+	    var len = queue.length;
+	    while (len) {
+	        currentQueue = queue;
+	        queue = [];
+	        var i = -1;
+	        while (++i < len) {
+	            currentQueue[i]();
+	        }
+	        len = queue.length;
+	    }
+	    draining = false;
+	}
+	process.nextTick = function (fun) {
+	    queue.push(fun);
+	    if (!draining) {
+	        setTimeout(drainQueue, 0);
+	    }
+	};
+
+	process.title = "browser";
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ""; // empty string to avoid regexp issues
+	process.versions = {};
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+
+	process.binding = function (name) {
+	    throw new Error("process.binding is not supported");
+	};
+
+	// TODO(shtylman)
+	process.cwd = function () {
+	    return "/";
+	};
+	process.chdir = function (dir) {
+	    throw new Error("process.chdir is not supported");
+	};
+	process.umask = function () {
+	    return 0;
+	};
 
 /***/ },
 /* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function isBuffer(arg) {
+	  return arg && typeof arg === "object" && typeof arg.copy === "function" && typeof arg.fill === "function" && typeof arg.readUInt8 === "function";
+	};
+
+/***/ },
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2745,16 +2737,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = AudioManager;
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function isBuffer(arg) {
-	  return arg && typeof arg === "object" && typeof arg.copy === "function" && typeof arg.fill === "function" && typeof arg.readUInt8 === "function";
-	};
 
 /***/ },
 /* 20 */
