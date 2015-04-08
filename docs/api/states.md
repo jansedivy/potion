@@ -89,15 +89,13 @@ This method is called every frame. Used for updating.
 
 #### `exitUpdate(time)`
 
-#### `mousemove(x, y, button)`
+#### `mousemove(x, y)`
 
 Event which is called when the user moves mouse over the canvas element
 
 `x` - x coordinate of the action
 
 `y` - y coordinate of the action
-
-`button` - which mouse button was used (1, 2, 3)
 
 #### `mousedown(x, y, button)`
 
