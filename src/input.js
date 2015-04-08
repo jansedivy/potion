@@ -120,59 +120,53 @@ Input.prototype._addEvents = function(game) {
     game.states.mousedown(x, y, e.button);
   }, false);
 
-  var touchX = null;
-  var touchY = null;
-
   self._container.addEventListener('touchstart', function(e) {
-    var x = e.layerX;
-    var y = e.layerY;
+    e.preventDefault();
 
-    touchX = x;
-    touchY = y;
+    for (var i=0; i<e.touches.length; i++) {
+      var touch = e.touches[i];
 
-    self.mouse.x = x;
-    self.mouse.y = y;
-    self.mouse.isDown = true;
+      var x = touch.pageX - self._container.offsetLeft;
+      var y = touch.pageY - self._container.offsetTop;
 
-    game.states.mousedown(x, y, e);
+      self.mouse.x = x;
+      self.mouse.y = y;
+      self.mouse.isDown = true;
+
+      game.states.mousedown(x, y, 1);
+    }
   });
 
   self._container.addEventListener('touchmove', function(e) {
     e.preventDefault();
 
-    var x = e.layerX;
-    var y = e.layerY;
+    for (var i=0; i<e.touches.length; i++) {
+      var touch = e.touches[i];
 
-    game.states.mousemove(x, y, e);
+      var x = touch.pageX - self._container.offsetLeft;
+      var y = touch.pageY - self._container.offsetTop;
 
-    self.mouse.x = x;
-    self.mouse.y = y;
+      self.mouse.x = x;
+      self.mouse.y = y;
+      self.mouse.isDown = true;
+
+      game.states.mousemove(x, y);
+    }
   });
 
   self._container.addEventListener('touchend', function(e) {
     e.preventDefault();
 
-    self.mouse.isDown = false;
+    var touch = e.changedTouches[0];
 
-    for (var i=0, len=e.changedTouches.length; i<len; i++) {
-      var touch = e.changedTouches[i];
+    var x = touch.pageX - self._container.offsetLeft;
+    var y = touch.pageY - self._container.offsetTop;
 
-      var x = touch.pageX - self._container.offsetLeft;
-      var y = touch.pageY - self._container.offsetTop;
-      var button = 0;
+    self.mouse.x = x;
+    self.mouse.y = y;
+    self.mouse.isDown = true;
 
-      var dx = Math.abs(touchX - x);
-      var dy = Math.abs(touchY - y);
-
-      var threshold = 5;
-
-      if (dx < threshold && dy < threshold) {
-        self.mouse.x = x;
-        self.mouse.y = y;
-
-        game.states.mouseup(x, y, button);
-      }
-    }
+    game.states.mouseup(x, y, 1);
   });
 
   self._container.addEventListener('contextmenu', function(e) {
