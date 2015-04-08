@@ -5,6 +5,7 @@ HTML5 canvas game engine
 ## Documentation
 
 - [API](/docs/api/)
+- [Examples](potion-examples.jansedivy.com)
 
 ## Installation
 
