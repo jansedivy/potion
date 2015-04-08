@@ -165,7 +165,7 @@ Input.prototype._addEvents = function(game) {
 
     self.mouse.x = x;
     self.mouse.y = y;
-    self.mouse.isDown = true;
+    self.mouse.isDown = false;
 
     game.states.mouseup(x, y, 1);
   });
