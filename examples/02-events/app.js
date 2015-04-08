@@ -24,7 +24,7 @@ Potion.init(document.querySelector('.game'), {
   },
 
   mousemove: function(x, y) {
-    this.log('mouseup x: ' + x + ', y: ' + y);
+    this.log('mousemove x: ' + x + ', y: ' + y);
   },
 
   // helper function (not defined in potion)
