@@ -67,9 +67,10 @@ Input.prototype._addEvents = function(game) {
     var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
     var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
-    game.states.mousemove(x, y, e);
     self.mouse.x = x;
     self.mouse.y = y;
+
+    game.states.mousemove(x, y, e);
   });
 
   self._container.addEventListener('mouseup', function(e) {
