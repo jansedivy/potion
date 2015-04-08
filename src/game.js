@@ -34,7 +34,7 @@ var Game = function(canvas) {
   }
 
   if (this.config.addInputEvents) {
-    this.input = new Input(this, canvas);
+    this.input = new Input(this, canvas.parentElement);
   }
 };
 
