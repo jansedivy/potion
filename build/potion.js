@@ -1107,7 +1107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = __webpack_require__(12)();
+	var isRetina = __webpack_require__(14)();
 
 	/**
 	 * @constructor
@@ -1208,7 +1208,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var utils = __webpack_require__(13);
+	var utils = __webpack_require__(12);
 	var path = __webpack_require__(15);
 
 	var PotionAudio = __webpack_require__(16);
@@ -1404,7 +1404,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var keys = __webpack_require__(14);
+	var keys = __webpack_require__(13);
 
 	/**
 	 * Input wrapper
@@ -1573,7 +1573,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    self.mouse.x = x;
 	    self.mouse.y = y;
-	    self.mouse.isDown = true;
+	    self.mouse.isDown = false;
 
 	    game.states.mouseup(x, y, 1);
 	  });
@@ -2205,24 +2205,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
 	var get = exports.get = function (url, callback) {
 	  var request = new XMLHttpRequest();
 	  request.open("GET", url, true);
@@ -2245,7 +2227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2343,6 +2325,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	  MINUS: 189,
 	  PERIOD: 190
 	};
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
 
 /***/ },
 /* 15 */
