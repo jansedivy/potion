@@ -18,6 +18,8 @@ var app = Potion.init(document.querySelector('.game'), {
   },
 
   mousedown: function() {
-    app.assets.get(this.sounds[Math.floor(Math.random() * this.sounds.length)]).play();
+    var index = Math.floor(Math.random() * this.sounds.length);
+    var sound = app.assets.get(this.sounds[index]);
+    sound.play();
   }
 });
