@@ -1107,7 +1107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = __webpack_require__(14)();
+	var isRetina = __webpack_require__(12)();
 
 	/**
 	 * @constructor
@@ -1208,7 +1208,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var utils = __webpack_require__(12);
+	var utils = __webpack_require__(13);
 	var path = __webpack_require__(15);
 
 	var PotionAudio = __webpack_require__(16);
@@ -1404,7 +1404,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var keys = __webpack_require__(13);
+	var keys = __webpack_require__(14);
 
 	/**
 	 * Input wrapper
@@ -1541,6 +1541,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      self.mouse.x = x;
 	      self.mouse.y = y;
 	      self.mouse.isDown = true;
+	      self.mouse.isLeftDown = true;
 
 	      game.states.mousedown(x, y, 1);
 	    }
@@ -1558,6 +1559,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      self.mouse.x = x;
 	      self.mouse.y = y;
 	      self.mouse.isDown = true;
+	      self.mouse.isLeftDown = true;
 
 	      game.states.mousemove(x, y);
 	    }
@@ -1574,6 +1576,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    self.mouse.x = x;
 	    self.mouse.y = y;
 	    self.mouse.isDown = false;
+	    self.mouse.isLeftDown = false;
 
 	    game.states.mouseup(x, y, 1);
 	  });
@@ -2180,7 +2183,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(20);
+	exports.inherits = __webpack_require__(19);
 
 	exports._extend = function (origin, add) {
 	  // Don't do anything if add isn't an object
@@ -2201,6 +2204,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2227,7 +2248,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2325,24 +2346,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  MINUS: 189,
 	  PERIOD: 190
 	};
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
 
 /***/ },
 /* 15 */
@@ -2579,7 +2582,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	module.exports = __webpack_require__(19);
+	module.exports = __webpack_require__(20);
 
 /***/ },
 /* 17 */
@@ -2666,6 +2669,36 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
+	if (typeof Object.create === "function") {
+	  // implementation from standard node.js 'util' module
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    ctor.prototype = Object.create(superCtor.prototype, {
+	      constructor: {
+	        value: ctor,
+	        enumerable: false,
+	        writable: true,
+	        configurable: true
+	      }
+	    });
+	  };
+	} else {
+	  // old school shim for old browsers
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    var TempCtor = function TempCtor() {};
+	    TempCtor.prototype = superCtor.prototype;
+	    ctor.prototype = new TempCtor();
+	    ctor.prototype.constructor = ctor;
+	  };
+	}
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
 	var LoadedAudio = __webpack_require__(21);
 
 	var AudioManager = function AudioManager() {
@@ -2737,36 +2770,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = AudioManager;
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	if (typeof Object.create === "function") {
-	  // implementation from standard node.js 'util' module
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    ctor.prototype = Object.create(superCtor.prototype, {
-	      constructor: {
-	        value: ctor,
-	        enumerable: false,
-	        writable: true,
-	        configurable: true
-	      }
-	    });
-	  };
-	} else {
-	  // old school shim for old browsers
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    var TempCtor = function TempCtor() {};
-	    TempCtor.prototype = superCtor.prototype;
-	    ctor.prototype = new TempCtor();
-	    ctor.prototype.constructor = ctor;
-	  };
-	}
 
 /***/ },
 /* 21 */
