@@ -133,6 +133,7 @@ Input.prototype._addEvents = function(game) {
       self.mouse.x = x;
       self.mouse.y = y;
       self.mouse.isDown = true;
+      self.mouse.isLeftDown = true;
 
       game.states.mousedown(x, y, 1);
     }
@@ -150,6 +151,7 @@ Input.prototype._addEvents = function(game) {
       self.mouse.x = x;
       self.mouse.y = y;
       self.mouse.isDown = true;
+      self.mouse.isLeftDown = true;
 
       game.states.mousemove(x, y);
     }
@@ -166,6 +168,7 @@ Input.prototype._addEvents = function(game) {
     self.mouse.x = x;
     self.mouse.y = y;
     self.mouse.isDown = false;
+    self.mouse.isLeftDown = false;
 
     game.states.mouseup(x, y, 1);
   });
