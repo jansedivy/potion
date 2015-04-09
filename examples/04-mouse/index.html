@@ -3,28 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <title>04 Mouse</title>
-  <style>
-    body {
-      font-family: sans-serif;
-    }
-
-    .game {
-      display: block;
-      border: 1px solid black;
-      width: 300px;
-      height: 300px;
-    }
-  </style>
+  <link rel="stylesheet" href="../main.css">
+  <link rel="stylesheet" href="../prism.css">
 </head>
 <body>
-  <div class="game"></div>
-  <p>Move your mouse and click</p>
-  <ul>
-    <li>left mouse button</li>
-    <li>right mouse button</li>
-    <li>middle mouse button</li>
-  </ul>
+  <div class="game-preview">
+    <div class="game"></div>
+    <ul>
+      <li>left mouse button</li>
+      <li>right mouse button</li>
+      <li>middle mouse button</li>
+    </ul>
+  </div>
 
+  <div class="code-preview">
+    <pre><code class="language-javascript code"></code></pre>
+  </div>
+
+  <script>
+    (function() {
+      var request = new XMLHttpRequest();
+      var el = document.querySelector('.code');
+      request.open('GET', 'app.js', true);
+
+      request.onload = function() {
+        el.textContent = request.responseText;
+
+        Prism.highlightElement(el);
+      };
+
+      request.send();
+    })();
+  </script>
+
+  <script src="../prism.js"></script>
   <script src="/__build__/shared.js"></script>
   <script src="/__build__/04-mouse.js"></script>
 </body>
