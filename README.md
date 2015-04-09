@@ -1,11 +1,21 @@
 # Potion
 
-HTML5 canvas game engine
+Potion is a game library with very simple and powerful abstractions.
+
+- Asset loader
+- Input event handling
+- Sound manager
+- State manager
+- Multi-layered canvas
+- HiDPI monitor support
+- Debugger for in game logging and switch toggling
+
+
+#### [Examples](http://potion-examples.jansedivy.com)
 
 ## Documentation
 
 - [API](/docs/api/)
-- [Examples](http://potion-examples.jansedivy.com)
 
 ## Installation
 
@@ -18,15 +28,6 @@ HTML5 canvas game engine
 
 - `npm install potion`
 - `browserify main.js -o bundle.js`
-
-## Features
-
-- Asset loader
-- Input event handling
-- Sound manager
-- State manager
-- Multiple canvas layers
-- Retina support
 
 ## Usage
 
