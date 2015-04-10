@@ -78,3 +78,9 @@ Method for setting items in assets. Used for overwriting items in assets object.
 `path` - path of the asset
 
 `value` - value to store in assets object
+
+#### 'remove(path)'
+
+Removes item from assets object.
+
+`path` - path of the asset
