@@ -1,8 +1,4 @@
 module.exports = {
-  'MOUSE1':-1,
-  'MOUSE2':-3,
-  'MWHEEL_UP':-4,
-  'MWHEEL_DOWN':-5,
   'BACKSPACE':8,
   'TAB':9,
   'ENTER':13,
