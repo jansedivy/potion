@@ -2,7 +2,7 @@ var keys = require('./keys');
 
 var Input = function(game, container) {
   this._container = container;
-  this.keys = {};
+  this._keys = {};
 
   this.canControlKeys = true;
 
@@ -19,7 +19,7 @@ var Input = function(game, container) {
 };
 
 Input.prototype.resetKeys = function() {
-  this.keys = {};
+  this._keys = {};
 };
 
 Input.prototype.isKeyDown = function(key) {
@@ -27,7 +27,7 @@ Input.prototype.isKeyDown = function(key) {
 
   if (this.canControlKeys) {
     var code = typeof key === 'number' ? key : keys[key.toUpperCase()];
-    return this.keys[code];
+    return this._keys[code];
   }
 };
 
@@ -149,12 +149,12 @@ Input.prototype._addEvents = function(game) {
   });
 
   document.addEventListener('keydown', function(e) {
-    game.input.keys[e.keyCode] = true;
+    self._keys[e.keyCode] = true;
     game.states.keydown(e.which, e);
   });
 
   document.addEventListener('keyup', function(e) {
-    game.input.keys[e.keyCode] = false;
+    self._keys[e.keyCode] = false;
     game.states.keyup(e.which, e);
   });
 };
