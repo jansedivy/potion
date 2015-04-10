@@ -42,13 +42,18 @@ Number between 0 and 1 which tells how far we are in loading.
 Methods
 -------
 
-#### `load(type, path)`
+#### `load(type, path, [callback])`
 
-Main function which defines what file to load.
+Main function which defines what file to load. If you call this function in
+`configure` it will show preloading bar. If you call function outside, it will
+not show any preloading. When it finishes, the parsed result is stored inside
+assets object. Which you can get with `get()` method.
 
 `type` - file type of given path. It's used for setting up images, json, music, text files
 
 `path` - url of the file
+
+`callback` - Callback is called with the parsed result when the file is loaded
 
 ##### File types
 
