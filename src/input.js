@@ -1,28 +1,11 @@
 var keys = require('./keys');
 
-/**
- * Input wrapper
- * @constructor
- * @param {Game} game - Game object
- */
 var Input = function(game, container) {
   this._container = container;
-  /**
-   * Pressed keys object
-   * @type {object}
-   */
   this.keys = {};
 
-  /**
-   * Controls if you can press keys
-   * @type {boolean}
-   */
   this.canControlKeys = true;
 
-  /**
-   * Mouse object with positions and if is mouse button pressed
-   * @type {object}
-   */
   this.mouse = {
     isDown: false,
     isLeftDown: false,
@@ -35,18 +18,10 @@ var Input = function(game, container) {
   this._addEvents(game);
 };
 
-/**
- * Clears the pressed keys object
- */
 Input.prototype.resetKeys = function() {
   this.keys = {};
 };
 
-/**
- * Return true or false if key is pressed
- * @param {string} key
- * @return {boolean}
- */
 Input.prototype.isKeyDown = function(key) {
   if (key == null) { return false; }
 
@@ -56,10 +31,6 @@ Input.prototype.isKeyDown = function(key) {
   }
 };
 
-/**
- * Add canvas event listener
- * @private
- */
 Input.prototype._addEvents = function(game) {
   var self = this;
 
