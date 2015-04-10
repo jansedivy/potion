@@ -131,6 +131,8 @@ Event which is called when the user do presses some key
 
 `key` - code number of the pressed key
 
+`name` - string name of the key
+
 `e` - event object
 
 #### `keyup(key, e)`
@@ -140,6 +142,8 @@ Event which is called when the user do releases some key
 ##### `value` Keyboard Event object
 
 `key` - code number of the pressed key
+
+`name` - string name of the key
 
 `e` - event object
 
