@@ -10,6 +10,8 @@ var StateManager = function() {
   this.states = {};
   this.renderOrder = [];
   this.updateOrder = [];
+
+  this._preventEvent = false;
 };
 
 StateManager.prototype.add = function(name, state) {
@@ -230,47 +232,67 @@ StateManager.prototype.render = function() {
   }
 };
 StateManager.prototype.mousemove = function(value) {
+  this._preventEvent = false;
+
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.mousemove && !state.paused) {
       state.state.mousemove(value);
     }
+
+    if (this._preventEvent) { break; }
   }
 };
 
 StateManager.prototype.mouseup = function(value) {
+  this._preventEvent = false;
+
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.mouseup && !state.paused) {
       state.state.mouseup(value);
     }
+
+    if (this._preventEvent) { break; }
   }
 };
 
 StateManager.prototype.mousedown = function(value) {
+  this._preventEvent = false;
+
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.mousedown && !state.paused) {
       state.state.mousedown(value);
     }
+
+    if (this._preventEvent) { break; }
   }
 };
 
 StateManager.prototype.keyup = function(value) {
+  this._preventEvent = false;
+
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.keyup && !state.paused) {
       state.state.keyup(value);
     }
+
+    if (this._preventEvent) { break; }
   }
 };
 
 StateManager.prototype.keydown = function(value) {
+  this._preventEvent = false;
+
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.keydown && !state.paused) {
       state.state.keydown(value);
     }
+
+    if (this._preventEvent) { break; }
   }
 };
 

@@ -43,13 +43,19 @@ Input.prototype._addEvents = function(game) {
     x: null,
     y: null,
     button: null,
-    event: null
+    event: null,
+    statePreventDefault: function() {
+      game.states._preventEvent = true;
+    }
   };
 
   var keyboardEvent = {
     key: null,
     name: null,
-    event: null
+    event: null,
+    statePreventDefault: function() {
+      game.states._preventEvent = true;
+    }
   };
 
   self._container.addEventListener('mousemove', function(e) {
