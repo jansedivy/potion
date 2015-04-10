@@ -1107,7 +1107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = __webpack_require__(12)();
+	var isRetina = __webpack_require__(13)();
 
 	/**
 	 * @constructor
@@ -1208,7 +1208,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var utils = __webpack_require__(13);
+	var utils = __webpack_require__(12);
 	var path = __webpack_require__(15);
 
 	var PotionAudio = __webpack_require__(16);
@@ -1232,6 +1232,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this._thingsToLoad = 0;
 	  this._data = {};
+	  this._preloading = true;
 
 	  this.callback = null;
 
@@ -1249,6 +1250,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if (this._thingsToLoad === 0) {
 	    this.isLoading = false;
+	    this._preloading = false;
 	    process.nextTick(function () {
 	      callback();
 	    });
@@ -1282,11 +1284,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {function} callback - callback function
 	 */
 	Assets.prototype.load = function (type, url, callback) {
-	  this.isLoading = true;
-	  this.itemsCount += 1;
-	  this._thingsToLoad += 1;
+	  var loadObject = { type: type, url: url != null ? path.normalize(url) : null, callback: callback };
 
-	  this._toLoad.push({ type: type, url: url != null ? path.normalize(url) : null, callback: callback });
+	  if (this._preloading) {
+	    this.isLoading = true;
+	    this.itemsCount += 1;
+	    this._thingsToLoad += 1;
+
+	    this._toLoad.push(loadObject);
+	  } else {
+	    var self = this;
+	    this._loadAssetFile(loadObject, function (data) {
+	      self.set(loadObject.url, data);
+	      if (callback) {
+	        callback(data);
+	      }
+	    });
+	  }
 	};
 
 	Assets.prototype._finishedOneFile = function () {
@@ -1299,6 +1313,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var self = this;
 	    setTimeout(function () {
 	      self.callback();
+	      self._preloading = false;
 	      self.isLoading = false;
 	    }, 0);
 	  }
@@ -1332,9 +1347,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  var type = current.type;
-	  var url = current.url;
-	  var callback = current.callback;
+	  var self = this;
+	  this._loadAssetFile(current, function (data) {
+	    self._save(current.url, data, current.callback);
+	  });
+	};
+
+	Assets.prototype._loadAssetFile = function (file, callback) {
+	  var type = file.type;
+	  var url = file.url;
 
 	  var self = this;
 
@@ -1353,7 +1374,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      request.responseType = "text";
 	      request.onload = function () {
 	        var data = JSON.parse(this.response);
-	        self._save(url, data, callback);
+	        callback(data);
 	      };
 	      request.onerror = function () {
 	        self._error(type, url);
@@ -1364,7 +1385,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    case "music":
 	    case "sound":
 	      self.audio.load(url, function (audio) {
-	        self._save(url, audio, callback);
+	        callback(audio);
 	      });
 	      break;
 	    case "image":
@@ -1372,7 +1393,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    case "sprite":
 	      var image = new Image();
 	      image.onload = function () {
-	        self._save(url, image, callback);
+	        callback(image);
 	      };
 	      image.onerror = function () {
 	        self._error(type, url);
@@ -1385,7 +1406,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      request.responseType = "text";
 	      request.onload = function () {
 	        var data = this.response;
-	        self._save(url, data, callback);
+	        callback(data);
 	      };
 	      request.onerror = function () {
 	        self._error(type, url);
@@ -2183,7 +2204,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(19);
+	exports.inherits = __webpack_require__(20);
 
 	exports._extend = function (origin, add) {
 	  // Don't do anything if add isn't an object
@@ -2208,24 +2229,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
 	var get = exports.get = function (url, callback) {
 	  var request = new XMLHttpRequest();
 	  request.open("GET", url, true);
@@ -2246,6 +2249,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.isFunction = function (obj) {
 	  return !!(obj && obj.constructor && obj.call && obj.apply);
 	};
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
 
 /***/ },
 /* 14 */
@@ -2582,7 +2603,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	module.exports = __webpack_require__(20);
+	module.exports = __webpack_require__(19);
 
 /***/ },
 /* 17 */
@@ -2669,36 +2690,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	if (typeof Object.create === "function") {
-	  // implementation from standard node.js 'util' module
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    ctor.prototype = Object.create(superCtor.prototype, {
-	      constructor: {
-	        value: ctor,
-	        enumerable: false,
-	        writable: true,
-	        configurable: true
-	      }
-	    });
-	  };
-	} else {
-	  // old school shim for old browsers
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    var TempCtor = function TempCtor() {};
-	    TempCtor.prototype = superCtor.prototype;
-	    ctor.prototype = new TempCtor();
-	    ctor.prototype.constructor = ctor;
-	  };
-	}
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
 	var LoadedAudio = __webpack_require__(21);
 
 	var AudioManager = function AudioManager() {
@@ -2770,6 +2761,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = AudioManager;
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	if (typeof Object.create === "function") {
+	  // implementation from standard node.js 'util' module
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    ctor.prototype = Object.create(superCtor.prototype, {
+	      constructor: {
+	        value: ctor,
+	        enumerable: false,
+	        writable: true,
+	        configurable: true
+	      }
+	    });
+	  };
+	} else {
+	  // old school shim for old browsers
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    var TempCtor = function TempCtor() {};
+	    TempCtor.prototype = superCtor.prototype;
+	    ctor.prototype = new TempCtor();
+	    ctor.prototype.constructor = ctor;
+	  };
+	}
 
 /***/ },
 /* 21 */
