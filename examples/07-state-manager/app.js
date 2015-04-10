@@ -26,7 +26,7 @@ GameState.prototype.render = function() {
 };
 
 GameState.prototype.keydown = function(value) {
-  if (value.key === 27) { // esc
+  if (value.name === 'esc') {
     app.states.pause('game');
     app.states.enable('pause');
   }
@@ -47,7 +47,7 @@ PauseState.prototype.render = function() {
 
 
 PauseState.prototype.keydown = function(value) {
-  if (value.key === 27) { // esc
+  if (value.name === 'esc') {
     app.states.disable('pause');
     app.states.unpause('game');
   }
