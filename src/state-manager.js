@@ -229,47 +229,47 @@ StateManager.prototype.render = function() {
     }
   }
 };
-StateManager.prototype.mousemove = function(x, y, e) {
+StateManager.prototype.mousemove = function(value) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.mousemove && !state.paused) {
-      state.state.mousemove(x, y, e);
+      state.state.mousemove(value);
     }
   }
 };
 
-StateManager.prototype.mouseup = function(x, y, button) {
+StateManager.prototype.mouseup = function(value) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.mouseup && !state.paused) {
-      state.state.mouseup(x, y, button);
+      state.state.mouseup(value);
     }
   }
 };
 
-StateManager.prototype.mousedown = function(x, y, button) {
+StateManager.prototype.mousedown = function(value) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.mousedown && !state.paused) {
-      state.state.mousedown(x, y, button);
+      state.state.mousedown(value);
     }
   }
 };
 
-StateManager.prototype.keyup = function(key, e) {
+StateManager.prototype.keyup = function(value) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.keyup && !state.paused) {
-      state.state.keyup(key, e);
+      state.state.keyup(value);
     }
   }
 };
 
-StateManager.prototype.keydown = function(key, e) {
+StateManager.prototype.keydown = function(value) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
     if (state.enabled && !state.changed && state.state.keydown && !state.paused) {
-      state.state.keydown(key, e);
+      state.state.keydown(value);
     }
   }
 };
