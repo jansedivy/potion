@@ -22,6 +22,7 @@ var Assets = function() {
 
   this._thingsToLoad = 0;
   this._data = {};
+  this._preloading = true;
 
   this.callback = null;
 
@@ -39,6 +40,7 @@ Assets.prototype.onload = function(callback) {
 
   if (this._thingsToLoad === 0) {
     this.isLoading = false;
+    this._preloading = false;
     process.nextTick(function() {
       callback();
     });
@@ -72,11 +74,13 @@ Assets.prototype.set = function(name, value) {
  * @param {function} callback - callback function
  */
 Assets.prototype.load = function(type, url, callback) {
-  this.isLoading = true;
-  this.itemsCount += 1;
-  this._thingsToLoad += 1;
+  if (this._preloading) {
+    this.isLoading = true;
+    this.itemsCount += 1;
+    this._thingsToLoad += 1;
 
-  this._toLoad.push({ type: type, url: url != null ? path.normalize(url) : null, callback: callback });
+    this._toLoad.push({ type: type, url: url != null ? path.normalize(url) : null, callback: callback });
+  }
 };
 
 Assets.prototype._finishedOneFile = function() {
@@ -89,6 +93,7 @@ Assets.prototype._finishedOneFile = function() {
     var self = this;
     setTimeout(function() {
       self.callback();
+      self._preloading = false;
       self.isLoading = false;
     }, 0);
   }
@@ -118,9 +123,15 @@ Assets.prototype._nextFile = function() {
 
   if (!current) { return; }
 
-  var type = current.type;
-  var url = current.url;
-  var callback = current.callback;
+  var self = this;
+  this._loadAssetFile(current, function(data) {
+    self._save(current.url, data, current.callback);
+  });
+};
+
+Assets.prototype._loadAssetFile = function(file, callback) {
+  var type = file.type;
+  var url = file.url;
 
   var self = this;
 
@@ -139,7 +150,7 @@ Assets.prototype._nextFile = function() {
       request.responseType = 'text';
       request.onload = function() {
         var data = JSON.parse(this.response);
-        self._save(url, data, callback);
+        callback(data);
       };
       request.onerror = function() { self._error(type, url); };
       request.send();
@@ -148,7 +159,7 @@ Assets.prototype._nextFile = function() {
     case 'music':
     case 'sound':
       self.audio.load(url, function(audio) {
-        self._save(url, audio, callback);
+        callback(audio);
       });
       break;
     case 'image':
@@ -156,7 +167,7 @@ Assets.prototype._nextFile = function() {
     case 'sprite':
       var image = new Image();
       image.onload = function() {
-        self._save(url, image, callback);
+        callback(image);
       };
       image.onerror = function() { self._error(type, url); };
       image.src = url;
@@ -166,7 +177,7 @@ Assets.prototype._nextFile = function() {
       request.responseType = 'text';
       request.onload = function() {
         var data = this.response;
-        self._save(url, data, callback);
+        callback(data);
       };
       request.onerror = function() { self._error(type, url); };
       request.send();
