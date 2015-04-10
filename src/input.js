@@ -34,6 +34,19 @@ Input.prototype.isKeyDown = function(key) {
 Input.prototype._addEvents = function(game) {
   var self = this;
 
+  var mouseEvent = {
+    x: null,
+    y: null,
+    button: null,
+    event: null
+  };
+
+  var keyboardEvent = {
+    key: null,
+    name: null,
+    event: null
+  };
+
   self._container.addEventListener('mousemove', function(e) {
     var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
     var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
@@ -41,7 +54,12 @@ Input.prototype._addEvents = function(game) {
     self.mouse.x = x;
     self.mouse.y = y;
 
-    game.states.mousemove(x, y, e);
+    mouseEvent.x = x;
+    mouseEvent.y = y;
+    mouseEvent.button = null;
+    mouseEvent.event = e;
+
+    game.states.mousemove(mouseEvent);
   });
 
   self._container.addEventListener('mouseup', function(e) {
@@ -64,7 +82,12 @@ Input.prototype._addEvents = function(game) {
         break;
     }
 
-    game.states.mouseup(x, y, e.button);
+    mouseEvent.x = x;
+    mouseEvent.y = y;
+    mouseEvent.button = e.button;
+    mouseEvent.event = e;
+
+    game.states.mouseup(mouseEvent);
   }, false);
 
   self._container.addEventListener('mousedown', function(e) {
@@ -89,7 +112,12 @@ Input.prototype._addEvents = function(game) {
         break;
     }
 
-    game.states.mousedown(x, y, e.button);
+    mouseEvent.x = x;
+    mouseEvent.y = y;
+    mouseEvent.button = e.button;
+    mouseEvent.event = e;
+
+    game.states.mousedown(mouseEvent);
   }, false);
 
   self._container.addEventListener('touchstart', function(e) {
@@ -106,7 +134,12 @@ Input.prototype._addEvents = function(game) {
       self.mouse.isDown = true;
       self.mouse.isLeftDown = true;
 
-      game.states.mousedown(x, y, 1);
+      mouseEvent.x = x;
+      mouseEvent.y = y;
+      mouseEvent.button = 1;
+      mouseEvent.event = e;
+
+      game.states.mousedown(e);
     }
   });
 
@@ -124,7 +157,11 @@ Input.prototype._addEvents = function(game) {
       self.mouse.isDown = true;
       self.mouse.isLeftDown = true;
 
-      game.states.mousemove(x, y);
+      mouseEvent.x = x;
+      mouseEvent.y = y;
+      mouseEvent.event = e;
+
+      game.states.mousemove(e);
     }
   });
 
@@ -141,7 +178,11 @@ Input.prototype._addEvents = function(game) {
     self.mouse.isDown = false;
     self.mouse.isLeftDown = false;
 
-    game.states.mouseup(x, y, 1);
+    mouseEvent.x = x;
+    mouseEvent.y = y;
+    mouseEvent.event = e;
+
+    game.states.mouseup(e);
   });
 
   self._container.addEventListener('contextmenu', function(e) {
@@ -150,12 +191,20 @@ Input.prototype._addEvents = function(game) {
 
   document.addEventListener('keydown', function(e) {
     self._keys[e.keyCode] = true;
-    game.states.keydown(e.which, e);
+
+    keyboardEvent.key = e.which;
+    keyboardEvent.event = e;
+
+    game.states.keydown(keyboardEvent);
   });
 
   document.addEventListener('keyup', function(e) {
     self._keys[e.keyCode] = false;
-    game.states.keyup(e.which, e);
+
+    keyboardEvent.key = e.which;
+    keyboardEvent.event = e;
+
+    game.states.keyup(keyboardEvent);
   });
 };
 
