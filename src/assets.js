@@ -86,7 +86,7 @@ Assets.prototype.load = function(type, url, callback) {
     var self = this;
     this._loadAssetFile(loadObject, function(data) {
       self.set(loadObject.url, data);
-      callback(data);
+      if (callback) { callback(data); }
     });
   }
 };
