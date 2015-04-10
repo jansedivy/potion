@@ -135,7 +135,7 @@ Event which is called when the user do presses some key
 
 `e` - event object
 
-#### `keyup(key, e)`
+#### `keyup(value)`
 
 Event which is called when the user do releases some key
 
