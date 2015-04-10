@@ -10,11 +10,11 @@ var app = Potion.init(document.querySelector('.game'), {
     this.lastPosition = { x: null, y: null };
   },
 
-  mousemove: function(x, y) {
+  mousemove: function(value) {
     if (this.lastPosition.x && this.lastPosition.y) {
-      var dx = (x - this.lastPosition.x) * 20;
-      var dy = (y - this.lastPosition.y) * 20;
-      this.particles.push(new Particle(x, y, dx, dy));
+      var dx = (value.x - this.lastPosition.x) * 20;
+      var dy = (value.y - this.lastPosition.y) * 20;
+      this.particles.push(new Particle(value.x, value.y, dx, dy));
     }
 
     this.lastPosition.x = this.input.mouse.x;

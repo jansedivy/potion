@@ -46,13 +46,13 @@ app = Potion.init(document.querySelector('.game'), {
     this.particles = [];
   },
 
-  mousemove: function(x, y) {
+  mousemove: function(value) {
     if (this.input.mouse.isDown) {
       for (var i=0; i<10; i++) {
         var angle = Math.random() * Math.PI*2;
         var distance = 3;
 
-        this.particles.push(new Particle(Math.cos(angle) * distance + x, Math.sin(angle) * distance + y));
+        this.particles.push(new Particle(Math.cos(angle) * distance + value.x, Math.sin(angle) * distance + value.y));
       }
     }
   },
