@@ -4,27 +4,27 @@ Potion.init(document.querySelector('.game'), {
   /**
    * keyboard events
    */
-  keydown: function(key) {
-    this.log('keydown key: ' + key);
+  keydown: function(value) {
+    this.log('keydown key: ' + value.key);
   },
 
-  keyup: function(key) {
-    this.log('keyup key: ' + key);
+  keyup: function(value) {
+    this.log('keyup key: ' + value.key);
   },
 
   /**
    * Mouse events
    */
-  mousedown: function(x, y, button) {
-    this.log('mousedown x: ' + x + ', y: ' + y + ', button: ' + button);
+  mousedown: function(value) {
+    this.log('mousedown x: ' + value.x + ', y: ' + value.y + ', button: ' + value.button);
   },
 
-  mouseup: function(x, y, button) {
-    this.log('mouseup x: ' + x + ', y: ' + y + ', button: ' + button);
+  mouseup: function(value) {
+    this.log('mouseup x: ' + value.x + ', y: ' + value.y + ', button: ' + value.button);
   },
 
-  mousemove: function(x, y) {
-    this.log('mousemove x: ' + x + ', y: ' + y);
+  mousemove: function(value) {
+    this.log('mousemove x: ' + value.x + ', y: ' + value.y);
   },
 
   // helper function (not defined in potion)
