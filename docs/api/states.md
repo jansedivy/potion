@@ -89,47 +89,57 @@ This method is called every frame. Used for updating.
 
 #### `exitUpdate(time)`
 
-#### `mousemove(x, y)`
+#### `mousemove(value)`
 
 Event which is called when the user moves mouse over the canvas element
 
+##### `value` Mouse Event object
+
 `x` - x coordinate of the action
 
 `y` - y coordinate of the action
 
-#### `mousedown(x, y, button)`
+#### `mousedown(value)`
 
 Event which is called when the user do mousedown over the canvas element
 
+##### `value` Mouse Event object
+
 `x` - x coordinate of the action
 
 `y` - y coordinate of the action
 
 `button` - which mouse button was used (1, 2, 3)
 
-#### `mouseup(x, y, button)`
+#### `mouseup(value)`
 
 Event which is called when the user do mouseup over the canvas element
 
+##### `value` Mouse Event object
+
 `x` - x coordinate of the action
 
 `y` - y coordinate of the action
 
 `button` - which mouse button was used (1, 2, 3)
 
-#### `keydown(keyCode, e)`
+#### `keydown(value)`
 
 Event which is called when the user do presses some key
 
-`keyCode` - code number of the pressed key
+##### `value` Keyboard Event object
+
+`key` - code number of the pressed key
 
 `e` - event object
 
-#### `keyup(keyCode, e)`
+#### `keyup(key, e)`
 
 Event which is called when the user do releases some key
 
-`keyCode` - code number of the pressed key
+##### `value` Keyboard Event object
+
+`key` - code number of the pressed key
 
 `e` - event object
 
