@@ -57,6 +57,11 @@ Assets.prototype.get = function(name) {
   return this._data[path.normalize(name)];
 };
 
+Assets.prototype.remove = function(name) {
+  this.set(name, null);
+};
+
+
 /**
  * Used for storing some value in assets module
  * useful for overrating values
