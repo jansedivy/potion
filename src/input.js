@@ -74,6 +74,7 @@ Input.prototype._addEvents = function(game) {
     var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
     self.mouse.isDown = false;
+    self.mouse.button = e.button;
 
     switch (e.button) {
       case 0:
@@ -104,6 +105,7 @@ Input.prototype._addEvents = function(game) {
     self.mouse.x = x;
     self.mouse.y = y;
     self.mouse.isDown = true;
+    self.mouse.button = e.button;
 
     switch (e.button) {
       case 0:
