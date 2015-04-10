@@ -5,11 +5,11 @@ Potion.init(document.querySelector('.game'), {
    * keyboard events
    */
   keydown: function(value) {
-    this.log('keydown key: ' + value.key);
+    this.log('keydown key: ' + value.key + ' name: ' + value.name);
   },
 
   keyup: function(value) {
-    this.log('keyup key: ' + value.key);
+    this.log('keyup key: ' + value.key + ' name: ' + value.name);
   },
 
   /**
