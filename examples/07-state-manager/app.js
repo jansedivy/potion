@@ -25,8 +25,8 @@ GameState.prototype.render = function() {
   app.video.ctx.fillText('Esc to pause', 10, 10);
 };
 
-GameState.prototype.keydown = function(key) {
-  if (key === 27) { // esc
+GameState.prototype.keydown = function(value) {
+  if (value.key === 27) { // esc
     app.states.pause('game');
     app.states.enable('pause');
   }
@@ -46,8 +46,8 @@ PauseState.prototype.render = function() {
 };
 
 
-PauseState.prototype.keydown = function(key) {
-  if (key === 27) { // esc
+PauseState.prototype.keydown = function(value) {
+  if (value.key === 27) { // esc
     app.states.disable('pause');
     app.states.unpause('game');
   }
