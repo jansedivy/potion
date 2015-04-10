@@ -1,5 +1,10 @@
 var keys = require('./keys');
 
+var invKeys = {};
+for (var keyName in keys) {
+  invKeys[keys[keyName]] = keyName;
+}
+
 var Input = function(game, container) {
   this._container = container;
   this._keys = {};
@@ -193,6 +198,7 @@ Input.prototype._addEvents = function(game) {
     self._keys[e.keyCode] = true;
 
     keyboardEvent.key = e.which;
+    keyboardEvent.name = invKeys[e.which];
     keyboardEvent.event = e;
 
     game.states.keydown(keyboardEvent);
@@ -202,6 +208,7 @@ Input.prototype._addEvents = function(game) {
     self._keys[e.keyCode] = false;
 
     keyboardEvent.key = e.which;
+    keyboardEvent.name = invKeys[e.which];
     keyboardEvent.event = e;
 
     game.states.keyup(keyboardEvent);
