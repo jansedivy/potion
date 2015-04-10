@@ -74,12 +74,20 @@ Assets.prototype.set = function(name, value) {
  * @param {function} callback - callback function
  */
 Assets.prototype.load = function(type, url, callback) {
+  var loadObject = { type: type, url: url != null ? path.normalize(url) : null, callback: callback };
+
   if (this._preloading) {
     this.isLoading = true;
     this.itemsCount += 1;
     this._thingsToLoad += 1;
 
-    this._toLoad.push({ type: type, url: url != null ? path.normalize(url) : null, callback: callback });
+    this._toLoad.push(loadObject);
+  } else {
+    var self = this;
+    this._loadAssetFile(loadObject, function(data) {
+      self.set(loadObject.url, data);
+      callback(data);
+    });
   }
 };
 
