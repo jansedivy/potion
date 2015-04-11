@@ -16,16 +16,6 @@ if (process.env.COMPRESS) {
   );
 }
 
-if (process.env.COMPRESS) {
-  plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      compressor: {
-        warnings: false
-      }
-    })
-  );
-}
-
 module.exports = {
   output: {
     library: 'Potion',
