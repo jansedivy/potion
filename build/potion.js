@@ -166,9 +166,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var time = (now - this._time) / 1000;
 	  this._time = now;
 
+	  this.game.debug.perf("update");
 	  this.update(time);
+	  this.game.debug.stopPerf("update");
+
 	  this.game.states.exitUpdate(time);
+
+	  this.game.debug.perf("render");
 	  this.render();
+	  this.game.debug.stopPerf("render");
+
+	  this.game.debug.render();
 	};
 
 	/**
@@ -230,6 +238,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  states.protect("app");
 	  states.protect("debug");
+	  states.hide("debug");
 
 	  this.game.states = states;
 	};
@@ -456,6 +465,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.states = {};
 	  this.renderOrder = [];
 	  this.updateOrder = [];
+
+	  this._preventEvent = false;
 	};
 
 	StateManager.prototype.add = function (name, state) {
@@ -675,47 +686,77 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 	};
-	StateManager.prototype.mousemove = function (x, y, e) {
+	StateManager.prototype.mousemove = function (value) {
+	  this._preventEvent = false;
+
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
 	    if (state.enabled && !state.changed && state.state.mousemove && !state.paused) {
-	      state.state.mousemove(x, y, e);
+	      state.state.mousemove(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
 	    }
 	  }
 	};
 
-	StateManager.prototype.mouseup = function (x, y, button) {
+	StateManager.prototype.mouseup = function (value) {
+	  this._preventEvent = false;
+
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
 	    if (state.enabled && !state.changed && state.state.mouseup && !state.paused) {
-	      state.state.mouseup(x, y, button);
+	      state.state.mouseup(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
 	    }
 	  }
 	};
 
-	StateManager.prototype.mousedown = function (x, y, button) {
+	StateManager.prototype.mousedown = function (value) {
+	  this._preventEvent = false;
+
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
 	    if (state.enabled && !state.changed && state.state.mousedown && !state.paused) {
-	      state.state.mousedown(x, y, button);
+	      state.state.mousedown(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
 	    }
 	  }
 	};
 
-	StateManager.prototype.keyup = function (key, e) {
+	StateManager.prototype.keyup = function (value) {
+	  this._preventEvent = false;
+
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
 	    if (state.enabled && !state.changed && state.state.keyup && !state.paused) {
-	      state.state.keyup(key, e);
+	      state.state.keyup(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
 	    }
 	  }
 	};
 
-	StateManager.prototype.keydown = function (key, e) {
+	StateManager.prototype.keydown = function (value) {
+	  this._preventEvent = false;
+
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
 	    if (state.enabled && !state.changed && state.state.keydown && !state.paused) {
-	      state.state.keydown(key, e);
+	      state.state.keydown(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
 	    }
 	  }
 	};
@@ -755,13 +796,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	var defaults = [{ name: "Show FPS", entry: "showFps", "default": true }, { name: "Show Key Codes", entry: "showKeyCodes", "default": true }];
+	var defaults = [{ name: "Show FPS", entry: "showFps", defaults: true }, { name: "Show Key Codes", entry: "showKeyCodes", defaults: true }];
 
 	var Debugger = function Debugger(app) {
 	  this.video = app.video.createLayer({
 	    useRetina: true,
 	    initializeCanvas: true
 	  });
+
+	  this.graph = app.video.createLayer({
+	    useRetina: false,
+	    initializeCanvas: true
+	  });
+
 	  this.app = app;
 
 	  this.options = defaults;
@@ -778,11 +825,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.fpsCount = 0;
 	  this.fpsElapsedTime = 0;
 	  this.fpsUpdateInterval = 0.5;
+	  this._framePerf = [];
 
 	  this._fontSize = 0;
 	  this._dirtyManager = new DirtyManager(this.video.canvas, this.video.ctx);
 
 	  this.logs = [];
+
+	  this._perfValues = {};
+	  this._perfNames = [];
 
 	  this.showDebug = false;
 	  this.enableDebugKeys = true;
@@ -795,6 +846,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this._load();
 
 	  this.keyShortcuts = [{ key: 123, entry: "showDebug", type: "toggle" }];
+
+	  var self = this;
+	  this.addConfig({ name: "Show Performance Graph", entry: "showGraph", defaults: false, call: function call() {
+	      self.graph.clear();
+	    } });
 	};
 
 	Debugger.prototype._setFont = function (px, font) {
@@ -813,10 +869,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	Debugger.prototype._initOption = function (option) {
 	  option.type = option.type || "toggle";
-	  option["default"] = option["default"] == null ? false : option["default"];
+	  option.defaults = option.defaults == null ? false : option.defaults;
 
 	  if (option.type === "toggle") {
-	    this[option.entry] = option["default"];
+	    this[option.entry] = option.defaults;
 	  }
 	};
 
@@ -883,18 +939,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	Debugger.prototype.keydown = function (key, e) {
+	Debugger.prototype.keydown = function (value) {
 	  if (this.disabled) {
 	    return;
 	  }
 
-	  this.lastKey = key;
+	  this.lastKey = value.key;
 
 	  var i;
 
 	  if (this.enableDebugKeys) {
-	    if (key === this.enableShortcutsKey) {
-	      e.preventDefault();
+	    if (value.key === this.enableShortcutsKey) {
+	      value.event.preventDefault();
 
 	      this.enableShortcuts = !this.enableShortcuts;
 	      return true;
@@ -911,12 +967,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var charId = indexToNumberAndLowerCaseKey(keyIndex);
 
-	        if (charId && key === charId) {
-	          e.preventDefault();
+	        if (charId && value.key === charId) {
+	          value.event.preventDefault();
 
 	          if (option.type === "toggle") {
 
 	            this[option.entry] = !this[option.entry];
+	            if (option.call) {
+	              option.call();
+	            }
 
 	            this._save();
 	          } else if (option.type === "call") {
@@ -931,8 +990,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  for (i = 0; i < this.keyShortcuts.length; i++) {
 	    var keyShortcut = this.keyShortcuts[i];
-	    if (keyShortcut.key === key) {
-	      e.preventDefault();
+	    if (keyShortcut.key === value.key) {
+	      value.event.preventDefault();
 
 	      if (keyShortcut.type === "toggle") {
 	        this[keyShortcut.entry] = !this[keyShortcut.entry];
@@ -990,6 +1049,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this._renderShortcuts();
 
 	    this.video.ctx.restore();
+
+	    if (this.showGraph) {
+	      this.graph.ctx.drawImage(this.graph.canvas, 0, this.app.height - 100, this.app.width, 100, -2, this.app.height - 100, this.app.width, 100);
+
+	      this.graph.ctx.fillStyle = "#F2F0D8";
+	      this.graph.ctx.fillRect(this.app.width - 2, this.app.height - 100, 2, 100);
+
+	      var last = 0;
+	      for (var i = 0; i < this._framePerf.length; i++) {
+	        var item = this._framePerf[i];
+	        var name = this._perfNames[i];
+	        var background = "black";
+	        if (name === "update") {
+	          background = "#6BA5F2";
+	        } else if (name === "render") {
+	          background = "#F27830";
+	        }
+	        this.graph.ctx.fillStyle = background;
+
+	        var height = (item + last) * 100 / 16;
+	        if (height > 100) {
+	          height = 100;
+	        }
+
+	        this.graph.ctx.fillRect(this.app.width - 2, this.app.height - height, 2, height - last * 100 / 16);
+
+	        last += item;
+	      }
+
+	      this._framePerf.length = 0;
+	    }
 	  }
 	};
 
@@ -1009,6 +1099,56 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.disabled = true;
 	};
 
+	Debugger.prototype.perf = function (name) {
+	  if (!this.showDebug) {
+	    return;
+	  }
+
+	  var exists = this._perfValues[name];
+
+	  if (exists == null) {
+	    this._perfNames.push(name);
+
+	    this._perfValues[name] = {
+	      name: name,
+	      value: 0,
+	      records: []
+	    };
+	  }
+
+	  var time = window.performance.now();
+
+	  var record = this._perfValues[name];
+
+	  record.value = time;
+	};
+
+	Debugger.prototype.stopPerf = function (name) {
+	  if (!this.showDebug) {
+	    return;
+	  }
+
+	  var record = this._perfValues[name];
+
+	  var time = window.performance.now();
+	  var diff = time - record.value;
+
+	  record.records.push(diff);
+	  if (record.records.length > 10) {
+	    record.records.shift();
+	  }
+
+	  var sum = 0;
+	  for (var i = 0; i < record.records.length; i++) {
+	    sum += record.records[i];
+	  }
+
+	  var avg = sum / record.records.length;
+
+	  record.value = avg;
+	  this._framePerf.push(diff);
+	};
+
 	Debugger.prototype._renderData = function () {
 	  this.video.ctx.textAlign = "right";
 	  this.video.ctx.textBaseline = "top";
@@ -1020,13 +1160,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this._renderText(Math.round(this.fps) + " fps", x, y);
 	  }
 
-	  y += 20;
+	  y += 24;
 
 	  this._setFont(15, "sans-serif");
 
 	  if (this.showKeyCodes) {
+	    var buttonName = "";
+	    if (this.app.input.mouse.isLeftDown) {
+	      buttonName = "left";
+	    } else if (this.app.input.mouse.isRightDown) {
+	      buttonName = "right";
+	    } else if (this.app.input.mouse.isMiddleDown) {
+	      buttonName = "middle";
+	    }
+
 	    this._renderText("key " + this.lastKey, x, y, this.app.input.isKeyDown(this.lastKey) ? "#e9dc7c" : "white");
-	    this._renderText("btn " + this.app.input.mouse.button, x - 60, y, this.app.input.mouse.isDown ? "#e9dc7c" : "white");
+	    this._renderText("btn " + buttonName, x - 60, y, this.app.input.mouse.isDown ? "#e9dc7c" : "white");
+
+	    for (var i = 0; i < this._perfNames.length; i++) {
+	      var name = this._perfNames[i];
+	      var value = this._perfValues[name];
+
+	      y += 24;
+	      this._renderText(name + ": " + value.value.toFixed(3) + "ms", x, y);
+	    }
 	  }
 	};
 
@@ -1107,7 +1264,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = __webpack_require__(13)();
+	var isRetina = __webpack_require__(12)();
 
 	/**
 	 * @constructor
@@ -1208,7 +1365,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var utils = __webpack_require__(12);
+	var utils = __webpack_require__(13);
 	var path = __webpack_require__(15);
 
 	var PotionAudio = __webpack_require__(16);
@@ -1265,6 +1422,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	Assets.prototype.get = function (name) {
 	  return this._data[path.normalize(name)];
+	};
+
+	Assets.prototype.remove = function (name) {
+	  this.set(name, null);
 	};
 
 	/**
@@ -1427,29 +1588,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var keys = __webpack_require__(14);
 
-	/**
-	 * Input wrapper
-	 * @constructor
-	 * @param {Game} game - Game object
-	 */
+	var invKeys = {};
+	for (var keyName in keys) {
+	  invKeys[keys[keyName]] = keyName;
+	}
+
 	var Input = function Input(game, container) {
 	  this._container = container;
-	  /**
-	   * Pressed keys object
-	   * @type {object}
-	   */
-	  this.keys = {};
+	  this._keys = {};
 
-	  /**
-	   * Controls if you can press keys
-	   * @type {boolean}
-	   */
 	  this.canControlKeys = true;
 
-	  /**
-	   * Mouse object with positions and if is mouse button pressed
-	   * @type {object}
-	   */
 	  this.mouse = {
 	    isDown: false,
 	    isLeftDown: false,
@@ -1462,35 +1611,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this._addEvents(game);
 	};
 
-	/**
-	 * Clears the pressed keys object
-	 */
 	Input.prototype.resetKeys = function () {
-	  this.keys = {};
+	  this._keys = {};
 	};
 
-	/**
-	 * Return true or false if key is pressed
-	 * @param {string} key
-	 * @return {boolean}
-	 */
 	Input.prototype.isKeyDown = function (key) {
 	  if (key == null) {
 	    return false;
 	  }
 
 	  if (this.canControlKeys) {
-	    var code = typeof key === "number" ? key : keys[key.toUpperCase()];
-	    return this.keys[code];
+	    var code = typeof key === "number" ? key : keys[key.toLowerCase()];
+	    return this._keys[code];
 	  }
 	};
 
-	/**
-	 * Add canvas event listener
-	 * @private
-	 */
 	Input.prototype._addEvents = function (game) {
 	  var self = this;
+
+	  var mouseEvent = {
+	    x: null,
+	    y: null,
+	    button: null,
+	    event: null,
+	    statePreventDefault: function statePreventDefault() {
+	      game.states._preventEvent = true;
+	    }
+	  };
+
+	  var keyboardEvent = {
+	    key: null,
+	    name: null,
+	    event: null,
+	    statePreventDefault: function statePreventDefault() {
+	      game.states._preventEvent = true;
+	    }
+	  };
 
 	  self._container.addEventListener("mousemove", function (e) {
 	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
@@ -1499,7 +1655,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    self.mouse.x = x;
 	    self.mouse.y = y;
 
-	    game.states.mousemove(x, y, e);
+	    mouseEvent.x = x;
+	    mouseEvent.y = y;
+	    mouseEvent.button = null;
+	    mouseEvent.event = e;
+
+	    game.states.mousemove(mouseEvent);
 	  });
 
 	  self._container.addEventListener("mouseup", function (e) {
@@ -1522,7 +1683,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        break;
 	    }
 
-	    game.states.mouseup(x, y, e.button);
+	    mouseEvent.x = x;
+	    mouseEvent.y = y;
+	    mouseEvent.button = e.button;
+	    mouseEvent.event = e;
+
+	    game.states.mouseup(mouseEvent);
 	  }, false);
 
 	  self._container.addEventListener("mousedown", function (e) {
@@ -1547,7 +1713,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        break;
 	    }
 
-	    game.states.mousedown(x, y, e.button);
+	    mouseEvent.x = x;
+	    mouseEvent.y = y;
+	    mouseEvent.button = e.button;
+	    mouseEvent.event = e;
+
+	    game.states.mousedown(mouseEvent);
 	  }, false);
 
 	  self._container.addEventListener("touchstart", function (e) {
@@ -1564,7 +1735,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      self.mouse.isDown = true;
 	      self.mouse.isLeftDown = true;
 
-	      game.states.mousedown(x, y, 1);
+	      mouseEvent.x = x;
+	      mouseEvent.y = y;
+	      mouseEvent.button = 1;
+	      mouseEvent.event = e;
+
+	      game.states.mousedown(e);
 	    }
 	  });
 
@@ -1582,7 +1758,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      self.mouse.isDown = true;
 	      self.mouse.isLeftDown = true;
 
-	      game.states.mousemove(x, y);
+	      mouseEvent.x = x;
+	      mouseEvent.y = y;
+	      mouseEvent.event = e;
+
+	      game.states.mousemove(e);
 	    }
 	  });
 
@@ -1599,7 +1779,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    self.mouse.isDown = false;
 	    self.mouse.isLeftDown = false;
 
-	    game.states.mouseup(x, y, 1);
+	    mouseEvent.x = x;
+	    mouseEvent.y = y;
+	    mouseEvent.event = e;
+
+	    game.states.mouseup(e);
 	  });
 
 	  self._container.addEventListener("contextmenu", function (e) {
@@ -1607,13 +1791,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 
 	  document.addEventListener("keydown", function (e) {
-	    game.input.keys[e.keyCode] = true;
-	    game.states.keydown(e.which, e);
+	    self._keys[e.keyCode] = true;
+
+	    keyboardEvent.key = e.which;
+	    keyboardEvent.name = invKeys[e.which];
+	    keyboardEvent.event = e;
+
+	    game.states.keydown(keyboardEvent);
 	  });
 
 	  document.addEventListener("keyup", function (e) {
-	    game.input.keys[e.keyCode] = false;
-	    game.states.keyup(e.which, e);
+	    self._keys[e.keyCode] = false;
+
+	    keyboardEvent.key = e.which;
+	    keyboardEvent.name = invKeys[e.which];
+	    keyboardEvent.event = e;
+
+	    game.states.keyup(keyboardEvent);
 	  });
 	};
 
@@ -2229,6 +2423,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
 	var get = exports.get = function (url, callback) {
 	  var request = new XMLHttpRequest();
 	  request.open("GET", url, true);
@@ -2251,121 +2463,99 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
 /* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	module.exports = {
-	  MOUSE1: -1,
-	  MOUSE2: -3,
-	  MWHEEL_UP: -4,
-	  MWHEEL_DOWN: -5,
-	  BACKSPACE: 8,
-	  TAB: 9,
-	  ENTER: 13,
-	  PAUSE: 19,
-	  CAPS: 20,
-	  ESC: 27,
-	  SPACE: 32,
-	  PAGE_UP: 33,
-	  PAGE_DOWN: 34,
-	  END: 35,
-	  HOME: 36,
-	  LEFT: 37,
-	  UP: 38,
-	  RIGHT: 39,
-	  DOWN: 40,
-	  INSERT: 45,
-	  DELETE: 46,
-	  _0: 48,
-	  _1: 49,
-	  _2: 50,
-	  _3: 51,
-	  _4: 52,
-	  _5: 53,
-	  _6: 54,
-	  _7: 55,
-	  _8: 56,
-	  _9: 57,
-	  A: 65,
-	  B: 66,
-	  C: 67,
-	  D: 68,
-	  E: 69,
-	  F: 70,
-	  G: 71,
-	  H: 72,
-	  I: 73,
-	  J: 74,
-	  K: 75,
-	  L: 76,
-	  M: 77,
-	  N: 78,
-	  O: 79,
-	  P: 80,
-	  Q: 81,
-	  R: 82,
-	  S: 83,
-	  T: 84,
-	  U: 85,
-	  V: 86,
-	  W: 87,
-	  X: 88,
-	  Y: 89,
-	  Z: 90,
-	  NUMPAD_0: 96,
-	  NUMPAD_1: 97,
-	  NUMPAD_2: 98,
-	  NUMPAD_3: 99,
-	  NUMPAD_4: 100,
-	  NUMPAD_5: 101,
-	  NUMPAD_6: 102,
-	  NUMPAD_7: 103,
-	  NUMPAD_8: 104,
-	  NUMPAD_9: 105,
-	  MULTIPLY: 106,
-	  ADD: 107,
-	  SUBSTRACT: 109,
-	  DECIMAL: 110,
-	  DIVIDE: 111,
-	  F1: 112,
-	  F2: 113,
-	  F3: 114,
-	  F4: 115,
-	  F5: 116,
-	  F6: 117,
-	  F7: 118,
-	  F8: 119,
-	  F9: 120,
-	  F10: 121,
-	  F11: 122,
-	  F12: 123,
-	  SHIFT: 16,
-	  CTRL: 17,
-	  ALT: 18,
-	  PLUS: 187,
-	  COMMA: 188,
-	  MINUS: 189,
-	  PERIOD: 190
+	  backspace: 8,
+	  tab: 9,
+	  enter: 13,
+	  pause: 19,
+	  caps: 20,
+	  esc: 27,
+	  space: 32,
+	  page_up: 33,
+	  page_down: 34,
+	  end: 35,
+	  home: 36,
+	  left: 37,
+	  up: 38,
+	  right: 39,
+	  down: 40,
+	  insert: 45,
+	  "delete": 46,
+	  "0": 48,
+	  "1": 49,
+	  "2": 50,
+	  "3": 51,
+	  "4": 52,
+	  "5": 53,
+	  "6": 54,
+	  "7": 55,
+	  "8": 56,
+	  "9": 57,
+	  a: 65,
+	  b: 66,
+	  c: 67,
+	  d: 68,
+	  e: 69,
+	  f: 70,
+	  g: 71,
+	  h: 72,
+	  i: 73,
+	  j: 74,
+	  k: 75,
+	  l: 76,
+	  m: 77,
+	  n: 78,
+	  o: 79,
+	  p: 80,
+	  q: 81,
+	  r: 82,
+	  s: 83,
+	  t: 84,
+	  u: 85,
+	  v: 86,
+	  w: 87,
+	  x: 88,
+	  y: 89,
+	  z: 90,
+	  numpad_0: 96,
+	  numpad_1: 97,
+	  numpad_2: 98,
+	  numpad_3: 99,
+	  numpad_4: 100,
+	  numpad_5: 101,
+	  numpad_6: 102,
+	  numpad_7: 103,
+	  numpad_8: 104,
+	  numpad_9: 105,
+	  multiply: 106,
+	  add: 107,
+	  substract: 109,
+	  decimal: 110,
+	  divide: 111,
+	  f1: 112,
+	  f2: 113,
+	  f3: 114,
+	  f4: 115,
+	  f5: 116,
+	  f6: 117,
+	  f7: 118,
+	  f8: 119,
+	  f9: 120,
+	  f10: 121,
+	  f11: 122,
+	  f12: 123,
+	  shift: 16,
+	  ctrl: 17,
+	  alt: 18,
+	  plus: 187,
+	  comma: 188,
+	  minus: 189,
+	  period: 190
 	};
 
 /***/ },
