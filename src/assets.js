@@ -3,6 +3,10 @@ var path = require('path');
 
 var PotionAudio = require('potion-audio');
 
+var JsonLoader = require('./loader/json-loader');
+var imageLoader = require('./loader/image-loader');
+var textLoader = require('./loader/text-loader');
+
 /**
  * Class for managing and loading asset files
  * @constructor
@@ -17,8 +21,6 @@ var Assets = function() {
   this.itemsCount = 0;
   this.loadedItemsCount = 0;
   this.progress = 0;
-
-  this._xhr = new XMLHttpRequest();
 
   this._thingsToLoad = 0;
   this._data = {};
@@ -112,8 +114,8 @@ Assets.prototype._finishedOneFile = function() {
   }
 };
 
-Assets.prototype._error = function(type, url) {
-  console.warn('Error loading "' + type + '" asset with url ' + url);
+Assets.prototype._error = function(url) {
+  console.warn('Error loading "' + url + '" asset');
   this._nextFile();
 };
 
@@ -155,45 +157,22 @@ Assets.prototype._loadAssetFile = function(file, callback) {
 
   type = type.toLowerCase();
 
-  var request = this._xhr;
-
   switch (type) {
     case 'json':
-      request.open('GET', url, true);
-      request.responseType = 'text';
-      request.onload = function() {
-        var data = JSON.parse(this.response);
-        callback(data);
-      };
-      request.onerror = function() { self._error(type, url); };
-      request.send();
+      JsonLoader(url, callback, this._error.bind(this));
       break;
     case 'mp3':
     case 'music':
     case 'sound':
-      self.audio.load(url, function(audio) {
-        callback(audio);
-      });
+      self.audio.load(url, callback, this._error.bind(this));
       break;
     case 'image':
     case 'texture':
     case 'sprite':
-      var image = new Image();
-      image.onload = function() {
-        callback(image);
-      };
-      image.onerror = function() { self._error(type, url); };
-      image.src = url;
+      imageLoader(url, callback, this._error.bind(this));
       break;
     default: // text files
-      request.open('GET', url, true);
-      request.responseType = 'text';
-      request.onload = function() {
-        var data = this.response;
-        callback(data);
-      };
-      request.onerror = function() { self._error(type, url); };
-      request.send();
+      textLoader(url, callback, this._error.bind(this));
       break;
   }
 };
