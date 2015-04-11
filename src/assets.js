@@ -26,7 +26,7 @@ var Assets = function() {
   this._data = {};
   this._preloading = true;
 
-  this.callback = null;
+  this._callback = null;
 
   this._toLoad = [];
 
@@ -38,7 +38,7 @@ var Assets = function() {
  * @param {function} callback - callback function
  */
 Assets.prototype.onload = function(callback) {
-  this.callback = callback;
+  this._callback = callback;
 
   if (this._thingsToLoad === 0) {
     this.isLoading = false;
@@ -107,7 +107,7 @@ Assets.prototype._finishedOneFile = function() {
   if (this._thingsToLoad === 0) {
     var self = this;
     setTimeout(function() {
-      self.callback();
+      self._callback();
       self._preloading = false;
       self.isLoading = false;
     }, 0);
