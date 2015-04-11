@@ -217,7 +217,7 @@ StateManager.prototype.exitUpdate = function(time) {
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
 
-    if (state.enabled && state.state.exitUpdate && !state.paused) {
+    if (state && state.enabled && state.state.exitUpdate && !state.paused) {
       state.state.exitUpdate(time);
     }
   }
@@ -226,7 +226,7 @@ StateManager.prototype.exitUpdate = function(time) {
 StateManager.prototype.render = function() {
   for (var i=0, len=this.renderOrder.length; i<len; i++) {
     var state = this.renderOrder[i];
-    if (state.enabled && (state.updated || !state.state.update) && state.render && state.state.render) {
+    if (state && state.enabled && (state.updated || !state.state.update) && state.render && state.state.render) {
       state.state.render();
     }
   }
@@ -236,7 +236,7 @@ StateManager.prototype.mousemove = function(value) {
 
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && !state.changed && state.state.mousemove && !state.paused) {
+    if (state && state.enabled && !state.changed && state.state.mousemove && !state.paused) {
       state.state.mousemove(value);
     }
 
@@ -249,7 +249,7 @@ StateManager.prototype.mouseup = function(value) {
 
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && !state.changed && state.state.mouseup && !state.paused) {
+    if (state && state.enabled && !state.changed && state.state.mouseup && !state.paused) {
       state.state.mouseup(value);
     }
 
@@ -262,7 +262,7 @@ StateManager.prototype.mousedown = function(value) {
 
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && !state.changed && state.state.mousedown && !state.paused) {
+    if (state && state.enabled && !state.changed && state.state.mousedown && !state.paused) {
       state.state.mousedown(value);
     }
 
@@ -275,7 +275,7 @@ StateManager.prototype.keyup = function(value) {
 
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && !state.changed && state.state.keyup && !state.paused) {
+    if (state && state.enabled && !state.changed && state.state.keyup && !state.paused) {
       state.state.keyup(value);
     }
 
@@ -288,7 +288,7 @@ StateManager.prototype.keydown = function(value) {
 
   for (var i=0, len=this.updateOrder.length; i<len; i++) {
     var state = this.updateOrder[i];
-    if (state.enabled && !state.changed && state.state.keydown && !state.paused) {
+    if (state && state.enabled && !state.changed && state.state.keydown && !state.paused) {
       state.state.keydown(value);
     }
 
