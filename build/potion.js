@@ -1,3 +1,9 @@
+/**
+* potion - v0.12.2
+* Copyright (c) 2015, Jan Sedivy
+*
+* Potion is licensed under the MIT License.
+*/
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -773,7 +779,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var util = __webpack_require__(16);
+	var util = __webpack_require__(11);
 	var DirtyManager = __webpack_require__(10);
 
 	var ObjectPool = [];
@@ -1298,7 +1304,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = __webpack_require__(11)();
+	var isRetina = __webpack_require__(12)();
 
 	/**
 	 * @constructor
@@ -1399,7 +1405,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var util = __webpack_require__(16);
+	var util = __webpack_require__(11);
 	var path = __webpack_require__(17);
 
 	var PotionAudio = __webpack_require__(18);
@@ -1590,7 +1596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var keys = __webpack_require__(12);
+	var keys = __webpack_require__(16);
 
 	var invKeys = {};
 	for (var keyName in keys) {
@@ -1866,181 +1872,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = {
-	  backspace: 8,
-	  tab: 9,
-	  enter: 13,
-	  pause: 19,
-	  caps: 20,
-	  esc: 27,
-	  space: 32,
-	  page_up: 33,
-	  page_down: 34,
-	  end: 35,
-	  home: 36,
-	  left: 37,
-	  up: 38,
-	  right: 39,
-	  down: 40,
-	  insert: 45,
-	  "delete": 46,
-	  "0": 48,
-	  "1": 49,
-	  "2": 50,
-	  "3": 51,
-	  "4": 52,
-	  "5": 53,
-	  "6": 54,
-	  "7": 55,
-	  "8": 56,
-	  "9": 57,
-	  a: 65,
-	  b: 66,
-	  c: 67,
-	  d: 68,
-	  e: 69,
-	  f: 70,
-	  g: 71,
-	  h: 72,
-	  i: 73,
-	  j: 74,
-	  k: 75,
-	  l: 76,
-	  m: 77,
-	  n: 78,
-	  o: 79,
-	  p: 80,
-	  q: 81,
-	  r: 82,
-	  s: 83,
-	  t: 84,
-	  u: 85,
-	  v: 86,
-	  w: 87,
-	  x: 88,
-	  y: 89,
-	  z: 90,
-	  numpad_0: 96,
-	  numpad_1: 97,
-	  numpad_2: 98,
-	  numpad_3: 99,
-	  numpad_4: 100,
-	  numpad_5: 101,
-	  numpad_6: 102,
-	  numpad_7: 103,
-	  numpad_8: 104,
-	  numpad_9: 105,
-	  multiply: 106,
-	  add: 107,
-	  substract: 109,
-	  decimal: 110,
-	  divide: 111,
-	  f1: 112,
-	  f2: 113,
-	  f3: 114,
-	  f4: 115,
-	  f5: 116,
-	  f6: 117,
-	  f7: 118,
-	  f8: 119,
-	  f9: 120,
-	  f10: 121,
-	  f11: 122,
-	  f12: 123,
-	  shift: 16,
-	  ctrl: 17,
-	  alt: 18,
-	  plus: 187,
-	  comma: 188,
-	  minus: 189,
-	  period: 190
-	};
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return error(url);
-	    }
-
-	    var data = JSON.parse(this.response);
-	    callback(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var image = new Image();
-	  image.onload = function () {
-	    callback(image);
-	  };
-	  image.onerror = function () {
-	    error(url);
-	  };
-	  image.src = url;
-	};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return error(url);
-	    }
-
-	    var data = this.response;
-	    callback(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2595,6 +2426,181 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(19)))
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return error(url);
+	    }
+
+	    var data = JSON.parse(this.response);
+	    callback(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var image = new Image();
+	  image.onload = function () {
+	    callback(image);
+	  };
+	  image.onerror = function () {
+	    error(url);
+	  };
+	  image.src = url;
+	};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return error(url);
+	    }
+
+	    var data = this.response;
+	    callback(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = {
+	  backspace: 8,
+	  tab: 9,
+	  enter: 13,
+	  pause: 19,
+	  caps: 20,
+	  esc: 27,
+	  space: 32,
+	  page_up: 33,
+	  page_down: 34,
+	  end: 35,
+	  home: 36,
+	  left: 37,
+	  up: 38,
+	  right: 39,
+	  down: 40,
+	  insert: 45,
+	  "delete": 46,
+	  "0": 48,
+	  "1": 49,
+	  "2": 50,
+	  "3": 51,
+	  "4": 52,
+	  "5": 53,
+	  "6": 54,
+	  "7": 55,
+	  "8": 56,
+	  "9": 57,
+	  a: 65,
+	  b: 66,
+	  c: 67,
+	  d: 68,
+	  e: 69,
+	  f: 70,
+	  g: 71,
+	  h: 72,
+	  i: 73,
+	  j: 74,
+	  k: 75,
+	  l: 76,
+	  m: 77,
+	  n: 78,
+	  o: 79,
+	  p: 80,
+	  q: 81,
+	  r: 82,
+	  s: 83,
+	  t: 84,
+	  u: 85,
+	  v: 86,
+	  w: 87,
+	  x: 88,
+	  y: 89,
+	  z: 90,
+	  numpad_0: 96,
+	  numpad_1: 97,
+	  numpad_2: 98,
+	  numpad_3: 99,
+	  numpad_4: 100,
+	  numpad_5: 101,
+	  numpad_6: 102,
+	  numpad_7: 103,
+	  numpad_8: 104,
+	  numpad_9: 105,
+	  multiply: 106,
+	  add: 107,
+	  substract: 109,
+	  decimal: 110,
+	  divide: 111,
+	  f1: 112,
+	  f2: 113,
+	  f3: 114,
+	  f4: 115,
+	  f5: 116,
+	  f6: 117,
+	  f7: 118,
+	  f8: 119,
+	  f9: 120,
+	  f10: 121,
+	  f11: 122,
+	  f12: 123,
+	  shift: 16,
+	  ctrl: 17,
+	  alt: 18,
+	  plus: 187,
+	  comma: 188,
+	  minus: 189,
+	  period: 190
+	};
 
 /***/ },
 /* 17 */
