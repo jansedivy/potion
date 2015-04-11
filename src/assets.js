@@ -1,4 +1,4 @@
-var utils = require('./utils');
+var util = require('util');
 var path = require('path');
 
 var PotionAudio = require('potion-audio');
@@ -150,7 +150,7 @@ Assets.prototype._loadAssetFile = function(file, callback) {
 
   var self = this;
 
-  if (utils.isFunction(type)) {
+  if (util.isFunction(type)) {
     this._handleCustomLoading(type);
     return;
   }
