@@ -85,9 +85,17 @@ Engine.prototype.tick = function() {
   var time = (now - this._time) / 1000;
   this._time = now;
 
+  this.game.debug.perf('update');
   this.update(time);
+  this.game.debug.stopPerf('update');
+
   this.game.states.exitUpdate(time);
+
+  this.game.debug.perf('render');
   this.render();
+  this.game.debug.stopPerf('render');
+
+  this.game.debug.render();
 };
 
 /**
@@ -147,6 +155,7 @@ Engine.prototype._setDefaultStates = function() {
 
   states.protect('app');
   states.protect('debug');
+  states.hide('debug');
 
   this.game.states = states;
 };
