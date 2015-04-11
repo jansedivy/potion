@@ -30,7 +30,23 @@ var Assets = function() {
 
   this._toLoad = [];
 
+  this._loaders = {};
+
   this.audio = new PotionAudio();
+
+  this.addLoader('json', JsonLoader);
+
+  this.addLoader('mp3', this.audio.load.bind(this.audio));
+  this.addLoader('music', this.audio.load.bind(this.audio));
+  this.addLoader('sound', this.audio.load.bind(this.audio));
+
+  this.addLoader('image', imageLoader);
+  this.addLoader('texture', imageLoader);
+  this.addLoader('sprite', imageLoader);
+};
+
+Assets.prototype.addLoader = function(name, fn) {
+  this._loaders[name] = fn;
 };
 
 /**
@@ -148,8 +164,6 @@ Assets.prototype._loadAssetFile = function(file, callback) {
   var type = file.type;
   var url = file.url;
 
-  var self = this;
-
   if (util.isFunction(type)) {
     this._handleCustomLoading(type);
     return;
@@ -157,24 +171,8 @@ Assets.prototype._loadAssetFile = function(file, callback) {
 
   type = type.toLowerCase();
 
-  switch (type) {
-    case 'json':
-      JsonLoader(url, callback, this._error.bind(this));
-      break;
-    case 'mp3':
-    case 'music':
-    case 'sound':
-      self.audio.load(url, callback, this._error.bind(this));
-      break;
-    case 'image':
-    case 'texture':
-    case 'sprite':
-      imageLoader(url, callback, this._error.bind(this));
-      break;
-    default: // text files
-      textLoader(url, callback, this._error.bind(this));
-      break;
-  }
+  var loader = this._loaders[type] || textLoader;
+  loader(url, callback, this._error.bind(this));
 };
 
 module.exports = Assets;
