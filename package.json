@@ -22,6 +22,6 @@
   },
   "dependencies": {
     "potion-audio": "^1.1.1",
-    "potion-debugger": "^0.6.0"
+    "potion-debugger": "^0.6.2"
   }
 }
