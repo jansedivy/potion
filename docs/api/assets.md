@@ -84,3 +84,26 @@ Method for setting items in assets. Used for overwriting items in assets object.
 Removes item from assets object.
 
 `path` - path of the asset
+
+#### 'addLoader(name, fn)'
+
+Add custom asset loader for specific file type.
+
+`name` - Name of the asset loader. Used when calling `load` method
+
+`fn` - This functions is called every time when its started loading asset. Arguments are `(url, callback, error).
+
+##### Example
+
+```javascript
+this.assets.addLoader('json', function(url, callback, error) {
+  jsonRequest(url, {
+    success: function(result) {
+      callback(result);
+    },
+    error: function() {
+      error(url);
+    }
+  });
+});
+```
