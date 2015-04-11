@@ -160,6 +160,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	Engine.prototype.tick = function () {
+	  this.game.debug.begin();
+
 	  window.requestAnimationFrame(this.tickFunc);
 
 	  var now = Time.now();
@@ -177,6 +179,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.game.debug.stopPerf("render");
 
 	  this.game.debug.render();
+
+	  this.game.debug.end();
 	};
 
 	/**
@@ -672,7 +676,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
 
-	    if (state.enabled && state.state.exitUpdate && !state.paused) {
+	    if (state && state.enabled && state.state.exitUpdate && !state.paused) {
 	      state.state.exitUpdate(time);
 	    }
 	  }
@@ -681,7 +685,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	StateManager.prototype.render = function () {
 	  for (var i = 0, len = this.renderOrder.length; i < len; i++) {
 	    var state = this.renderOrder[i];
-	    if (state.enabled && (state.updated || !state.state.update) && state.render && state.state.render) {
+	    if (state && state.enabled && (state.updated || !state.state.update) && state.render && state.state.render) {
 	      state.state.render();
 	    }
 	  }
@@ -691,7 +695,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
-	    if (state.enabled && !state.changed && state.state.mousemove && !state.paused) {
+	    if (state && state.enabled && !state.changed && state.state.mousemove && !state.paused) {
 	      state.state.mousemove(value);
 	    }
 
@@ -706,7 +710,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
-	    if (state.enabled && !state.changed && state.state.mouseup && !state.paused) {
+	    if (state && state.enabled && !state.changed && state.state.mouseup && !state.paused) {
 	      state.state.mouseup(value);
 	    }
 
@@ -721,7 +725,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
-	    if (state.enabled && !state.changed && state.state.mousedown && !state.paused) {
+	    if (state && state.enabled && !state.changed && state.state.mousedown && !state.paused) {
 	      state.state.mousedown(value);
 	    }
 
@@ -736,7 +740,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
-	    if (state.enabled && !state.changed && state.state.keyup && !state.paused) {
+	    if (state && state.enabled && !state.changed && state.state.keyup && !state.paused) {
 	      state.state.keyup(value);
 	    }
 
@@ -751,7 +755,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
 	    var state = this.updateOrder[i];
-	    if (state.enabled && !state.changed && state.state.keydown && !state.paused) {
+	    if (state && state.enabled && !state.changed && state.state.keydown && !state.paused) {
 	      state.state.keydown(value);
 	    }
 
@@ -769,7 +773,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var util = __webpack_require__(11);
+	var util = __webpack_require__(16);
 	var DirtyManager = __webpack_require__(10);
 
 	var ObjectPool = [];
@@ -808,6 +812,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    useRetina: false,
 	    initializeCanvas: true
 	  });
+
+	  this._graphHeight = 100;
+	  this._60fpsMark = this._graphHeight * 0.8;
+	  this._msToPx = this._60fpsMark / 16.66;
 
 	  this.app = app;
 
@@ -851,6 +859,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.addConfig({ name: "Show Performance Graph", entry: "showGraph", defaults: false, call: function call() {
 	      self.graph.clear();
 	    } });
+
+	  this._diff = 0;
+	  this._frameStart = 0;
+	};
+
+	Debugger.prototype.begin = function () {
+	  if (this.showDebug) {
+	    this._frameStart = window.performance.now();
+	  }
+	};
+
+	Debugger.prototype.end = function () {
+	  if (this.showDebug) {
+	    this._diff = window.performance.now() - this._frameStart;
+	  }
 	};
 
 	Debugger.prototype._setFont = function (px, font) {
@@ -1051,36 +1074,47 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.video.ctx.restore();
 
 	    if (this.showGraph) {
-	      this.graph.ctx.drawImage(this.graph.canvas, 0, this.app.height - 100, this.app.width, 100, -2, this.app.height - 100, this.app.width, 100);
+	      this.graph.ctx.drawImage(this.graph.canvas, 0, this.app.height - this._graphHeight, this.app.width, this._graphHeight, -2, this.app.height - this._graphHeight, this.app.width, this._graphHeight);
 
 	      this.graph.ctx.fillStyle = "#F2F0D8";
-	      this.graph.ctx.fillRect(this.app.width - 2, this.app.height - 100, 2, 100);
+	      this.graph.ctx.fillRect(this.app.width - 2, this.app.height - this._graphHeight, 2, this._graphHeight);
+
+	      this.graph.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	      this.graph.ctx.fillRect(this.app.width - 2, this.app.height - this._60fpsMark, 2, 1);
 
 	      var last = 0;
 	      for (var i = 0; i < this._framePerf.length; i++) {
 	        var item = this._framePerf[i];
 	        var name = this._perfNames[i];
-	        var background = "black";
-	        if (name === "update") {
-	          background = "#6BA5F2";
-	        } else if (name === "render") {
-	          background = "#F27830";
-	        }
-	        this.graph.ctx.fillStyle = background;
 
-	        var height = (item + last) * 100 / 16;
-	        if (height > 100) {
-	          height = 100;
-	        }
-
-	        this.graph.ctx.fillRect(this.app.width - 2, this.app.height - height, 2, height - last * 100 / 16);
+	        this._drawFrameLine(item, name, last);
 
 	        last += item;
 	      }
 
+	      this._drawFrameLine(this._diff - last, "lag", last);
 	      this._framePerf.length = 0;
 	    }
 	  }
+	};
+
+	Debugger.prototype._drawFrameLine = function (value, name, last) {
+	  var background = "black";
+	  if (name === "update") {
+	    background = "#6BA5F2";
+	  } else if (name === "render") {
+	    background = "#F27830";
+	  } else if (name === "lag") {
+	    background = "#91f682";
+	  }
+	  this.graph.ctx.fillStyle = background;
+
+	  var height = (value + last) * this._msToPx;
+
+	  var x = this.app.width - 2;
+	  var y = this.app.height - height;
+
+	  this.graph.ctx.fillRect(x, y, 2, height - last * this._msToPx);
 	};
 
 	Debugger.prototype._renderLogs = function () {
@@ -1264,7 +1298,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = __webpack_require__(12)();
+	var isRetina = __webpack_require__(11)();
 
 	/**
 	 * @constructor
@@ -1365,10 +1399,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var utils = __webpack_require__(13);
-	var path = __webpack_require__(15);
+	var util = __webpack_require__(16);
+	var path = __webpack_require__(17);
 
-	var PotionAudio = __webpack_require__(16);
+	var PotionAudio = __webpack_require__(18);
+
+	var JsonLoader = __webpack_require__(13);
+	var imageLoader = __webpack_require__(14);
+	var textLoader = __webpack_require__(15);
 
 	/**
 	 * Class for managing and loading asset files
@@ -1385,17 +1423,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.loadedItemsCount = 0;
 	  this.progress = 0;
 
-	  this._xhr = new XMLHttpRequest();
-
 	  this._thingsToLoad = 0;
 	  this._data = {};
 	  this._preloading = true;
 
-	  this.callback = null;
+	  this._callback = null;
 
 	  this._toLoad = [];
 
+	  this._loaders = {};
+
 	  this.audio = new PotionAudio();
+
+	  this.addLoader("json", JsonLoader);
+
+	  this.addLoader("mp3", this.audio.load.bind(this.audio));
+	  this.addLoader("music", this.audio.load.bind(this.audio));
+	  this.addLoader("sound", this.audio.load.bind(this.audio));
+
+	  this.addLoader("image", imageLoader);
+	  this.addLoader("texture", imageLoader);
+	  this.addLoader("sprite", imageLoader);
+	};
+
+	Assets.prototype.addLoader = function (name, fn) {
+	  this._loaders[name] = fn;
 	};
 
 	/**
@@ -1403,7 +1455,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {function} callback - callback function
 	 */
 	Assets.prototype.onload = function (callback) {
-	  this.callback = callback;
+	  this._callback = callback;
 
 	  if (this._thingsToLoad === 0) {
 	    this.isLoading = false;
@@ -1473,15 +1525,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this._thingsToLoad === 0) {
 	    var self = this;
 	    setTimeout(function () {
-	      self.callback();
+	      self._callback();
 	      self._preloading = false;
 	      self.isLoading = false;
 	    }, 0);
 	  }
 	};
 
-	Assets.prototype._error = function (type, url) {
-	  console.warn("Error loading \"" + type + "\" asset with url " + url);
+	Assets.prototype._error = function (url) {
+	  console.warn("Error loading \"" + url + "\" asset");
 	  this._nextFile();
 	};
 
@@ -1518,67 +1570,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var type = file.type;
 	  var url = file.url;
 
-	  var self = this;
-
-	  if (utils.isFunction(type)) {
+	  if (util.isFunction(type)) {
 	    this._handleCustomLoading(type);
 	    return;
 	  }
 
 	  type = type.toLowerCase();
 
-	  var request = this._xhr;
-
-	  switch (type) {
-	    case "json":
-	      request.open("GET", url, true);
-	      request.responseType = "text";
-	      request.onload = function () {
-	        var data = JSON.parse(this.response);
-	        callback(data);
-	      };
-	      request.onerror = function () {
-	        self._error(type, url);
-	      };
-	      request.send();
-	      break;
-	    case "mp3":
-	    case "music":
-	    case "sound":
-	      self.audio.load(url, function (audio) {
-	        callback(audio);
-	      });
-	      break;
-	    case "image":
-	    case "texture":
-	    case "sprite":
-	      var image = new Image();
-	      image.onload = function () {
-	        callback(image);
-	      };
-	      image.onerror = function () {
-	        self._error(type, url);
-	      };
-	      image.src = url;
-	      break;
-	    default:
-	      // text files
-	      request.open("GET", url, true);
-	      request.responseType = "text";
-	      request.onload = function () {
-	        var data = this.response;
-	        callback(data);
-	      };
-	      request.onerror = function () {
-	        self._error(type, url);
-	      };
-	      request.send();
-	      break;
-	  }
+	  var loader = this._loaders[type] || textLoader;
+	  loader(url, callback, this._error.bind(this));
 	};
 
 	module.exports = Assets;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)))
 
 /***/ },
 /* 9 */
@@ -1586,7 +1590,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var keys = __webpack_require__(14);
+	var keys = __webpack_require__(12);
 
 	var invKeys = {};
 	for (var keyName in keys) {
@@ -1862,6 +1866,181 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = {
+	  backspace: 8,
+	  tab: 9,
+	  enter: 13,
+	  pause: 19,
+	  caps: 20,
+	  esc: 27,
+	  space: 32,
+	  page_up: 33,
+	  page_down: 34,
+	  end: 35,
+	  home: 36,
+	  left: 37,
+	  up: 38,
+	  right: 39,
+	  down: 40,
+	  insert: 45,
+	  "delete": 46,
+	  "0": 48,
+	  "1": 49,
+	  "2": 50,
+	  "3": 51,
+	  "4": 52,
+	  "5": 53,
+	  "6": 54,
+	  "7": 55,
+	  "8": 56,
+	  "9": 57,
+	  a: 65,
+	  b: 66,
+	  c: 67,
+	  d: 68,
+	  e: 69,
+	  f: 70,
+	  g: 71,
+	  h: 72,
+	  i: 73,
+	  j: 74,
+	  k: 75,
+	  l: 76,
+	  m: 77,
+	  n: 78,
+	  o: 79,
+	  p: 80,
+	  q: 81,
+	  r: 82,
+	  s: 83,
+	  t: 84,
+	  u: 85,
+	  v: 86,
+	  w: 87,
+	  x: 88,
+	  y: 89,
+	  z: 90,
+	  numpad_0: 96,
+	  numpad_1: 97,
+	  numpad_2: 98,
+	  numpad_3: 99,
+	  numpad_4: 100,
+	  numpad_5: 101,
+	  numpad_6: 102,
+	  numpad_7: 103,
+	  numpad_8: 104,
+	  numpad_9: 105,
+	  multiply: 106,
+	  add: 107,
+	  substract: 109,
+	  decimal: 110,
+	  divide: 111,
+	  f1: 112,
+	  f2: 113,
+	  f3: 114,
+	  f4: 115,
+	  f5: 116,
+	  f6: 117,
+	  f7: 118,
+	  f8: 119,
+	  f9: 120,
+	  f10: 121,
+	  f11: 122,
+	  f12: 123,
+	  shift: 16,
+	  ctrl: 17,
+	  alt: 18,
+	  plus: 187,
+	  comma: 188,
+	  minus: 189,
+	  period: 190
+	};
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return error(url);
+	    }
+
+	    var data = JSON.parse(this.response);
+	    callback(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var image = new Image();
+	  image.onload = function () {
+	    callback(image);
+	  };
+	  image.onerror = function () {
+	    error(url);
+	  };
+	  image.src = url;
+	};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return error(url);
+	    }
+
+	    var data = this.response;
+	    callback(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2361,7 +2540,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(18);
+	exports.isBuffer = __webpack_require__(20);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -2398,7 +2577,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(20);
+	exports.inherits = __webpack_require__(22);
 
 	exports._extend = function (origin, add) {
 	  // Don't do anything if add isn't an object
@@ -2415,151 +2594,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	function hasOwnProperty(obj, prop) {
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(17)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(19)))
 
 /***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var get = exports.get = function (url, callback) {
-	  var request = new XMLHttpRequest();
-	  request.open("GET", url, true);
-
-	  request.onload = function () {
-	    callback(this.response);
-	  };
-
-	  request.send();
-	};
-
-	var getJSON = exports.getJSON = function (url, callback) {
-	  get(url, function (text) {
-	    callback(JSON.parse(text));
-	  });
-	};
-
-	exports.isFunction = function (obj) {
-	  return !!(obj && obj.constructor && obj.call && obj.apply);
-	};
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = {
-	  backspace: 8,
-	  tab: 9,
-	  enter: 13,
-	  pause: 19,
-	  caps: 20,
-	  esc: 27,
-	  space: 32,
-	  page_up: 33,
-	  page_down: 34,
-	  end: 35,
-	  home: 36,
-	  left: 37,
-	  up: 38,
-	  right: 39,
-	  down: 40,
-	  insert: 45,
-	  "delete": 46,
-	  "0": 48,
-	  "1": 49,
-	  "2": 50,
-	  "3": 51,
-	  "4": 52,
-	  "5": 53,
-	  "6": 54,
-	  "7": 55,
-	  "8": 56,
-	  "9": 57,
-	  a: 65,
-	  b: 66,
-	  c: 67,
-	  d: 68,
-	  e: 69,
-	  f: 70,
-	  g: 71,
-	  h: 72,
-	  i: 73,
-	  j: 74,
-	  k: 75,
-	  l: 76,
-	  m: 77,
-	  n: 78,
-	  o: 79,
-	  p: 80,
-	  q: 81,
-	  r: 82,
-	  s: 83,
-	  t: 84,
-	  u: 85,
-	  v: 86,
-	  w: 87,
-	  x: 88,
-	  y: 89,
-	  z: 90,
-	  numpad_0: 96,
-	  numpad_1: 97,
-	  numpad_2: 98,
-	  numpad_3: 99,
-	  numpad_4: 100,
-	  numpad_5: 101,
-	  numpad_6: 102,
-	  numpad_7: 103,
-	  numpad_8: 104,
-	  numpad_9: 105,
-	  multiply: 106,
-	  add: 107,
-	  substract: 109,
-	  decimal: 110,
-	  divide: 111,
-	  f1: 112,
-	  f2: 113,
-	  f3: 114,
-	  f4: 115,
-	  f5: 116,
-	  f6: 117,
-	  f7: 118,
-	  f8: 119,
-	  f9: 120,
-	  f10: 121,
-	  f11: 122,
-	  f12: 123,
-	  shift: 16,
-	  ctrl: 17,
-	  alt: 18,
-	  plus: 187,
-	  comma: 188,
-	  minus: 189,
-	  period: 190
-	};
-
-/***/ },
-/* 15 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2785,18 +2823,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (start < 0) start = str.length + start;
 	  return str.substr(start, len);
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)))
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	module.exports = __webpack_require__(19);
+	module.exports = __webpack_require__(21);
 
 /***/ },
-/* 17 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser
@@ -2865,7 +2903,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 18 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2875,12 +2913,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 19 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var LoadedAudio = __webpack_require__(21);
+	var LoadedAudio = __webpack_require__(23);
 
 	var AudioManager = function AudioManager() {
 	  var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -2953,7 +2991,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = AudioManager;
 
 /***/ },
-/* 20 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2983,12 +3021,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 21 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var PlayingAudio = __webpack_require__(22);
+	var PlayingAudio = __webpack_require__(24);
 
 	var LoadedAudio = function LoadedAudio(ctx, buffer, masterGain) {
 	  this._ctx = ctx;
@@ -3048,7 +3086,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = LoadedAudio;
 
 /***/ },
-/* 22 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
