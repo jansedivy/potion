@@ -79,6 +79,8 @@ Engine.prototype.start = function() {
  * @private
  */
 Engine.prototype.tick = function() {
+  this.game.debug.begin();
+
   window.requestAnimationFrame(this.tickFunc);
 
   var now = Time.now();
@@ -96,6 +98,8 @@ Engine.prototype.tick = function() {
   this.game.debug.stopPerf('render');
 
   this.game.debug.render();
+
+  this.game.debug.end();
 };
 
 /**
