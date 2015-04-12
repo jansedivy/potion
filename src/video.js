@@ -36,6 +36,10 @@ Video.prototype.beginFrame = function() {};
 
 Video.prototype.endFrame = function() {};
 
+Video.prototype.destroy = function() {
+  this.canvas.parentElement.removeChild(this.canvas);
+};
+
 Video.prototype.scaleCanvas = function(scale) {
   this.canvas.style.width = this.canvas.width + 'px';
   this.canvas.style.height = this.canvas.height + 'px';
