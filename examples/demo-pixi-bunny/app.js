@@ -53,8 +53,10 @@ app = Potion.init(document.querySelector('.game'), {
     this.renderer = new PIXI.WebGLRenderer(this.width, this.height, { resolution: this.config.useRetina ? 2 : 1, view: this.canvas });
 
     this.assets.addLoader('pixi', function(url, callback) {
-      callback(PIXI.Texture.fromImage(url));
-    });
+      this.assets._loaders.image(url, function(image) {
+        callback(new PIXI.Texture(new PIXI.BaseTexture(image)));
+      });
+    }.bind(this));
 
     this.assets.load('pixi', 'bunny.png');
   },
