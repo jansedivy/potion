@@ -11,7 +11,7 @@ Potion is a game library with very simple and powerful abstractions.
 - Debugger for in game logging and switch toggling
 
 
-#### [Examples](http://potion-examples.jansedivy.com)
+#### [Examples](http://potionjs.com)
 
 ## Documentation
 
