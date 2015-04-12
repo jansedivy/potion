@@ -21,7 +21,7 @@
     "webpack-dev-server": "^1.8.0"
   },
   "dependencies": {
-    "potion-audio": "^1.1.1",
-    "potion-debugger": "^0.7.1"
+    "potion-audio": "^1.1.3",
+    "potion-debugger": "^0.7.2"
   }
 }
