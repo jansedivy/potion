@@ -25,8 +25,6 @@ Loading.prototype.render = function(time) {
   var currentWidth = width * this.app.assets.progress;
   this.barWidth = this.barWidth + (currentWidth - this.barWidth) * time * 10;
 
-  this.video.ctx.save();
-
   this.video.ctx.fillStyle = color2;
   this.video.ctx.fillRect(0, 0, this.app.width, this.app.height);
 
@@ -76,8 +74,6 @@ Loading.prototype.render = function(time) {
 
   this.video.ctx.stroke();
   this.video.ctx.closePath();
-
-  this.video.ctx.restore();
 };
 
 Loading.prototype.exit = function() {
