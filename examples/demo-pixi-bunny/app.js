@@ -11,6 +11,10 @@ var Bunny = function() {
   this.speedY = 0;
 
   this.object = new PIXI.Sprite(app.assets.get('bunny.png'));
+
+  this.object.scale.set(0.5 + Math.random() * 0.5);
+  this.object.rotation = Math.random() - 0.5;
+
   app.stage.addChild(this.object);
 };
 
