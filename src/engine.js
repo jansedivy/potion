@@ -54,7 +54,6 @@ var Engine = function(container, methods) {
 Engine.prototype.addEvents = function() {
   var self = this;
 
-  var game = self.game;
   window.addEventListener('blur', function() {
     self.game.input.resetKeys();
     self.game.blur();
