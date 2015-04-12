@@ -53,3 +53,7 @@ Methods which clears the screen. Could be overwritten for different rendering, l
 Creates new `Video` instance and new canvas element which is then placed on top
 of the current one. This is used for multi canvas rendering. For example
 debugger is on its own canvas element.
+
+#### 'destroy()'
+
+Removes canvas element from the container.
