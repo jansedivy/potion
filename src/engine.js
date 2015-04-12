@@ -37,6 +37,8 @@ var Engine = function(container, methods) {
     this.start();
 
     window.cancelAnimationFrame(this.preloaderId);
+    this.game._preloader.exit();
+
     window.requestAnimationFrame(this.tickFunc);
   }.bind(this));
 
