@@ -32,7 +32,7 @@ this.config.fixedStep = true;
 ```javascript
 {
   useRetina: true,
-  initializeCanvas: true,
+  getCanvasContext: true,
   initializeVideo: true,
   addInputEvents: true,
   showPreloader: true,
