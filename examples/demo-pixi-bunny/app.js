@@ -48,7 +48,7 @@ app = Potion.init(document.querySelector('.game'), {
   configure: function() {
     this.setSize(800, 600);
     this.config.useRetina = false;
-    this.config.initializeCanvas = false;
+    this.config.getCanvasContext = false;
 
     this.renderer = new PIXI.WebGLRenderer(this.width, this.height, { resolution: this.config.useRetina ? 2 : 1, view: this.canvas });
 

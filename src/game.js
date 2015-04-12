@@ -19,7 +19,7 @@ var Game = function(canvas) {
 
   this.config = {
     useRetina: true,
-    initializeCanvas: true,
+    getCanvasContext: true,
     initializeVideo: true,
     addInputEvents: true,
     showPreloader: true,

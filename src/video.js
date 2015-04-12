@@ -15,7 +15,7 @@ var Video = function(game, canvas, config) {
 
   this.height = game.height;
 
-  if (config.initializeCanvas) {
+  if (config.getCanvasContext) {
     this.ctx = canvas.getContext('2d');
   }
 

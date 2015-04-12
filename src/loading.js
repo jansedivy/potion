@@ -5,7 +5,7 @@ var Loading = function(app) {
 
   this.video = app.video.createLayer({
     useRetina: true,
-    initializeCanvas: true
+    getCanvasContext: true
   });
 
   this.video.canvas.className += ' test';
