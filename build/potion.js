@@ -1,5 +1,5 @@
 /**
-* potion - v0.12.2
+* potion - v0.12.3
 * Copyright (c) 2015, Jan Sedivy
 *
 * Potion is licensed under the MIT License.
@@ -124,6 +124,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.start();
 
 	    window.cancelAnimationFrame(this.preloaderId);
+	    this.game._preloader.exit();
+
 	    window.requestAnimationFrame(this.tickFunc);
 	  }).bind(this));
 
@@ -139,7 +141,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	Engine.prototype.addEvents = function () {
 	  var self = this;
 
-	  var game = self.game;
 	  window.addEventListener("blur", function () {
 	    self.game.input.resetKeys();
 	    self.game.blur();
@@ -314,6 +315,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Video = __webpack_require__(7);
 	var Assets = __webpack_require__(8);
 	var Input = __webpack_require__(9);
+	var Loading = __webpack_require__(10);
 
 	var Game = function Game(canvas) {
 	  this.canvas = canvas;
@@ -331,7 +333,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this.config = {
 	    useRetina: true,
-	    initializeCanvas: true,
+	    getCanvasContext: true,
 	    initializeVideo: true,
 	    addInputEvents: true,
 	    showPreloader: true,
@@ -349,6 +351,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.config.addInputEvents) {
 	    this.input = new Input(this, canvas.parentElement);
 	  }
+
+	  this._preloader = new Loading(this);
 	};
 
 	Game.prototype.setSize = function (width, height) {
@@ -361,81 +365,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	Game.prototype.preloading = function (time) {
-	  if (!this.config.showPreloader && !(this.video && this.video.ctx)) {
-	    return;
-	  }
-
-	  if (this.video.ctx) {
-	    var color1 = "#b9ff71";
-	    var color2 = "#8ac250";
-	    var color3 = "#648e38";
-
-	    if (this._preloaderWidth === undefined) {
-	      this._preloaderWidth = 0;
-	    }
-
-	    var width = Math.min(this.width * 2 / 3, 300);
-	    var height = 20;
-
-	    var y = (this.height - height) / 2;
-	    var x = (this.width - width) / 2;
-
-	    var currentWidth = width * this.assets.progress;
-	    this._preloaderWidth = this._preloaderWidth + (currentWidth - this._preloaderWidth) * time * 10;
-
-	    this.video.ctx.save();
-
-	    this.video.ctx.fillStyle = color2;
-	    this.video.ctx.fillRect(0, 0, this.width, this.height);
-
-	    this.video.ctx.font = "400 40px sans-serif";
-	    this.video.ctx.textAlign = "center";
-	    this.video.ctx.textBaseline = "bottom";
-
-	    this.video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-	    this.video.ctx.fillText("Potion.js", this.width / 2, y + 2);
-
-	    this.video.ctx.fillStyle = "#d1ffa1";
-	    this.video.ctx.fillText("Potion.js", this.width / 2, y);
-
-	    this.video.ctx.strokeStyle = this.video.ctx.fillStyle = color3;
-	    this.video.ctx.fillRect(x, y + 15, width, height);
-
-	    this.video.ctx.lineWidth = 2;
-	    this.video.ctx.beginPath();
-	    this.video.ctx.rect(x - 5, y + 10, width + 10, height + 10);
-	    this.video.ctx.closePath();
-	    this.video.ctx.stroke();
-
-	    this.video.ctx.strokeStyle = this.video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-	    this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height + 2);
-
-	    this.video.ctx.lineWidth = 2;
-	    this.video.ctx.beginPath();
-
-	    this.video.ctx.moveTo(x + this._preloaderWidth, y + 12);
-	    this.video.ctx.lineTo(x - 5, y + 12);
-	    this.video.ctx.lineTo(x - 5, y + 10 + height + 12);
-	    this.video.ctx.lineTo(x + this._preloaderWidth, y + 10 + height + 12);
-
-	    this.video.ctx.stroke();
-	    this.video.ctx.closePath();
-
-	    this.video.ctx.strokeStyle = this.video.ctx.fillStyle = color1;
-	    this.video.ctx.fillRect(x, y + 15, this._preloaderWidth, height);
-
-	    this.video.ctx.lineWidth = 2;
-	    this.video.ctx.beginPath();
-
-	    this.video.ctx.moveTo(x + this._preloaderWidth, y + 10);
-	    this.video.ctx.lineTo(x - 5, y + 10);
-	    this.video.ctx.lineTo(x - 5, y + 10 + height + 10);
-	    this.video.ctx.lineTo(x + this._preloaderWidth, y + 10 + height + 10);
-
-	    this.video.ctx.stroke();
-	    this.video.ctx.closePath();
-
-	    this.video.ctx.restore();
+	  if (this.config.showPreloader) {
+	    this._preloader.render(time);
 	  }
 	};
 
@@ -779,8 +710,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var util = __webpack_require__(11);
-	var DirtyManager = __webpack_require__(10);
+	var util = __webpack_require__(17);
+	var DirtyManager = __webpack_require__(11);
 
 	var ObjectPool = [];
 
@@ -811,12 +742,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Debugger = function Debugger(app) {
 	  this.video = app.video.createLayer({
 	    useRetina: true,
-	    initializeCanvas: true
+	    getCanvasContext: true
 	  });
 
 	  this.graph = app.video.createLayer({
 	    useRetina: false,
-	    initializeCanvas: true
+	    getCanvasContext: true
 	  });
 
 	  this._graphHeight = 100;
@@ -1304,7 +1235,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var isRetina = __webpack_require__(12)();
+	var isRetina = __webpack_require__(13)();
 
 	/**
 	 * @constructor
@@ -1321,7 +1252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this.height = game.height;
 
-	  if (config.initializeCanvas) {
+	  if (config.getCanvasContext) {
 	    this.ctx = canvas.getContext("2d");
 	  }
 
@@ -1341,6 +1272,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	Video.prototype.beginFrame = function () {};
 
 	Video.prototype.endFrame = function () {};
+
+	Video.prototype.destroy = function () {
+	  this.canvas.parentElement.removeChild(this.canvas);
+	};
 
 	Video.prototype.scaleCanvas = function (scale) {
 	  this.canvas.style.width = this.canvas.width + "px";
@@ -1405,14 +1340,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var util = __webpack_require__(11);
-	var path = __webpack_require__(17);
+	var util = __webpack_require__(17);
+	var path = __webpack_require__(18);
 
-	var PotionAudio = __webpack_require__(18);
+	var PotionAudio = __webpack_require__(19);
 
-	var JsonLoader = __webpack_require__(13);
-	var imageLoader = __webpack_require__(14);
-	var textLoader = __webpack_require__(15);
+	var JsonLoader = __webpack_require__(14);
+	var imageLoader = __webpack_require__(15);
+	var textLoader = __webpack_require__(16);
 
 	/**
 	 * Class for managing and loading asset files
@@ -1588,7 +1523,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = Assets;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20)))
 
 /***/ },
 /* 9 */
@@ -1596,7 +1531,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var keys = __webpack_require__(16);
+	var keys = __webpack_require__(12);
 
 	var invKeys = {};
 	for (var keyName in keys) {
@@ -1750,7 +1685,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      mouseEvent.button = 1;
 	      mouseEvent.event = e;
 
-	      game.states.mousedown(e);
+	      game.states.mousedown(mouseEvent);
 	    }
 	  });
 
@@ -1772,7 +1707,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      mouseEvent.y = y;
 	      mouseEvent.event = e;
 
-	      game.states.mousemove(e);
+	      game.states.mousemove(mouseEvent);
 	    }
 	  });
 
@@ -1793,7 +1728,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    mouseEvent.y = y;
 	    mouseEvent.event = e;
 
-	    game.states.mouseup(e);
+	    game.states.mouseup(mouseEvent);
 	  });
 
 	  self._container.addEventListener("contextmenu", function (e) {
@@ -1825,6 +1760,96 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var Loading = function Loading(app) {
+	  this.app = app;
+
+	  this.barWidth = 0;
+
+	  this.video = app.video.createLayer({
+	    useRetina: true,
+	    getCanvasContext: true
+	  });
+
+	  this.video.canvas.className += " test";
+	};
+
+	Loading.prototype.render = function (time) {
+	  var color1 = "#b9ff71";
+	  var color2 = "#8ac250";
+	  var color3 = "#648e38";
+
+	  var width = Math.min(this.app.width * 2 / 3, 300);
+	  var height = 20;
+
+	  var y = (this.app.height - height) / 2;
+	  var x = (this.app.width - width) / 2;
+
+	  var currentWidth = width * this.app.assets.progress;
+	  this.barWidth = this.barWidth + (currentWidth - this.barWidth) * time * 10;
+
+	  this.video.ctx.fillStyle = color2;
+	  this.video.ctx.fillRect(0, 0, this.app.width, this.app.height);
+
+	  this.video.ctx.font = "400 40px sans-serif";
+	  this.video.ctx.textAlign = "center";
+	  this.video.ctx.textBaseline = "bottom";
+
+	  this.video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+	  this.video.ctx.fillText("Potion.js", this.app.width / 2, y + 2);
+
+	  this.video.ctx.fillStyle = "#d1ffa1";
+	  this.video.ctx.fillText("Potion.js", this.app.width / 2, y);
+
+	  this.video.ctx.strokeStyle = this.video.ctx.fillStyle = color3;
+	  this.video.ctx.fillRect(x, y + 15, width, height);
+
+	  this.video.ctx.lineWidth = 2;
+	  this.video.ctx.beginPath();
+	  this.video.ctx.rect(x - 5, y + 10, width + 10, height + 10);
+	  this.video.ctx.closePath();
+	  this.video.ctx.stroke();
+
+	  this.video.ctx.strokeStyle = this.video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+	  this.video.ctx.fillRect(x, y + 15, this.barWidth, height + 2);
+
+	  this.video.ctx.lineWidth = 2;
+	  this.video.ctx.beginPath();
+
+	  this.video.ctx.moveTo(x + this.barWidth, y + 12);
+	  this.video.ctx.lineTo(x - 5, y + 12);
+	  this.video.ctx.lineTo(x - 5, y + 10 + height + 12);
+	  this.video.ctx.lineTo(x + this.barWidth, y + 10 + height + 12);
+
+	  this.video.ctx.stroke();
+	  this.video.ctx.closePath();
+
+	  this.video.ctx.strokeStyle = this.video.ctx.fillStyle = color1;
+	  this.video.ctx.fillRect(x, y + 15, this.barWidth, height);
+
+	  this.video.ctx.lineWidth = 2;
+	  this.video.ctx.beginPath();
+
+	  this.video.ctx.moveTo(x + this.barWidth, y + 10);
+	  this.video.ctx.lineTo(x - 5, y + 10);
+	  this.video.ctx.lineTo(x - 5, y + 10 + height + 10);
+	  this.video.ctx.lineTo(x + this.barWidth, y + 10 + height + 10);
+
+	  this.video.ctx.stroke();
+	  this.video.ctx.closePath();
+	};
+
+	Loading.prototype.exit = function () {
+	  this.video.destroy();
+	};
+
+	module.exports = Loading;
+
+/***/ },
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1871,7 +1896,182 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DirtyManager;
 
 /***/ },
-/* 11 */
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = {
+	  backspace: 8,
+	  tab: 9,
+	  enter: 13,
+	  pause: 19,
+	  caps: 20,
+	  esc: 27,
+	  space: 32,
+	  page_up: 33,
+	  page_down: 34,
+	  end: 35,
+	  home: 36,
+	  left: 37,
+	  up: 38,
+	  right: 39,
+	  down: 40,
+	  insert: 45,
+	  "delete": 46,
+	  "0": 48,
+	  "1": 49,
+	  "2": 50,
+	  "3": 51,
+	  "4": 52,
+	  "5": 53,
+	  "6": 54,
+	  "7": 55,
+	  "8": 56,
+	  "9": 57,
+	  a: 65,
+	  b: 66,
+	  c: 67,
+	  d: 68,
+	  e: 69,
+	  f: 70,
+	  g: 71,
+	  h: 72,
+	  i: 73,
+	  j: 74,
+	  k: 75,
+	  l: 76,
+	  m: 77,
+	  n: 78,
+	  o: 79,
+	  p: 80,
+	  q: 81,
+	  r: 82,
+	  s: 83,
+	  t: 84,
+	  u: 85,
+	  v: 86,
+	  w: 87,
+	  x: 88,
+	  y: 89,
+	  z: 90,
+	  numpad_0: 96,
+	  numpad_1: 97,
+	  numpad_2: 98,
+	  numpad_3: 99,
+	  numpad_4: 100,
+	  numpad_5: 101,
+	  numpad_6: 102,
+	  numpad_7: 103,
+	  numpad_8: 104,
+	  numpad_9: 105,
+	  multiply: 106,
+	  add: 107,
+	  substract: 109,
+	  decimal: 110,
+	  divide: 111,
+	  f1: 112,
+	  f2: 113,
+	  f3: 114,
+	  f4: 115,
+	  f5: 116,
+	  f6: 117,
+	  f7: 118,
+	  f8: 119,
+	  f9: 120,
+	  f10: 121,
+	  f11: 122,
+	  f12: 123,
+	  shift: 16,
+	  ctrl: 17,
+	  alt: 18,
+	  plus: 187,
+	  comma: 188,
+	  minus: 189,
+	  period: 190
+	};
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return error(url);
+	    }
+
+	    var data = JSON.parse(this.response);
+	    callback(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var image = new Image();
+	  image.onload = function () {
+	    callback(image);
+	  };
+	  image.onerror = function () {
+	    error(url);
+	  };
+	  image.src = url;
+	};
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return error(url);
+	    }
+
+	    var data = this.response;
+	    callback(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2371,7 +2571,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(20);
+	exports.isBuffer = __webpack_require__(21);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -2408,7 +2608,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(22);
+	exports.inherits = __webpack_require__(23);
 
 	exports._extend = function (origin, add) {
 	  // Don't do anything if add isn't an object
@@ -2425,185 +2625,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	function hasOwnProperty(obj, prop) {
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(19)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(20)))
 
 /***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return error(url);
-	    }
-
-	    var data = JSON.parse(this.response);
-	    callback(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var image = new Image();
-	  image.onload = function () {
-	    callback(image);
-	  };
-	  image.onerror = function () {
-	    error(url);
-	  };
-	  image.src = url;
-	};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return error(url);
-	    }
-
-	    var data = this.response;
-	    callback(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = {
-	  backspace: 8,
-	  tab: 9,
-	  enter: 13,
-	  pause: 19,
-	  caps: 20,
-	  esc: 27,
-	  space: 32,
-	  page_up: 33,
-	  page_down: 34,
-	  end: 35,
-	  home: 36,
-	  left: 37,
-	  up: 38,
-	  right: 39,
-	  down: 40,
-	  insert: 45,
-	  "delete": 46,
-	  "0": 48,
-	  "1": 49,
-	  "2": 50,
-	  "3": 51,
-	  "4": 52,
-	  "5": 53,
-	  "6": 54,
-	  "7": 55,
-	  "8": 56,
-	  "9": 57,
-	  a: 65,
-	  b: 66,
-	  c: 67,
-	  d: 68,
-	  e: 69,
-	  f: 70,
-	  g: 71,
-	  h: 72,
-	  i: 73,
-	  j: 74,
-	  k: 75,
-	  l: 76,
-	  m: 77,
-	  n: 78,
-	  o: 79,
-	  p: 80,
-	  q: 81,
-	  r: 82,
-	  s: 83,
-	  t: 84,
-	  u: 85,
-	  v: 86,
-	  w: 87,
-	  x: 88,
-	  y: 89,
-	  z: 90,
-	  numpad_0: 96,
-	  numpad_1: 97,
-	  numpad_2: 98,
-	  numpad_3: 99,
-	  numpad_4: 100,
-	  numpad_5: 101,
-	  numpad_6: 102,
-	  numpad_7: 103,
-	  numpad_8: 104,
-	  numpad_9: 105,
-	  multiply: 106,
-	  add: 107,
-	  substract: 109,
-	  decimal: 110,
-	  divide: 111,
-	  f1: 112,
-	  f2: 113,
-	  f3: 114,
-	  f4: 115,
-	  f5: 116,
-	  f6: 117,
-	  f7: 118,
-	  f8: 119,
-	  f9: 120,
-	  f10: 121,
-	  f11: 122,
-	  f12: 123,
-	  shift: 16,
-	  ctrl: 17,
-	  alt: 18,
-	  plus: 187,
-	  comma: 188,
-	  minus: 189,
-	  period: 190
-	};
-
-/***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2829,18 +2854,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (start < 0) start = str.length + start;
 	  return str.substr(start, len);
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20)))
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	module.exports = __webpack_require__(21);
+	module.exports = __webpack_require__(22);
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser
@@ -2909,7 +2934,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2919,19 +2944,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var LoadedAudio = __webpack_require__(23);
+	var LoadedAudio = __webpack_require__(24);
 
 	var AudioManager = function AudioManager() {
 	  var AudioContext = window.AudioContext || window.webkitAudioContext;
 
-	  this.ctx = new AudioContext();
-	  this.masterGain = this.ctx.createGain();
+	  this._ctx = new AudioContext();
+	  this._masterGain = this._ctx.createGain();
 	  this._volume = 1;
+	  this.isMuted = false;
 
 	  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
 	  if (iOS) {
@@ -2953,10 +2979,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    return _touchWrapper;
 	  })(function () {
-	    var buffer = self.ctx.createBuffer(1, 1, 22050);
-	    var source = self.ctx.createBufferSource();
+	    var buffer = self._ctx.createBuffer(1, 1, 22050);
+	    var source = self._ctx.createBufferSource();
 	    source.buffer = buffer;
-	    source.connect(self.ctx.destination);
+	    source.connect(self._ctx.destination);
 	    source.start(0);
 
 	    window.removeEventListener("touchstart", touch, false);
@@ -2965,9 +2991,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	  window.addEventListener("touchstart", touch, false);
 	};
 
+	AudioManager.prototype.mute = function () {
+	  this.isMuted = true;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.unmute = function () {
+	  this.isMuted = false;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.toggleMute = function () {
+	  this.isMuted = !this.isMuted;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype._updateMute = function () {
+	  this._masterGain.gain.value = this.isMuted ? 0 : this._volume;
+	};
+
 	AudioManager.prototype.setVolume = function (volume) {
 	  this._volume = volume;
-	  this.masterGain.gain.value = volume;
+	  this._masterGain.gain.value = volume;
 	};
 
 	AudioManager.prototype.load = function (url, callback) {
@@ -2987,8 +3032,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	AudioManager.prototype.decodeAudioData = function (data, callback) {
 	  var self = this;
 
-	  this.ctx.decodeAudioData(data, function (result) {
-	    var audio = new LoadedAudio(self.ctx, result, self.masterGain);
+	  this._ctx.decodeAudioData(data, function (result) {
+	    var audio = new LoadedAudio(self._ctx, result, self._masterGain);
 
 	    callback(audio);
 	  });
@@ -2997,7 +3042,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = AudioManager;
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3027,12 +3072,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var PlayingAudio = __webpack_require__(24);
+	var PlayingAudio = __webpack_require__(25);
 
 	var LoadedAudio = function LoadedAudio(ctx, buffer, masterGain) {
 	  this._ctx = ctx;
@@ -3092,7 +3137,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = LoadedAudio;
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
