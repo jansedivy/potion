@@ -145,6 +145,8 @@ This object is passed to the event methods.
 
 `value.event` - event object
 
+`value.stateStopEvent()` - function which stops event propagation on the other states
+
 ### Keyboard Event object
 
 `value.key` - code number of the pressed key
@@ -152,3 +154,5 @@ This object is passed to the event methods.
 `value.name` - string name of the key
 
 `value.event` - event object
+
+`value.stateStopEvent()` - function which stops event propagation on the other states
