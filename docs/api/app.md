@@ -84,3 +84,12 @@ This method is used for rendering loading bar. Could be overwritten to rendering
 #### `setSize(width, height)`
 
 Method which sets width and height of the app and the canvas element.
+
+#### `focus()`
+
+Event which is called when browser gets focus
+
+#### `blur()`
+
+Event which is called when browser gets blur
+

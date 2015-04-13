@@ -87,14 +87,6 @@ This method is called every frame. Used for updating.
 
 `time` is the difference in seconds from the last frame.
 
-#### `focus()`
-
-Event which is called when browser gets focus
-
-#### `blur()`
-
-Event which is called when browser gets blur
-
 #### `exitUpdate(time)`
 
 ## Input Events
