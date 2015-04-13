@@ -4,7 +4,7 @@ var Loading = function(app) {
   this.barWidth = 0;
 
   this.video = app.video.createLayer({
-    useRetina: true,
+    allowHiDPI: true,
     getCanvasContext: true
   });
 

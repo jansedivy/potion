@@ -18,7 +18,7 @@ var Game = function(canvas) {
   this.video = null;
 
   this.config = {
-    useRetina: true,
+    allowHiDPI: true,
     getCanvasContext: true,
     initializeVideo: true,
     addInputEvents: true,

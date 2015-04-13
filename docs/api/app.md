@@ -31,7 +31,7 @@ this.config.fixedStep = true;
 
 ```javascript
 {
-  useRetina: true,
+  allowHiDPI: true,
   getCanvasContext: true,
   initializeVideo: true,
   addInputEvents: true,
