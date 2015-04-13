@@ -87,66 +87,6 @@ This method is called every frame. Used for updating.
 
 `time` is the difference in seconds from the last frame.
 
-#### `exitUpdate(time)`
-
-#### `mousemove(value)`
-
-Event which is called when the user moves mouse over the canvas element
-
-##### `value` Mouse Event object
-
-`x` - x coordinate of the action
-
-`y` - y coordinate of the action
-
-#### `mousedown(value)`
-
-Event which is called when the user do mousedown over the canvas element
-
-##### `value` Mouse Event object
-
-`x` - x coordinate of the action
-
-`y` - y coordinate of the action
-
-`button` - which mouse button was used (1, 2, 3)
-
-#### `mouseup(value)`
-
-Event which is called when the user do mouseup over the canvas element
-
-##### `value` Mouse Event object
-
-`x` - x coordinate of the action
-
-`y` - y coordinate of the action
-
-`button` - which mouse button was used (1, 2, 3)
-
-#### `keydown(value)`
-
-Event which is called when the user do presses some key
-
-##### `value` Keyboard Event object
-
-`key` - code number of the pressed key
-
-`name` - string name of the key
-
-`e` - event object
-
-#### `keyup(value)`
-
-Event which is called when the user do releases some key
-
-##### `value` Keyboard Event object
-
-`key` - code number of the pressed key
-
-`name` - string name of the key
-
-`e` - event object
-
 #### `focus()`
 
 Event which is called when browser gets focus
@@ -154,3 +94,61 @@ Event which is called when browser gets focus
 #### `blur()`
 
 Event which is called when browser gets blur
+
+#### `exitUpdate(time)`
+
+## Input Events
+
+### Mouse
+
+#### `mousemove(value)`
+
+Event which is called when the user moves mouse over the canvas element
+
+- `value` is `Mouse Event Object` defined below
+
+#### `mousedown(value)`
+
+Event which is called when the user do mousedown over the canvas element
+
+- `value` is `Mouse Event Object` defined below
+
+#### `mouseup(value)`
+
+Event which is called when the user do mouseup over the canvas element
+
+- `value` is `Mouse Event Object` defined below
+
+### Keyboard
+
+#### `keydown(value)`
+
+Event which is called when the user do presses some key
+
+- `value` is `Keyboard Event Object` defined below
+
+#### `keyup(value)`
+
+Event which is called when the user do releases some key
+
+- `value` is `Keyboard Event Object` defined below
+
+### Mouse Event object
+
+This object is passed to the event methods.
+
+`value.x` - x coordinate of the action
+
+`value.y` - y coordinate of the action
+
+`value.button` - which mouse button is pressed, either (1, 2, 3)
+
+`value.event` - event object
+
+### Keyboard Event object
+
+`value.key` - code number of the pressed key
+
+`value.name` - string name of the key
+
+`value.event` - event object
