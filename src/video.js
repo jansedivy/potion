@@ -4,16 +4,16 @@ var isRetina = require('./retina')();
  * @constructor
  * @param {HTMLCanvasElement} canvas - Canvas DOM element
  */
-var Video = function(game, canvas, config) {
-  this.game = game;
+var Video = function(app, canvas, config) {
+  this.app = app;
 
   this.config = config;
 
   this.canvas = canvas;
 
-  this.width = game.width;
+  this.width = app.width;
 
-  this.height = game.height;
+  this.height = app.height;
 
   if (config.getCanvasContext) {
     this.ctx = canvas.getContext('2d');
@@ -88,7 +88,7 @@ Video.prototype.createLayer = function(config) {
   canvas.style.left = '0px';
   container.appendChild(canvas);
 
-  var video = new Video(this.game, canvas, config);
+  var video = new Video(this.app, canvas, config);
 
   return video;
 };

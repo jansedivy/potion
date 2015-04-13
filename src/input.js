@@ -5,7 +5,7 @@ for (var keyName in keys) {
   invKeys[keys[keyName]] = keyName;
 }
 
-var Input = function(game, container) {
+var Input = function(app, container) {
   this._container = container;
   this._keys = {};
 
@@ -20,7 +20,7 @@ var Input = function(game, container) {
     y: null
   };
 
-  this._addEvents(game);
+  this._addEvents(app);
 };
 
 Input.prototype.resetKeys = function() {
@@ -36,7 +36,7 @@ Input.prototype.isKeyDown = function(key) {
   }
 };
 
-Input.prototype._addEvents = function(game) {
+Input.prototype._addEvents = function(app) {
   var self = this;
 
   var mouseEvent = {
@@ -45,7 +45,7 @@ Input.prototype._addEvents = function(game) {
     button: null,
     event: null,
     stateStopEvent: function() {
-      game.states._preventEvent = true;
+      app.states._preventEvent = true;
     }
   };
 
@@ -54,7 +54,7 @@ Input.prototype._addEvents = function(game) {
     name: null,
     event: null,
     stateStopEvent: function() {
-      game.states._preventEvent = true;
+      app.states._preventEvent = true;
     }
   };
 
@@ -70,7 +70,7 @@ Input.prototype._addEvents = function(game) {
     mouseEvent.button = null;
     mouseEvent.event = e;
 
-    game.states.mousemove(mouseEvent);
+    app.states.mousemove(mouseEvent);
   });
 
   self._container.addEventListener('mouseup', function(e) {
@@ -98,7 +98,7 @@ Input.prototype._addEvents = function(game) {
     mouseEvent.button = e.button;
     mouseEvent.event = e;
 
-    game.states.mouseup(mouseEvent);
+    app.states.mouseup(mouseEvent);
   }, false);
 
   self._container.addEventListener('mousedown', function(e) {
@@ -128,7 +128,7 @@ Input.prototype._addEvents = function(game) {
     mouseEvent.button = e.button;
     mouseEvent.event = e;
 
-    game.states.mousedown(mouseEvent);
+    app.states.mousedown(mouseEvent);
   }, false);
 
   self._container.addEventListener('touchstart', function(e) {
@@ -150,7 +150,7 @@ Input.prototype._addEvents = function(game) {
       mouseEvent.button = 1;
       mouseEvent.event = e;
 
-      game.states.mousedown(mouseEvent);
+      app.states.mousedown(mouseEvent);
     }
   });
 
@@ -172,7 +172,7 @@ Input.prototype._addEvents = function(game) {
       mouseEvent.y = y;
       mouseEvent.event = e;
 
-      game.states.mousemove(mouseEvent);
+      app.states.mousemove(mouseEvent);
     }
   });
 
@@ -193,7 +193,7 @@ Input.prototype._addEvents = function(game) {
     mouseEvent.y = y;
     mouseEvent.event = e;
 
-    game.states.mouseup(mouseEvent);
+    app.states.mouseup(mouseEvent);
   });
 
   self._container.addEventListener('contextmenu', function(e) {
@@ -207,7 +207,7 @@ Input.prototype._addEvents = function(game) {
     keyboardEvent.name = invKeys[e.which];
     keyboardEvent.event = e;
 
-    game.states.keydown(keyboardEvent);
+    app.states.keydown(keyboardEvent);
   });
 
   document.addEventListener('keyup', function(e) {
@@ -217,7 +217,7 @@ Input.prototype._addEvents = function(game) {
     keyboardEvent.name = invKeys[e.which];
     keyboardEvent.event = e;
 
-    game.states.keyup(keyboardEvent);
+    app.states.keyup(keyboardEvent);
   });
 };
 

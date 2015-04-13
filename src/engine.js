@@ -1,6 +1,6 @@
 require('./raf-polyfill')();
 
-var Game = require('./game');
+var App = require('./app');
 
 var Time = require('./time');
 
@@ -9,11 +9,11 @@ var Debugger = require('potion-debugger');
 var StateManager = require('./state-manager');
 
 /**
- * Main Engine class which calls the game methods
+ * Main Engine class which calls the app methods
  * @constructor
  */
 var Engine = function(container, methods) {
-  var GameClass = this._subclassGame(container, methods);
+  var AppClass = this._subclassApp(container, methods);
 
   container.style.position = 'relative';
 
@@ -21,8 +21,8 @@ var Engine = function(container, methods) {
   canvas.style.display = 'block';
   container.appendChild(canvas);
 
-  this.game = new GameClass(canvas);
-  this.game.debug = new Debugger(this.game);
+  this.app = new AppClass(canvas);
+  this.app.debug = new Debugger(this.app);
 
   this._setDefaultStates();
 
@@ -33,14 +33,14 @@ var Engine = function(container, methods) {
 
   this._time = Time.now();
 
-  this.game.assets.onload(function() {
+  this.app.assets.onload(function() {
     window.cancelAnimationFrame(this.preloaderId);
-    this.game._preloader.exit();
+    this.app._preloader.exit();
 
     this.start();
   }.bind(this));
 
-  if (this.game.assets.isLoading && this.game.config.showPreloader) {
+  if (this.app.assets.isLoading && this.app.config.showPreloader) {
     this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
   }
 };
@@ -53,22 +53,22 @@ Engine.prototype.addEvents = function() {
   var self = this;
 
   window.addEventListener('blur', function() {
-    self.game.input.resetKeys();
-    self.game.blur();
+    self.app.input.resetKeys();
+    self.app.blur();
   });
 
   window.addEventListener('focus', function() {
-    self.game.input.resetKeys();
-    self.game.focus();
+    self.app.input.resetKeys();
+    self.app.focus();
   });
 };
 
 /**
- * Starts the game, adds events and run first frame
+ * Starts the app, adds events and run first frame
  * @private
  */
 Engine.prototype.start = function() {
-  if (this.game.config.addInputEvents) {
+  if (this.app.config.addInputEvents) {
     this.addEvents();
   }
 
@@ -76,64 +76,64 @@ Engine.prototype.start = function() {
 };
 
 /**
- * Main tick function in game loop
+ * Main tick function in app loop
  * @private
  */
 Engine.prototype.tick = function() {
   window.requestAnimationFrame(this.tickFunc);
 
-  this.game.debug.begin();
+  this.app.debug.begin();
 
   var now = Time.now();
   var time = (now - this._time) / 1000;
   this._time = now;
 
-  this.game.debug.perf('update');
+  this.app.debug.perf('update');
   this.update(time);
-  this.game.debug.stopPerf('update');
+  this.app.debug.stopPerf('update');
 
-  this.game.states.exitUpdate(time);
+  this.app.states.exitUpdate(time);
 
-  this.game.debug.perf('render');
+  this.app.debug.perf('render');
   this.render();
-  this.game.debug.stopPerf('render');
+  this.app.debug.stopPerf('render');
 
-  this.game.debug.render();
+  this.app.debug.render();
 
-  this.game.debug.end();
+  this.app.debug.end();
 };
 
 /**
- * Updates the game
+ * Updates the app
  * @param {number} time - time in seconds since last frame
  * @private
  */
 Engine.prototype.update = function(time) {
-  if (time > this.game.config.maxStepTime) { time = this.game.config.maxStepTime; }
+  if (time > this.app.config.maxStepTime) { time = this.app.config.maxStepTime; }
 
-  if (this.game.config.fixedStep) {
+  if (this.app.config.fixedStep) {
     this.strayTime = this.strayTime + time;
-    while (this.strayTime >= this.game.config.stepTime) {
-      this.strayTime = this.strayTime - this.game.config.stepTime;
-      this.game.states.update(this.game.config.stepTime);
+    while (this.strayTime >= this.app.config.stepTime) {
+      this.strayTime = this.strayTime - this.app.config.stepTime;
+      this.app.states.update(this.app.config.stepTime);
     }
   } else {
-    this.game.states.update(time);
+    this.app.states.update(time);
   }
 };
 
 /**
- * Renders the game
+ * Renders the app
  * @private
  */
 Engine.prototype.render = function() {
-  this.game.video.beginFrame();
+  this.app.video.beginFrame();
 
-  this.game.video.clear();
+  this.app.video.clear();
 
-  this.game.states.render();
+  this.app.states.render();
 
-  this.game.video.endFrame();
+  this.app.video.endFrame();
 };
 
 /**
@@ -147,33 +147,33 @@ Engine.prototype._preloaderTick = function() {
   var time = (now - this._time) / 1000;
   this._time = now;
 
-  this.game.preloading(time);
+  this.app.preloading(time);
 };
 
 Engine.prototype._setDefaultStates = function() {
   var states = new StateManager();
-  states.add('app', this.game);
-  states.add('debug', this.game.debug);
+  states.add('app', this.app);
+  states.add('debug', this.app.debug);
 
   states.protect('app');
   states.protect('debug');
   states.hide('debug');
 
-  this.game.states = states;
+  this.app.states = states;
 };
 
-Engine.prototype._subclassGame = function(container, methods) {
-  var GameClass = function(container) {
-    Game.call(this, container);
+Engine.prototype._subclassApp = function(container, methods) {
+  var AppClass = function(container) {
+    App.call(this, container);
   };
 
-  GameClass.prototype = Object.create(Game.prototype);
+  AppClass.prototype = Object.create(App.prototype);
 
   for (var method in methods) {
-    GameClass.prototype[method] = methods[method];
+    AppClass.prototype[method] = methods[method];
   }
 
-  return GameClass;
+  return AppClass;
 };
 
 module.exports = Engine;

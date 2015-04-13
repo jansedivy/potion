@@ -3,7 +3,7 @@ var Assets = require('./assets');
 var Input = require('./input');
 var Loading = require('./loading');
 
-var Game = function(canvas) {
+var App = function(canvas) {
   this.canvas = canvas;
 
   this.width = 300;
@@ -41,7 +41,7 @@ var Game = function(canvas) {
   this._preloader = new Loading(this);
 };
 
-Game.prototype.setSize = function(width, height) {
+App.prototype.setSize = function(width, height) {
   this.width = width;
   this.height = height;
 
@@ -50,16 +50,16 @@ Game.prototype.setSize = function(width, height) {
   }
 };
 
-Game.prototype.preloading = function(time) {
+App.prototype.preloading = function(time) {
   if (this.config.showPreloader) {
     this._preloader.render(time);
   }
 };
 
-Game.prototype.configure = function() {};
+App.prototype.configure = function() {};
 
-Game.prototype.focus = function() {};
+App.prototype.focus = function() {};
 
-Game.prototype.blur = function() {};
+App.prototype.blur = function() {};
 
-module.exports = Game;
+module.exports = App;
