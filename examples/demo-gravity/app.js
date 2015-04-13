@@ -17,8 +17,11 @@ var Particle = function(x, y) {
 Particle.prototype.update = function(time) {
   var angle = Math.atan2(app.centerY - this.y, app.centerX - this.x);
 
-  this.dx += Math.cos(angle) * this.speed * time;
-  this.dy += Math.sin(angle) * this.speed * time;
+  this.dx += Math.cos(angle) * 5 * this.speed * time;
+  this.dy += Math.sin(angle) * 5 * this.speed * time;
+
+  this.dx = this.dx + (0 - this.dx) * time/2;
+  this.dy = this.dy + (0 - this.dy) * time/2;
 
   this.r = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2)) / 200 + 0.3;
 
@@ -27,48 +30,61 @@ Particle.prototype.update = function(time) {
 };
 
 Particle.prototype.render = function() {
-  app.video.ctx.arc(this.x, this.y, this.r, 0, Math.PI*2, false);
+  app.video.ctx.fillStyle = '#408655';
+  app.video.ctx.fillRect(this.x, this.y, this.r, this.r);
 };
 
 app = Potion.init(document.querySelector('.game'), {
   configure: function() {
     this.setSize(document.body.clientWidth, document.body.clientHeight);
+    this.config.allowHiDPI = false;
 
     this.centerX = this.width/2;
     this.centerY = this.height/2;
+
+    this.prevX = null;
+    this.prevY = null;
   },
 
   init: function() {
+    // app.video.scaleCanvas(1/10);
     this.particles = [];
   },
 
-  mousemove: function(value) {
-    if (this.input.mouse.isDown) {
+  update: function(time) {
+    if (this.prevX == null || this.prevY == null) {
+      this.prevX = app.input.mouse.x;
+      this.prevY = app.input.mouse.y;
+    }
+
+    if (app.input.mouse.isDown) {
       for (var i=0; i<10; i++) {
         var angle = Math.random() * Math.PI*2;
-        var distance = 3;
+        var distance = Math.random() * 10 + 4;
 
-        this.particles.push(new Particle(Math.cos(angle) * distance + value.x, Math.sin(angle) * distance + value.y));
+        var particle = new Particle(Math.cos(angle) * distance + app.input.mouse.x, Math.sin(angle) * distance + app.input.mouse.y);
+
+        particle.dx += (app.input.mouse.x - this.prevX) * 20;
+        particle.dy += (app.input.mouse.y - this.prevY) * 20;
+
+        this.particles.push(particle);
       }
     }
-  },
 
-  update: function(time) {
+    this.prevX = app.input.mouse.x;
+    this.prevY = app.input.mouse.y;
+
     for (var i=0, len=this.particles.length; i<len; i++) {
       this.particles[i].update(time);
     }
   },
 
   render: function() {
-    this.video.ctx.fillStyle = '#38b2ce';
-    this.video.ctx.fillRect(this.centerX - 5, this.centerY - 5, 10, 10);
+    app.video.ctx.fillStyle = '#408655';
+    app.video.ctx.fillRect(this.centerX - 5, this.centerY - 5, 10, 10);
 
     for (var i=0, len=this.particles.length; i<len; i++) {
-      app.video.ctx.beginPath();
       this.particles[i].render();
-      app.video.ctx.closePath();
-      app.video.ctx.fillStyle = '#04819e';
-      app.video.ctx.fill();
     }
   }
 });
