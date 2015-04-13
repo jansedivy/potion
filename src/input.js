@@ -44,7 +44,7 @@ Input.prototype._addEvents = function(game) {
     y: null,
     button: null,
     event: null,
-    statePreventDefault: function() {
+    stateStopEvent: function() {
       game.states._preventEvent = true;
     }
   };
@@ -53,7 +53,7 @@ Input.prototype._addEvents = function(game) {
     key: null,
     name: null,
     event: null,
-    statePreventDefault: function() {
+    stateStopEvent: function() {
       game.states._preventEvent = true;
     }
   };
