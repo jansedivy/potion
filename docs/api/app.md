@@ -75,7 +75,7 @@ This method is called when all assets are loaded.
 
 #### `configure()`
 
-Method for configuring potion, setting up width and height and main probably the main thing is to define which assets to load.
+Method for configuring potion, setting up width and height and the main thing is to define which assets to load.
 
 #### `preloading()`
 
