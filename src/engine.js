@@ -80,9 +80,9 @@ Engine.prototype.start = function() {
  * @private
  */
 Engine.prototype.tick = function() {
-  this.game.debug.begin();
-
   window.requestAnimationFrame(this.tickFunc);
+
+  this.game.debug.begin();
 
   var now = Time.now();
   var time = (now - this._time) / 1000;
