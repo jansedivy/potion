@@ -42,7 +42,7 @@ var Engine = function(container, methods) {
     window.requestAnimationFrame(this.tickFunc);
   }.bind(this));
 
-  if (this.game.assets.isLoading) {
+  if (this.game.assets.isLoading && this.game.config.showPreloader) {
     this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
   }
 };
@@ -147,9 +147,7 @@ Engine.prototype._preloaderTick = function() {
   var time = (now - this._time) / 1000;
   this._time = now;
 
-  if (this.game.config.showPreloader) {
-    this.game.preloading(time);
-  }
+  this.game.preloading(time);
 };
 
 Engine.prototype._setDefaultStates = function() {
