@@ -12,6 +12,8 @@ var Loading = function(app) {
 };
 
 Loading.prototype.render = function(time) {
+  this.video.clear();
+
   var color1 = '#b9ff71';
   var color2 = '#8ac250';
   var color3 = '#648e38';

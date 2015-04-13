@@ -148,7 +148,6 @@ Engine.prototype._preloaderTick = function() {
   this._time = now;
 
   if (this.game.config.showPreloader) {
-    this.game.video.clear();
     this.game.preloading(time);
   }
 };
