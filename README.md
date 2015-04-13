@@ -19,15 +19,17 @@ Potion is a game library with very simple and powerful abstractions.
 
 ## Installation
 
-### Include potion.js file
+Potion is compatible with CommonJS modules. Can be used with browserify,
+webpack and others. You can install it from npm.
 
-- download [potion.js](https://raw.githubusercontent.com/jansedivy/potion/master/build/potion.js) or [potion.min.js](https://raw.githubusercontent.com/jansedivy/potion/master/build/potion.min.js)
-- Add this into your html file `<script src="potion.js"></script>`
+```sh
+npm install potion
+```
 
-### Browserify
+There is also a built version you can download
 
-- `npm install potion`
-- `browserify main.js -o bundle.js`
+- [potion.js](https://raw.githubusercontent.com/jansedivy/potion/master/build/potion.js)
+- [potion.min.js](https://raw.githubusercontent.com/jansedivy/potion/master/build/potion.min.js)
 
 ## Usage
 
@@ -36,7 +38,7 @@ Potion is a game library with very simple and powerful abstractions.
 ```
 
 ```javascript
-var Potion = require('potion'); // if you use browserify version
+var Potion = require('potion');
 
 Potion.init(document.querySelector('.container'), {
   configure: function() {
