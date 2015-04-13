@@ -150,7 +150,7 @@ Input.prototype._addEvents = function(game) {
       mouseEvent.button = 1;
       mouseEvent.event = e;
 
-      game.states.mousedown(e);
+      game.states.mousedown(mouseEvent);
     }
   });
 
@@ -172,7 +172,7 @@ Input.prototype._addEvents = function(game) {
       mouseEvent.y = y;
       mouseEvent.event = e;
 
-      game.states.mousemove(e);
+      game.states.mousemove(mouseEvent);
     }
   });
 
@@ -193,7 +193,7 @@ Input.prototype._addEvents = function(game) {
     mouseEvent.y = y;
     mouseEvent.event = e;
 
-    game.states.mouseup(e);
+    game.states.mouseup(mouseEvent);
   });
 
   self._container.addEventListener('contextmenu', function(e) {
