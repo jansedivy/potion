@@ -27,11 +27,7 @@ Particle.prototype.update = function(time) {
 };
 
 Particle.prototype.render = function() {
-  app.video.ctx.beginPath();
   app.video.ctx.arc(this.x, this.y, this.r, 0, Math.PI*2, false);
-  app.video.ctx.fillStyle = '#04819e';
-  app.video.ctx.fill();
-  app.video.ctx.closePath();
 };
 
 app = Potion.init(document.querySelector('.game'), {
@@ -68,7 +64,11 @@ app = Potion.init(document.querySelector('.game'), {
     this.video.ctx.fillRect(this.centerX - 5, this.centerY - 5, 10, 10);
 
     for (var i=0, len=this.particles.length; i<len; i++) {
+      app.video.ctx.beginPath();
       this.particles[i].render();
+      app.video.ctx.closePath();
+      app.video.ctx.fillStyle = '#04819e';
+      app.video.ctx.fill();
     }
   }
 });
