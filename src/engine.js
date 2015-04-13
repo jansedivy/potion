@@ -34,12 +34,10 @@ var Engine = function(container, methods) {
   this._time = Time.now();
 
   this.game.assets.onload(function() {
-    this.start();
-
     window.cancelAnimationFrame(this.preloaderId);
     this.game._preloader.exit();
 
-    window.requestAnimationFrame(this.tickFunc);
+    this.start();
   }.bind(this));
 
   if (this.game.assets.isLoading && this.game.config.showPreloader) {
@@ -73,6 +71,8 @@ Engine.prototype.start = function() {
   if (this.game.config.addInputEvents) {
     this.addEvents();
   }
+
+  window.requestAnimationFrame(this.tickFunc);
 };
 
 /**
