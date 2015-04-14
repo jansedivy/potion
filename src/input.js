@@ -79,8 +79,6 @@ Input.prototype._addEvents = function(app) {
     var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
     var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
-    self.mouse.isDown = false;
-
     switch (e.button) {
       case 0:
         self.mouse.isLeftDown = false;
@@ -92,6 +90,8 @@ Input.prototype._addEvents = function(app) {
         self.mouse.isRightDown = false;
         break;
     }
+
+    self.mouse.isDown = self.mouse.isLeftDown || self.mouse.isRightDown || self.mouse.isMiddleDown;
 
     mouseEvent.x = x;
     mouseEvent.y = y;
