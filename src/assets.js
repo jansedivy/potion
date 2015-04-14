@@ -63,7 +63,12 @@ Assets.prototype.onload = function(callback) {
       callback();
     });
   } else {
-    this._nextFile();
+    var self = this;
+    this._toLoad.forEach(function(current) {
+      self._loadAssetFile(current, function(data) {
+        self._save(current.url, data, current.callback);
+      });
+    });
   }
 };
 
@@ -115,7 +120,6 @@ Assets.prototype.load = function(type, url, callback) {
 };
 
 Assets.prototype._finishedOneFile = function() {
-  this._nextFile();
   this.progress = this.loadedItemsCount / this.itemsCount;
   this._thingsToLoad -= 1;
   this.loadedItemsCount += 1;
@@ -132,7 +136,6 @@ Assets.prototype._finishedOneFile = function() {
 
 Assets.prototype._error = function(url) {
   console.warn('Error loading "' + url + '" asset');
-  this._nextFile();
 };
 
 Assets.prototype._save = function(url, data, callback) {
@@ -147,17 +150,6 @@ Assets.prototype._handleCustomLoading = function(loading) {
     self._save(name, value);
   };
   loading(done);
-};
-
-Assets.prototype._nextFile = function() {
-  var current = this._toLoad.shift();
-
-  if (!current) { return; }
-
-  var self = this;
-  this._loadAssetFile(current, function(data) {
-    self._save(current.url, data, current.callback);
-  });
 };
 
 Assets.prototype._loadAssetFile = function(file, callback) {
