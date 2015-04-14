@@ -13,11 +13,12 @@ var Particle = function(x, y) {
   this.dx = Math.random() * 100 - 50;
   this.dy = Math.random() * 100 - 50;
 
-  this.speed = 150;
+  this.speed = 250;
 
   this.object = new PIXI.Sprite(app.assets.get('particle.png'));
+  this.object.tint = 0xffffff * Math.random();
 
-  this.object.blendMode = PIXI.blendModes.SCREEN;
+  this.object.blendMode = PIXI.blendModes.ADD;
 
   app.stage.addChild(this.object);
 };
@@ -28,15 +29,15 @@ Particle.prototype.update = function(time) {
   this.dx += Math.cos(angle) * 5 * this.speed * time;
   this.dy += Math.sin(angle) * 5 * this.speed * time;
 
-  this.dx = this.dx + (0 - this.dx) * time/4;
-  this.dy = this.dy + (0 - this.dy) * time/4;
+  this.dx = this.dx + (0 - this.dx) * time/2;
+  this.dy = this.dy + (0 - this.dy) * time/2;
 
   this.r = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2)) / 200 + 0.2;
 
   this.x += this.dx * time;
   this.y += this.dy * time;
 
-  this.object.scale.set(this.r / 20);
+  this.object.scale.set(this.r / 10);
   this.object.position.x = this.x;
   this.object.position.y = this.y;
 };
@@ -81,14 +82,14 @@ app = Potion.init(document.querySelector('.game'), {
         this.prevY = app.input.mouse.y;
       }
 
-      for (var i=0; i<10; i++) {
+      for (var i=0; i<100; i++) {
         var angle = Math.random() * Math.PI*2;
-        var distance = Math.random() * 20 + 4;
+        var distance = Math.random() * 40;
 
         var particle = new Particle(Math.cos(angle) * distance + app.input.mouse.x, Math.sin(angle) * distance + app.input.mouse.y);
 
-        particle.dx += (app.input.mouse.x - this.prevX) * 20;
-        particle.dy += (app.input.mouse.y - this.prevY) * 20;
+        particle.dx += (app.input.mouse.x - this.prevX) * Math.random() * 40;
+        particle.dy += (app.input.mouse.y - this.prevY) * Math.random() * 40;
 
         this.particles.push(particle);
       }
