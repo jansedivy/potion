@@ -7,8 +7,6 @@ var Loading = function(app) {
     allowHiDPI: true,
     getCanvasContext: true
   });
-
-  this.video.canvas.className += ' test';
 };
 
 Loading.prototype.render = function(time) {
