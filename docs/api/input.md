@@ -16,6 +16,7 @@ input.mouse.isMiddleDown // if the scroll wheel is pressed
 input.mouse.isDown // if any button is pressed
 input.mouse.x // x coordinate
 input.mouse.y // y coordinate
+input.mouse.isActive // if the cursor is over the canvas element
 ```
 
 Methods
