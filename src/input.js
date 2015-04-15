@@ -64,6 +64,7 @@ Input.prototype._addEvents = function(app) {
 
     self.mouse.x = x;
     self.mouse.y = y;
+    self.mouse.isActive = true;
 
     mouseEvent.x = x;
     mouseEvent.y = y;
@@ -101,6 +102,14 @@ Input.prototype._addEvents = function(app) {
     app.states.mouseup(mouseEvent);
   }, false);
 
+  self._container.addEventListener('mouseleave', function() {
+    self.mouse.isActive = false;
+  });
+
+  self._container.addEventListener('mouseenter', function() {
+    self.mouse.isActive = true;
+  });
+
   self._container.addEventListener('mousedown', function(e) {
     e.preventDefault();
 
@@ -110,6 +119,7 @@ Input.prototype._addEvents = function(app) {
     self.mouse.x = x;
     self.mouse.y = y;
     self.mouse.isDown = true;
+    self.mouse.isActive = true;
 
     switch (e.button) {
       case 0:
@@ -144,6 +154,7 @@ Input.prototype._addEvents = function(app) {
       self.mouse.y = y;
       self.mouse.isDown = true;
       self.mouse.isLeftDown = true;
+      self.mouse.isActive = true;
 
       mouseEvent.x = x;
       mouseEvent.y = y;
@@ -167,6 +178,7 @@ Input.prototype._addEvents = function(app) {
       self.mouse.y = y;
       self.mouse.isDown = true;
       self.mouse.isLeftDown = true;
+      self.mouse.isActive = true;
 
       mouseEvent.x = x;
       mouseEvent.y = y;
@@ -188,6 +200,7 @@ Input.prototype._addEvents = function(app) {
     self.mouse.y = y;
     self.mouse.isDown = false;
     self.mouse.isLeftDown = false;
+    self.mouse.isActive = false;
 
     mouseEvent.x = x;
     mouseEvent.y = y;
