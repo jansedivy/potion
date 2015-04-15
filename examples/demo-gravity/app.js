@@ -70,11 +70,6 @@ app = Potion.init(document.querySelector('.game'), {
     this.stage = new PIXI.Stage(0x080a25);
   },
 
-  mouseup: function() {
-    this.prevX = null;
-    this.prevY = null;
-  },
-
   update: function(time) {
     if (app.input.mouse.isDown) {
       if (this.prevX == null || this.prevY == null) {
@@ -96,8 +91,10 @@ app = Potion.init(document.querySelector('.game'), {
 
       this.prevX = app.input.mouse.x;
       this.prevY = app.input.mouse.y;
+    } else {
+      this.prevX = null;
+      this.prevX = null;
     }
-
 
     for (var i=0, len=this.particles.length; i<len; i++) {
       this.particles[i].update(time);
