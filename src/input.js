@@ -104,6 +104,11 @@ Input.prototype._addEvents = function(app) {
 
   self._container.addEventListener('mouseleave', function() {
     self.mouse.isActive = false;
+
+    self.mouse.isDown = false;
+    self.mouse.isLeftDown = false;
+    self.mouse.isRightDown = false;
+    self.mouse.isMiddleDown = false;
   });
 
   self._container.addEventListener('mouseenter', function() {
@@ -198,9 +203,11 @@ Input.prototype._addEvents = function(app) {
 
     self.mouse.x = x;
     self.mouse.y = y;
+    self.mouse.isActive = false;
     self.mouse.isDown = false;
     self.mouse.isLeftDown = false;
-    self.mouse.isActive = false;
+    self.mouse.isRightDown = false;
+    self.mouse.isMiddleDown = false;
 
     mouseEvent.x = x;
     mouseEvent.y = y;
