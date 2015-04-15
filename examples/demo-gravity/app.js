@@ -32,7 +32,10 @@ Particle.prototype.update = function(time) {
   this.dx = this.dx + (0 - this.dx) * time/2;
   this.dy = this.dy + (0 - this.dy) * time/2;
 
-  this.r = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2)) / 200 + 0.2;
+  var speed = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2));
+  var distance = Math.sqrt(Math.pow(app.centerX - this.x, 2) + Math.pow(app.centerY - this.y, 2));
+
+  this.r = speed / 200 + 0.2;
 
   this.x += this.dx * time;
   this.y += this.dy * time;
@@ -40,6 +43,11 @@ Particle.prototype.update = function(time) {
   this.object.scale.set(this.r / 10);
   this.object.position.x = this.x;
   this.object.position.y = this.y;
+
+  if (speed < 100 && distance < 100) {
+    app.stage.removeChild(this.object);
+    return true;
+  }
 };
 
 app = Potion.init(document.querySelector('.game'), {
@@ -97,7 +105,10 @@ app = Potion.init(document.querySelector('.game'), {
     }
 
     for (var i=0, len=this.particles.length; i<len; i++) {
-      this.particles[i].update(time);
+      var particle = this.particles[i];
+      if (particle && particle.update(time)) {
+        this.particles.splice(i, 1);
+      }
     }
   },
 
