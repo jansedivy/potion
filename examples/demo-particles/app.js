@@ -3,7 +3,7 @@ var Potion = require('potion');
 var app = Potion.init(document.querySelector('.game'), {
   configure: function() {
     this.setSize(document.body.clientWidth, document.body.clientHeight);
-    this.config.allowHiDPI = false;
+    this.config.allowHiDPI = true;
   },
 
   init: function() {

@@ -45,7 +45,7 @@ Particle.prototype.update = function(time) {
 app = Potion.init(document.querySelector('.game'), {
   configure: function() {
     this.setSize(document.body.clientWidth, document.body.clientHeight);
-    this.config.allowHiDPI = false;
+    this.config.allowHiDPI = true;
     this.config.getCanvasContext = false;
 
     this.renderer = new PIXI.WebGLRenderer(this.width, this.height, { resolution: this.config.allowHiDPI ? 2 : 1, view: this.canvas });
