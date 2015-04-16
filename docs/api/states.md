@@ -89,6 +89,10 @@ This method is called every frame. Used for updating.
 
 #### `exitUpdate(time)`
 
+#### `resize()`
+
+Resize is called when the app changes size (`app.setSize()` is called)
+
 ## Input Events
 
 ### Mouse
