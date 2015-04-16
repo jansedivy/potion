@@ -1,5 +1,5 @@
 /**
-* potion - v0.12.3
+* potion - v0.13.0
 * Copyright (c) 2015, Jan Sedivy
 *
 * Potion is licensed under the MIT License.
@@ -67,7 +67,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = {
 	  init: function init(canvas, methods) {
 	    var engine = new Engine(canvas, methods);
-	    return engine.game;
+	    return engine.app;
 	  }
 	};
 
@@ -79,7 +79,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	__webpack_require__(2)();
 
-	var Game = __webpack_require__(3);
+	var App = __webpack_require__(3);
 
 	var Time = __webpack_require__(4);
 
@@ -88,11 +88,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	var StateManager = __webpack_require__(5);
 
 	/**
-	 * Main Engine class which calls the game methods
+	 * Main Engine class which calls the app methods
 	 * @constructor
 	 */
 	var Engine = function Engine(container, methods) {
-	  var GameClass = this._subclassGame(container, methods);
+	  var AppClass = this._subclassApp(container, methods);
 
 	  container.style.position = "relative";
 
@@ -100,8 +100,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  canvas.style.display = "block";
 	  container.appendChild(canvas);
 
-	  this.game = new GameClass(canvas);
-	  this.game.debug = new Debugger(this.game);
+	  this.app = new AppClass(canvas);
+	  this.app.debug = new Debugger(this.app);
 
 	  this._setDefaultStates();
 
@@ -120,16 +120,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  this._time = Time.now();
 
-	  this.game.assets.onload((function () {
-	    this.start();
-
+	  this.app.assets.onload((function () {
 	    window.cancelAnimationFrame(this.preloaderId);
-	    this.game._preloader.exit();
+	    this.app._preloader.exit();
 
-	    window.requestAnimationFrame(this.tickFunc);
+	    this.start();
 	  }).bind(this));
 
-	  if (this.game.assets.isLoading) {
+	  if (this.app.assets.isLoading && this.app.config.showPreloader) {
 	    this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
 	  }
 	};
@@ -142,87 +140,89 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var self = this;
 
 	  window.addEventListener("blur", function () {
-	    self.game.input.resetKeys();
-	    self.game.blur();
+	    self.app.input.resetKeys();
+	    self.app.blur();
 	  });
 
 	  window.addEventListener("focus", function () {
-	    self.game.input.resetKeys();
-	    self.game.focus();
+	    self.app.input.resetKeys();
+	    self.app.focus();
 	  });
 	};
 
 	/**
-	 * Starts the game, adds events and run first frame
+	 * Starts the app, adds events and run first frame
 	 * @private
 	 */
 	Engine.prototype.start = function () {
-	  if (this.game.config.addInputEvents) {
+	  if (this.app.config.addInputEvents) {
 	    this.addEvents();
 	  }
+
+	  window.requestAnimationFrame(this.tickFunc);
 	};
 
 	/**
-	 * Main tick function in game loop
+	 * Main tick function in app loop
 	 * @private
 	 */
 	Engine.prototype.tick = function () {
-	  this.game.debug.begin();
-
 	  window.requestAnimationFrame(this.tickFunc);
+
+	  this.app.debug.begin();
 
 	  var now = Time.now();
 	  var time = (now - this._time) / 1000;
 	  this._time = now;
 
-	  this.game.debug.perf("update");
+	  this.app.debug.perf("update");
 	  this.update(time);
-	  this.game.debug.stopPerf("update");
+	  this.app.debug.stopPerf("update");
 
-	  this.game.states.exitUpdate(time);
+	  this.app.states.exitUpdate(time);
 
-	  this.game.debug.perf("render");
+	  this.app.debug.perf("render");
 	  this.render();
-	  this.game.debug.stopPerf("render");
+	  this.app.debug.stopPerf("render");
 
-	  this.game.debug.render();
+	  this.app.debug.render();
 
-	  this.game.debug.end();
+	  this.app.debug.end();
 	};
 
 	/**
-	 * Updates the game
+	 * Updates the app
 	 * @param {number} time - time in seconds since last frame
 	 * @private
 	 */
 	Engine.prototype.update = function (time) {
-	  if (time > this.game.config.maxStepTime) {
-	    time = this.game.config.maxStepTime;
+	  if (time > this.app.config.maxStepTime) {
+	    time = this.app.config.maxStepTime;
 	  }
 
-	  if (this.game.config.fixedStep) {
+	  if (this.app.config.fixedStep) {
 	    this.strayTime = this.strayTime + time;
-	    while (this.strayTime >= this.game.config.stepTime) {
-	      this.strayTime = this.strayTime - this.game.config.stepTime;
-	      this.game.states.update(this.game.config.stepTime);
+	    while (this.strayTime >= this.app.config.stepTime) {
+	      this.strayTime = this.strayTime - this.app.config.stepTime;
+	      this.app.states.update(this.app.config.stepTime);
 	    }
 	  } else {
-	    this.game.states.update(time);
+	    this.app.states.update(time);
 	  }
 	};
 
 	/**
-	 * Renders the game
+	 * Renders the app
 	 * @private
 	 */
 	Engine.prototype.render = function () {
-	  this.game.video.beginFrame();
+	  this.app.video.beginFrame();
 
-	  this.game.video.clear();
+	  this.app.video.clear();
 
-	  this.game.states.render();
+	  this.app.states.render();
 
-	  this.game.video.endFrame();
+	  this.app.video.endFrame();
 	};
 
 	/**
@@ -236,36 +236,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var time = (now - this._time) / 1000;
 	  this._time = now;
 
-	  if (this.game.config.showPreloader) {
-	    this.game.video.clear();
-	    this.game.preloading(time);
-	  }
+	  this.app.preloading(time);
 	};
 
 	Engine.prototype._setDefaultStates = function () {
 	  var states = new StateManager();
-	  states.add("app", this.game);
-	  states.add("debug", this.game.debug);
+	  states.add("app", this.app);
+	  states.add("debug", this.app.debug);
 
 	  states.protect("app");
 	  states.protect("debug");
 	  states.hide("debug");
 
-	  this.game.states = states;
+	  this.app.states = states;
 	};
 
-	Engine.prototype._subclassGame = function (container, methods) {
-	  var GameClass = function GameClass(container) {
-	    Game.call(this, container);
+	Engine.prototype._subclassApp = function (container, methods) {
+	  var AppClass = function AppClass(container) {
+	    App.call(this, container);
 	  };
 
-	  GameClass.prototype = Object.create(Game.prototype);
+	  AppClass.prototype = Object.create(App.prototype);
 
 	  for (var method in methods) {
-	    GameClass.prototype[method] = methods[method];
+	    AppClass.prototype[method] = methods[method];
 	  }
 
-	  return GameClass;
+	  return AppClass;
 	};
 
 	module.exports = Engine;
@@ -317,7 +314,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Input = __webpack_require__(9);
 	var Loading = __webpack_require__(10);
 
-	var Game = function Game(canvas) {
+	var App = function App(canvas) {
 	  this.canvas = canvas;
 
 	  this.width = 300;
@@ -332,9 +329,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.video = null;
 
 	  this.config = {
-	    useRetina: true,
+	    allowHiDPI: true,
 	    getCanvasContext: true,
-	    initializeVideo: true,
 	    addInputEvents: true,
 	    showPreloader: true,
 	    fixedStep: false,
@@ -342,41 +338,57 @@ return /******/ (function(modules) { // webpackBootstrap
 	    maxStepTime: 0.01666
 	  };
 
+	  this.video = new Video(this, canvas, this.config);
+	  this.video._isRoot = true;
+
 	  this.configure();
 
-	  if (this.config.initializeVideo) {
-	    this.video = new Video(this, canvas, this.config);
-	  }
+	  this.video.init();
 
 	  if (this.config.addInputEvents) {
 	    this.input = new Input(this, canvas.parentElement);
 	  }
 
 	  this._preloader = new Loading(this);
-	};
 
-	Game.prototype.setSize = function (width, height) {
-	  this.width = width;
-	  this.height = height;
-
-	  if (this.video) {
-	    this.video.setSize(width, height);
+	  if (this.resize) {
+	    this.resize();
 	  }
 	};
 
-	Game.prototype.preloading = function (time) {
+	App.prototype.setSize = function (width, height) {
+	  if (width === this.width && height === this.height) {
+	    return;
+	  }
+	  this.width = width;
+	  this.height = height;
+
+	  var container = this.canvas.parentElement;
+	  container.style.width = this.width + "px";
+	  container.style.height = this.height + "px";
+
+	  if (this.video) {
+	    this.video._setSize(width, height);
+	  }
+
+	  if (this.states) {
+	    this.states.resize();
+	  }
+	};
+
+	App.prototype.preloading = function (time) {
 	  if (this.config.showPreloader) {
 	    this._preloader.render(time);
 	  }
 	};
 
-	Game.prototype.configure = function () {};
+	App.prototype.configure = function () {};
 
-	Game.prototype.focus = function () {};
+	App.prototype.focus = function () {};
 
-	Game.prototype.blur = function () {};
+	App.prototype.blur = function () {};
 
-	module.exports = Game;
+	module.exports = App;
 
 /***/ },
 /* 4 */
@@ -702,6 +714,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
+	StateManager.prototype.resize = function () {
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+	    if (state && state.enabled && state.state.resize) {
+	      state.state.resize();
+	    }
+	  }
+	};
+
 	module.exports = StateManager;
 
 /***/ },
@@ -710,7 +731,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var util = __webpack_require__(17);
+	var util = __webpack_require__(12);
 	var DirtyManager = __webpack_require__(11);
 
 	var ObjectPool = [];
@@ -737,16 +758,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	var defaults = [{ name: "Show FPS", entry: "showFps", defaults: true }, { name: "Show Key Codes", entry: "showKeyCodes", defaults: true }];
+	var defaults = [{ name: "Show FPS", entry: "showFps", defaults: true }, { name: "Show Key Codes", entry: "showKeyCodes", defaults: true }, { name: "Show Perf Time", entry: "showPerfTime", defaults: true }];
 
 	var Debugger = function Debugger(app) {
 	  this.video = app.video.createLayer({
-	    useRetina: true,
+	    allowHiDPI: true,
 	    getCanvasContext: true
 	  });
 
 	  this.graph = app.video.createLayer({
-	    useRetina: false,
+	    allowHiDPI: false,
 	    getCanvasContext: true
 	  });
 
@@ -816,10 +837,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	Debugger.prototype._setFont = function (px, font) {
 	  this._fontSize = px;
 	  this.video.ctx.font = px + "px " + font;
-	};
-
-	Debugger.prototype.resize = function () {
-	  this.video.setSize(this.app.width, this.app.height);
 	};
 
 	Debugger.prototype.addConfig = function (option) {
@@ -1147,7 +1164,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this._renderText("key " + this.lastKey, x, y, this.app.input.isKeyDown(this.lastKey) ? "#e9dc7c" : "white");
 	    this._renderText("btn " + buttonName, x - 60, y, this.app.input.mouse.isDown ? "#e9dc7c" : "white");
+	  }
 
+	  if (this.showPerfTime) {
 	    for (var i = 0; i < this._perfNames.length; i++) {
 	      var name = this._perfNames[i];
 	      var value = this._perfValues[name];
@@ -1241,19 +1260,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @constructor
 	 * @param {HTMLCanvasElement} canvas - Canvas DOM element
 	 */
-	var Video = function Video(game, canvas, config) {
-	  this.game = game;
+	var Video = function Video(app, canvas, config) {
+	  this.app = app;
 
 	  this.config = config;
 
 	  this.canvas = canvas;
 
-	  this.width = game.width;
+	  this.width = app.width;
 
-	  this.height = game.height;
+	  this.height = app.height;
 
-	  if (config.getCanvasContext) {
-	    this.ctx = canvas.getContext("2d");
+	  this._parent = null;
+	  this._isRoot = false;
+	  this._children = [];
+	};
+
+	Video.prototype.init = function () {
+	  if (this.config.getCanvasContext) {
+	    this.ctx = this.canvas.getContext("2d");
 	  }
 
 	  this._applySizeToCanvas();
@@ -1274,13 +1299,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	Video.prototype.endFrame = function () {};
 
 	Video.prototype.destroy = function () {
+	  if (!this._isRoot) {
+	    var index = this._parent._children.indexOf(this);
+	    if (index !== -1) {
+	      this._parent._children.splice(index, 1);
+	    }
+	  }
+
 	  this.canvas.parentElement.removeChild(this.canvas);
 	};
 
 	Video.prototype.scaleCanvas = function (scale) {
-	  this.canvas.style.width = this.canvas.width + "px";
-	  this.canvas.style.height = this.canvas.height + "px";
-
 	  this.canvas.width *= scale;
 	  this.canvas.height *= scale;
 
@@ -1289,22 +1318,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	Video.prototype.setSize = function (width, height) {
+	Video.prototype._setSize = function (width, height) {
 	  this.width = width;
 	  this.height = height;
 
 	  this._applySizeToCanvas();
+
+	  for (var i = 0, len = this._children.length; i < len; i++) {
+	    var item = this._children[i];
+	    item._setSize(width, height);
+	  }
 	};
 
 	Video.prototype._applySizeToCanvas = function () {
 	  this.canvas.width = this.width;
 	  this.canvas.height = this.height;
 
-	  var container = this.canvas.parentElement;
-	  container.style.width = this.width + "px";
-	  container.style.height = this.height + "px";
+	  this.canvas.style.width = this.width + "px";
+	  this.canvas.style.height = this.height + "px";
 
-	  if (this.config.useRetina && isRetina) {
+	  if (this.config.allowHiDPI && isRetina) {
 	    this.scaleCanvas(2);
 	  }
 	};
@@ -1327,7 +1360,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  canvas.style.left = "0px";
 	  container.appendChild(canvas);
 
-	  var video = new Video(this.game, canvas, config);
+	  var video = new Video(this.app, canvas, config);
+
+	  video._parent = this;
+	  video._isRoot = false;
+
+	  video.init();
+
+	  this._children.push(video);
 
 	  return video;
 	};
@@ -1340,7 +1380,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
 
-	var util = __webpack_require__(17);
+	var util = __webpack_require__(12);
 	var path = __webpack_require__(18);
 
 	var PotionAudio = __webpack_require__(19);
@@ -1405,7 +1445,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      callback();
 	    });
 	  } else {
-	    this._nextFile();
+	    var self = this;
+	    this._toLoad.forEach(function (current) {
+	      self._loadAssetFile(current, function (data) {
+	        self._save(current.url, data, current.callback);
+	      });
+	    });
 	  }
 	};
 
@@ -1458,7 +1503,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	Assets.prototype._finishedOneFile = function () {
-	  this._nextFile();
 	  this.progress = this.loadedItemsCount / this.itemsCount;
 	  this._thingsToLoad -= 1;
 	  this.loadedItemsCount += 1;
@@ -1475,7 +1519,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	Assets.prototype._error = function (url) {
 	  console.warn("Error loading \"" + url + "\" asset");
-	  this._nextFile();
 	};
 
 	Assets.prototype._save = function (url, data, callback) {
@@ -1492,19 +1535,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    self._save(name, value);
 	  };
 	  loading(done);
-	};
-
-	Assets.prototype._nextFile = function () {
-	  var current = this._toLoad.shift();
-
-	  if (!current) {
-	    return;
-	  }
-
-	  var self = this;
-	  this._loadAssetFile(current, function (data) {
-	    self._save(current.url, data, current.callback);
-	  });
 	};
 
 	Assets.prototype._loadAssetFile = function (file, callback) {
@@ -1531,14 +1561,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var keys = __webpack_require__(12);
+	var keys = __webpack_require__(17);
 
 	var invKeys = {};
 	for (var keyName in keys) {
 	  invKeys[keys[keyName]] = keyName;
 	}
 
-	var Input = function Input(game, container) {
+	var Input = function Input(app, container) {
 	  this._container = container;
 	  this._keys = {};
 
@@ -1553,7 +1583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    y: null
 	  };
 
-	  this._addEvents(game);
+	  this._addEvents(app);
 	};
 
 	Input.prototype.resetKeys = function () {
@@ -1571,7 +1601,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 
-	Input.prototype._addEvents = function (game) {
+	Input.prototype._addEvents = function (app) {
 	  var self = this;
 
 	  var mouseEvent = {
@@ -1579,8 +1609,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    y: null,
 	    button: null,
 	    event: null,
-	    statePreventDefault: function statePreventDefault() {
-	      game.states._preventEvent = true;
+	    stateStopEvent: function stateStopEvent() {
+	      app.states._preventEvent = true;
 	    }
 	  };
 
@@ -1588,8 +1618,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    key: null,
 	    name: null,
 	    event: null,
-	    statePreventDefault: function statePreventDefault() {
-	      game.states._preventEvent = true;
+	    stateStopEvent: function stateStopEvent() {
+	      app.states._preventEvent = true;
 	    }
 	  };
 
@@ -1599,13 +1629,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    self.mouse.x = x;
 	    self.mouse.y = y;
+	    self.mouse.isActive = true;
 
 	    mouseEvent.x = x;
 	    mouseEvent.y = y;
 	    mouseEvent.button = null;
 	    mouseEvent.event = e;
 
-	    game.states.mousemove(mouseEvent);
+	    app.states.mousemove(mouseEvent);
 	  });
 
 	  self._container.addEventListener("mouseup", function (e) {
@@ -1613,8 +1644,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
 	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
-
-	    self.mouse.isDown = false;
 
 	    switch (e.button) {
 	      case 0:
@@ -1628,13 +1657,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	        break;
 	    }
 
+	    self.mouse.isDown = self.mouse.isLeftDown || self.mouse.isRightDown || self.mouse.isMiddleDown;
+
 	    mouseEvent.x = x;
 	    mouseEvent.y = y;
 	    mouseEvent.button = e.button;
 	    mouseEvent.event = e;
 
-	    game.states.mouseup(mouseEvent);
+	    app.states.mouseup(mouseEvent);
 	  }, false);
+
+	  self._container.addEventListener("mouseleave", function () {
+	    self.mouse.isActive = false;
+
+	    self.mouse.isDown = false;
+	    self.mouse.isLeftDown = false;
+	    self.mouse.isRightDown = false;
+	    self.mouse.isMiddleDown = false;
+	  });
+
+	  self._container.addEventListener("mouseenter", function () {
+	    self.mouse.isActive = true;
+	  });
 
 	  self._container.addEventListener("mousedown", function (e) {
 	    e.preventDefault();
@@ -1645,6 +1689,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    self.mouse.x = x;
 	    self.mouse.y = y;
 	    self.mouse.isDown = true;
+	    self.mouse.isActive = true;
 
 	    switch (e.button) {
 	      case 0:
@@ -1663,7 +1708,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    mouseEvent.button = e.button;
 	    mouseEvent.event = e;
 
-	    game.states.mousedown(mouseEvent);
+	    app.states.mousedown(mouseEvent);
 	  }, false);
 
 	  self._container.addEventListener("touchstart", function (e) {
@@ -1679,13 +1724,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      self.mouse.y = y;
 	      self.mouse.isDown = true;
 	      self.mouse.isLeftDown = true;
+	      self.mouse.isActive = true;
 
 	      mouseEvent.x = x;
 	      mouseEvent.y = y;
 	      mouseEvent.button = 1;
 	      mouseEvent.event = e;
 
-	      game.states.mousedown(mouseEvent);
+	      app.states.mousedown(mouseEvent);
 	    }
 	  });
 
@@ -1702,12 +1748,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      self.mouse.y = y;
 	      self.mouse.isDown = true;
 	      self.mouse.isLeftDown = true;
+	      self.mouse.isActive = true;
 
 	      mouseEvent.x = x;
 	      mouseEvent.y = y;
 	      mouseEvent.event = e;
 
-	      game.states.mousemove(mouseEvent);
+	      app.states.mousemove(mouseEvent);
 	    }
 	  });
 
@@ -1721,14 +1768,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    self.mouse.x = x;
 	    self.mouse.y = y;
+	    self.mouse.isActive = false;
 	    self.mouse.isDown = false;
 	    self.mouse.isLeftDown = false;
+	    self.mouse.isRightDown = false;
+	    self.mouse.isMiddleDown = false;
 
 	    mouseEvent.x = x;
 	    mouseEvent.y = y;
 	    mouseEvent.event = e;
 
-	    game.states.mouseup(mouseEvent);
+	    app.states.mouseup(mouseEvent);
 	  });
 
 	  self._container.addEventListener("contextmenu", function (e) {
@@ -1742,7 +1792,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    keyboardEvent.name = invKeys[e.which];
 	    keyboardEvent.event = e;
 
-	    game.states.keydown(keyboardEvent);
+	    app.states.keydown(keyboardEvent);
 	  });
 
 	  document.addEventListener("keyup", function (e) {
@@ -1752,7 +1802,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    keyboardEvent.name = invKeys[e.which];
 	    keyboardEvent.event = e;
 
-	    game.states.keyup(keyboardEvent);
+	    app.states.keyup(keyboardEvent);
 	  });
 	};
 
@@ -1770,14 +1820,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.barWidth = 0;
 
 	  this.video = app.video.createLayer({
-	    useRetina: true,
+	    allowHiDPI: true,
 	    getCanvasContext: true
 	  });
-
-	  this.video.canvas.className += " test";
 	};
 
 	Loading.prototype.render = function (time) {
+	  this.video.clear();
+
 	  var color1 = "#b9ff71";
 	  var color2 = "#8ac250";
 	  var color3 = "#648e38";
@@ -1897,181 +1947,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = {
-	  backspace: 8,
-	  tab: 9,
-	  enter: 13,
-	  pause: 19,
-	  caps: 20,
-	  esc: 27,
-	  space: 32,
-	  page_up: 33,
-	  page_down: 34,
-	  end: 35,
-	  home: 36,
-	  left: 37,
-	  up: 38,
-	  right: 39,
-	  down: 40,
-	  insert: 45,
-	  "delete": 46,
-	  "0": 48,
-	  "1": 49,
-	  "2": 50,
-	  "3": 51,
-	  "4": 52,
-	  "5": 53,
-	  "6": 54,
-	  "7": 55,
-	  "8": 56,
-	  "9": 57,
-	  a: 65,
-	  b: 66,
-	  c: 67,
-	  d: 68,
-	  e: 69,
-	  f: 70,
-	  g: 71,
-	  h: 72,
-	  i: 73,
-	  j: 74,
-	  k: 75,
-	  l: 76,
-	  m: 77,
-	  n: 78,
-	  o: 79,
-	  p: 80,
-	  q: 81,
-	  r: 82,
-	  s: 83,
-	  t: 84,
-	  u: 85,
-	  v: 86,
-	  w: 87,
-	  x: 88,
-	  y: 89,
-	  z: 90,
-	  numpad_0: 96,
-	  numpad_1: 97,
-	  numpad_2: 98,
-	  numpad_3: 99,
-	  numpad_4: 100,
-	  numpad_5: 101,
-	  numpad_6: 102,
-	  numpad_7: 103,
-	  numpad_8: 104,
-	  numpad_9: 105,
-	  multiply: 106,
-	  add: 107,
-	  substract: 109,
-	  decimal: 110,
-	  divide: 111,
-	  f1: 112,
-	  f2: 113,
-	  f3: 114,
-	  f4: 115,
-	  f5: 116,
-	  f6: 117,
-	  f7: 118,
-	  f8: 119,
-	  f9: 120,
-	  f10: 121,
-	  f11: 122,
-	  f12: 123,
-	  shift: 16,
-	  ctrl: 17,
-	  alt: 18,
-	  plus: 187,
-	  comma: 188,
-	  minus: 189,
-	  period: 190
-	};
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return error(url);
-	    }
-
-	    var data = JSON.parse(this.response);
-	    callback(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var image = new Image();
-	  image.onload = function () {
-	    callback(image);
-	  };
-	  image.onerror = function () {
-	    error(url);
-	  };
-	  image.src = url;
-	};
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return error(url);
-	    }
-
-	    var data = this.response;
-	    callback(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2626,6 +2501,181 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(20)))
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return error(url);
+	    }
+
+	    var data = JSON.parse(this.response);
+	    callback(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var image = new Image();
+	  image.onload = function () {
+	    callback(image);
+	  };
+	  image.onerror = function () {
+	    error(url);
+	  };
+	  image.src = url;
+	};
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, callback, error) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return error(url);
+	    }
+
+	    var data = this.response;
+	    callback(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = {
+	  backspace: 8,
+	  tab: 9,
+	  enter: 13,
+	  pause: 19,
+	  caps: 20,
+	  esc: 27,
+	  space: 32,
+	  page_up: 33,
+	  page_down: 34,
+	  end: 35,
+	  home: 36,
+	  left: 37,
+	  up: 38,
+	  right: 39,
+	  down: 40,
+	  insert: 45,
+	  "delete": 46,
+	  "0": 48,
+	  "1": 49,
+	  "2": 50,
+	  "3": 51,
+	  "4": 52,
+	  "5": 53,
+	  "6": 54,
+	  "7": 55,
+	  "8": 56,
+	  "9": 57,
+	  a: 65,
+	  b: 66,
+	  c: 67,
+	  d: 68,
+	  e: 69,
+	  f: 70,
+	  g: 71,
+	  h: 72,
+	  i: 73,
+	  j: 74,
+	  k: 75,
+	  l: 76,
+	  m: 77,
+	  n: 78,
+	  o: 79,
+	  p: 80,
+	  q: 81,
+	  r: 82,
+	  s: 83,
+	  t: 84,
+	  u: 85,
+	  v: 86,
+	  w: 87,
+	  x: 88,
+	  y: 89,
+	  z: 90,
+	  numpad_0: 96,
+	  numpad_1: 97,
+	  numpad_2: 98,
+	  numpad_3: 99,
+	  numpad_4: 100,
+	  numpad_5: 101,
+	  numpad_6: 102,
+	  numpad_7: 103,
+	  numpad_8: 104,
+	  numpad_9: 105,
+	  multiply: 106,
+	  add: 107,
+	  substract: 109,
+	  decimal: 110,
+	  divide: 111,
+	  f1: 112,
+	  f2: 113,
+	  f3: 114,
+	  f4: 115,
+	  f5: 116,
+	  f6: 117,
+	  f7: 118,
+	  f8: 119,
+	  f9: 120,
+	  f10: 121,
+	  f11: 122,
+	  f12: 123,
+	  shift: 16,
+	  ctrl: 17,
+	  alt: 18,
+	  plus: 187,
+	  comma: 188,
+	  minus: 189,
+	  period: 190
+	};
 
 /***/ },
 /* 18 */
