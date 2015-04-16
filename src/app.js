@@ -32,6 +32,7 @@ var App = function(canvas) {
 
   if (this.config.initializeVideo) {
     this.video = new Video(this, canvas, this.config);
+    this.video._isRoot = true;
   }
 
   if (this.config.addInputEvents) {
@@ -39,14 +40,26 @@ var App = function(canvas) {
   }
 
   this._preloader = new Loading(this);
+
+  if (this.resize) {
+    this.resize();
+  }
 };
 
 App.prototype.setSize = function(width, height) {
+  if (width === this.width && height === this.height) {
+    return;
+  }
+
   this.width = width;
   this.height = height;
 
   if (this.video) {
-    this.video.setSize(width, height);
+    this.video._setSize(width, height);
+  }
+
+  if (this.states) {
+    this.states.resize();
   }
 };
 
