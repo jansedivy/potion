@@ -139,6 +139,8 @@ This object is passed to the event methods.
 
 `value.stateStopEvent()` - function which stops event propagation on the other states
 
+`value.isTouch` - if the event is from touch input
+
 ### Keyboard Event object
 
 `value.key` - code number of the pressed key
