@@ -17,6 +17,9 @@ var Particle = function(x, y) {
 
   this.object = new PIXI.Sprite(app.assets.get('particle.png'));
   this.object.tint = 0xffffff * Math.random();
+  this.object.scale.set(this.r / 10);
+  this.object.position.x = this.x;
+  this.object.position.y = this.y;
 
   this.object.blendMode = PIXI.blendModes.ADD;
 
