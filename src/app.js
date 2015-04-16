@@ -20,7 +20,6 @@ var App = function(canvas) {
   this.config = {
     allowHiDPI: true,
     getCanvasContext: true,
-    initializeVideo: true,
     addInputEvents: true,
     showPreloader: true,
     fixedStep: false,
@@ -28,12 +27,12 @@ var App = function(canvas) {
     maxStepTime: 0.01666
   };
 
+  this.video = new Video(this, canvas, this.config);
+  this.video._isRoot = true;
+
   this.configure();
 
-  if (this.config.initializeVideo) {
-    this.video = new Video(this, canvas, this.config);
-    this.video._isRoot = true;
-  }
+  this.video.init();
 
   if (this.config.addInputEvents) {
     this.input = new Input(this, canvas.parentElement);
@@ -50,9 +49,12 @@ App.prototype.setSize = function(width, height) {
   if (width === this.width && height === this.height) {
     return;
   }
-
   this.width = width;
   this.height = height;
+
+  var container = this.canvas.parentElement;
+  container.style.width = this.width + 'px';
+  container.style.height = this.height + 'px';
 
   if (this.video) {
     this.video._setSize(width, height);

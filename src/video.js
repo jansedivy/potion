@@ -18,9 +18,11 @@ var Video = function(app, canvas, config) {
   this._parent = null;
   this._isRoot = false;
   this._children = [];
+};
 
-  if (config.getCanvasContext) {
-    this.ctx = canvas.getContext('2d');
+Video.prototype.init = function() {
+  if (this.config.getCanvasContext) {
+    this.ctx = this.canvas.getContext('2d');
   }
 
   this._applySizeToCanvas();
@@ -52,9 +54,6 @@ Video.prototype.destroy = function() {
 };
 
 Video.prototype.scaleCanvas = function(scale) {
-  this.canvas.style.width = this.canvas.width + 'px';
-  this.canvas.style.height = this.canvas.height + 'px';
-
   this.canvas.width *= scale;
   this.canvas.height *= scale;
 
@@ -79,9 +78,8 @@ Video.prototype._applySizeToCanvas = function() {
   this.canvas.width = this.width;
   this.canvas.height = this.height;
 
-  var container = this.canvas.parentElement;
-  container.style.width = this.width + 'px';
-  container.style.height = this.height + 'px';
+  this.canvas.style.width = this.width + 'px';
+  this.canvas.style.height = this.height + 'px';
 
   if (this.config.allowHiDPI && isRetina) {
     this.scaleCanvas(2);
@@ -108,6 +106,9 @@ Video.prototype.createLayer = function(config) {
 
   video._parent = this;
   video._isRoot = false;
+
+  video.init();
+
   this._children.push(video);
 
   return video;
