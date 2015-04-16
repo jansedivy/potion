@@ -33,7 +33,6 @@ this.config.fixedStep = true;
 {
   allowHiDPI: true,
   getCanvasContext: true,
-  initializeVideo: true,
   addInputEvents: true,
   showPreloader: true,
   fixedStep: false,
