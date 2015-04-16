@@ -82,7 +82,7 @@ This method is used for rendering loading bar. Could be overwritten to rendering
 
 #### `setSize(width, height)`
 
-Method which sets width and height of the app and the canvas element.
+Method which sets width and height of the app and the canvas element. This also resizes all the nested Video instances.
 
 #### `focus()`
 
