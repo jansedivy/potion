@@ -63,10 +63,6 @@ Video.prototype.scaleCanvas = function(scale) {
   }
 };
 
-Video.prototype.setSize = function(width, height) {
-  this.app.setSize(width, height);
-};
-
 Video.prototype._setSize = function(width, height) {
   this.width = width;
   this.height = height;

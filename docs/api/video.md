@@ -38,10 +38,6 @@ Method for scaling pixel density of the canvas element. Used for HiDPI screens.
 
 `scale` - number on how much to scale the canvas element
 
-#### `setSize(width, height)`
-
-Sets the width and height
-
 #### `clear()`
 
 Methods which clears the screen. Could be overwritten for different rendering, like WebGL.
