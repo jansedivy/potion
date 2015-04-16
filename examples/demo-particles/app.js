@@ -9,6 +9,10 @@ var app = Potion.init(document.querySelector('.game'), {
   init: function() {
     this.particles = [];
     this.lastPosition = { x: null, y: null };
+
+    window.addEventListener('resize', function() {
+      this.setSize(document.body.clientWidth, document.body.clientHeight);
+    }.bind(this));
   },
 
   mousemove: function(value) {
