@@ -79,13 +79,13 @@ Method for setting items in assets. Used for overwriting items in assets object.
 
 `value` - value to store in assets object
 
-#### 'remove(path)'
+#### `remove(path)`
 
 Removes item from assets object.
 
 `path` - path of the asset
 
-#### 'addLoader(name, fn)'
+#### `addLoader(name, fn)`
 
 Add custom asset loader for specific file type.
 
