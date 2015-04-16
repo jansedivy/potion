@@ -43,6 +43,7 @@ Input.prototype._addEvents = function(app) {
     x: null,
     y: null,
     button: null,
+    isTouch: false,
     event: null,
     stateStopEvent: function() {
       app.states._preventEvent = true;
@@ -70,6 +71,7 @@ Input.prototype._addEvents = function(app) {
     mouseEvent.y = y;
     mouseEvent.button = null;
     mouseEvent.event = e;
+    mouseEvent.isTouch = false;
 
     app.states.mousemove(mouseEvent);
   });
@@ -98,6 +100,7 @@ Input.prototype._addEvents = function(app) {
     mouseEvent.y = y;
     mouseEvent.button = e.button;
     mouseEvent.event = e;
+    mouseEvent.isTouch = false;
 
     app.states.mouseup(mouseEvent);
   }, false);
@@ -142,6 +145,7 @@ Input.prototype._addEvents = function(app) {
     mouseEvent.y = y;
     mouseEvent.button = e.button;
     mouseEvent.event = e;
+    mouseEvent.isTouch = false;
 
     app.states.mousedown(mouseEvent);
   }, false);
@@ -165,6 +169,7 @@ Input.prototype._addEvents = function(app) {
       mouseEvent.y = y;
       mouseEvent.button = 1;
       mouseEvent.event = e;
+      mouseEvent.isTouch = true;
 
       app.states.mousedown(mouseEvent);
     }
@@ -188,6 +193,7 @@ Input.prototype._addEvents = function(app) {
       mouseEvent.x = x;
       mouseEvent.y = y;
       mouseEvent.event = e;
+      mouseEvent.isTouch = true;
 
       app.states.mousemove(mouseEvent);
     }
@@ -212,6 +218,7 @@ Input.prototype._addEvents = function(app) {
     mouseEvent.x = x;
     mouseEvent.y = y;
     mouseEvent.event = e;
+    mouseEvent.isTouch = true;
 
     app.states.mouseup(mouseEvent);
   });
