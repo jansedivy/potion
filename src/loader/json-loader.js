@@ -3,6 +3,12 @@ module.exports = function(url, loader) {
 
   request.open('GET', url, true);
   request.responseType = 'text';
+
+  request.addEventListener('progress', function(e) {
+    var percent = e.loaded / e.total;
+    loader.progress(percent);
+  });
+
   request.onload = function() {
     if (request.status !== 200) {
       return loader.error(url);
