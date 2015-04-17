@@ -27,9 +27,11 @@ var Assets = function() {
 
   this.addLoader('json', JsonLoader);
 
-  this.addLoader('mp3', this.audio.load.bind(this.audio));
-  this.addLoader('music', this.audio.load.bind(this.audio));
-  this.addLoader('sound', this.audio.load.bind(this.audio));
+  var audioLoader = require('./loader/audio-loader')(this.audio);
+
+  this.addLoader('mp3', audioLoader);
+  this.addLoader('music', audioLoader);
+  this.addLoader('sound', audioLoader);
 
   this.addLoader('image', imageLoader);
   this.addLoader('texture', imageLoader);
