@@ -7,15 +7,7 @@ var JsonLoader = require('./loader/json-loader');
 var imageLoader = require('./loader/image-loader');
 var textLoader = require('./loader/text-loader');
 
-/**
- * Class for managing and loading asset files
- * @constructor
- */
 var Assets = function() {
-  /**
-   * Is currently loading any assets
-   * @type {boolean}
-   */
   this.isLoading = false;
 
   this.itemsCount = 0;
@@ -49,10 +41,6 @@ Assets.prototype.addLoader = function(name, fn) {
   this._loaders[name] = fn;
 };
 
-/**
- * Starts loading stored assets urls and runs given callback after everything is loaded
- * @param {function} callback - callback function
- */
 Assets.prototype.onload = function(callback) {
   this._callback = callback;
 
@@ -72,10 +60,6 @@ Assets.prototype.onload = function(callback) {
   }
 };
 
-/**
- * Getter for loaded assets
- * @param {string} name - url of stored asset
- */
 Assets.prototype.get = function(name) {
   return this._data[path.normalize(name)];
 };
@@ -85,22 +69,10 @@ Assets.prototype.remove = function(name) {
 };
 
 
-/**
- * Used for storing some value in assets module
- * useful for overrating values
- * @param {string} name - url of the asset
- * @param {any} value - value to be stored
- */
 Assets.prototype.set = function(name, value) {
   this._data[path.normalize(name)] = value;
 };
 
-/**
- * Stores url so it can be loaded later
- * @param {string} type - type of asset
- * @param {string} url - url of given asset
- * @param {function} callback - callback function
- */
 Assets.prototype.load = function(type, url, callback) {
   var loadObject = { type: type, url: url != null ? path.normalize(url) : null, callback: callback };
 
