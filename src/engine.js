@@ -33,7 +33,7 @@ var Engine = function(container, methods) {
 
   this._time = Time.now();
 
-  this.app.assets.onload(function() {
+  this.app.assets.start(function() {
     window.cancelAnimationFrame(this.preloaderId);
     this.app._preloader.exit();
 
