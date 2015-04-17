@@ -44,9 +44,8 @@ Assets.prototype.start = function(callback) {
   this._callback = callback;
 
   this._toLoad.forEach(function(current) {
-    this._loadAssetFile(current, function(data, name) {
-      var finalName = name == null ? current.url : name;
-      this.set(finalName, data);
+    this._loadAssetFile(current, function(name, data) {
+      this.set(name, data);
       if (current.callback) { current.callback(data); }
 
       this._finishedQueuedFile();
@@ -76,15 +75,15 @@ Assets.prototype.load = function(type, url, callback) {
   var loadObject = {
     type: type,
     url: (url != null ? path.normalize(url) : null),
-    callback: callback
+    callback: callback,
+    progress: 0
   };
 
   if (this._preloading) {
     this._queueFile(loadObject);
   } else {
-    this._loadAssetFile(loadObject, function(data, name) {
-      var finalName = name == null ? loadObject.url : name;
-      this.set(finalName, data);
+    this._loadAssetFile(loadObject, function(name, data) {
+      this.set(name, data);
       if (callback) { callback(data); }
     }.bind(this));
   }
@@ -99,20 +98,29 @@ Assets.prototype._queueFile = function(loadObject) {
 
 Assets.prototype._finishedQueuedFile = function() {
   this._thingsToLoad -= 1;
-  this.progress = (this.itemsCount - this._thingsToLoad) / this.itemsCount;
 
   if (this._thingsToLoad === 0) {
     this._done();
   }
 };
 
+Assets.prototype._updateProgress = function() {
+  var sum = 0;
+
+  for (var i=0; i<this._toLoad.length; i++) {
+    sum += this._toLoad[i].progress;
+  }
+
+  this.progress = sum/this._toLoad.length;
+};
+
 Assets.prototype._error = function(url) {
   console.warn('Error loading "' + url + '" asset');
 };
 
-Assets.prototype._handleCustomLoading = function(loading, callback) {
+Assets.prototype._handleCustomLoading = function(loading, loader) {
   loading(function(name, value) {
-    callback(value, name);
+    loader.done(value, name);
   });
 };
 
@@ -120,15 +128,32 @@ Assets.prototype._loadAssetFile = function(file, callback) {
   var type = file.type;
   var url = file.url;
 
+  var manager = {
+    done: function(data, name) {
+      name = name == null ? file.url : name;
+
+      file.progress = 1;
+      callback(name, data);
+      this._updateProgress();
+    }.bind(this),
+
+    error: function() {
+      this._error.bind(this);
+    }.bind(this),
+
+    progress: function(percent) {
+      file.progress = percent;
+      this._updateProgress();
+    }.bind(this)
+  };
+
   if (util.isFunction(type)) {
-    this._handleCustomLoading(type, callback);
-    return;
+    this._handleCustomLoading(type, manager);
+  } else {
+    type = type.toLowerCase();
+    var loader = this._loaders[type] || textLoader;
+    loader(url, manager);
   }
-
-  type = type.toLowerCase();
-
-  var loader = this._loaders[type] || textLoader;
-  loader(url, callback, this._error.bind(this));
 };
 
 Assets.prototype._done = function() {

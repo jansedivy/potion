@@ -1,10 +1,10 @@
-module.exports = function(url, callback, error) {
+module.exports = function(url, loader) {
   var image = new Image();
   image.onload = function() {
-    callback(image);
+    loader.done(image);
   };
   image.onerror = function() {
-    error(url);
+    loader.error(url);
   };
   image.src = url;
 };
