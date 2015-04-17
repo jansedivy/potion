@@ -91,18 +91,26 @@ Add custom asset loader for specific file type.
 
 `name` - Name of the asset loader. Used when calling `load` method
 
-`fn` - This functions is called every time when its started loading asset. Arguments are `(url, callback, error).
+`fn` - This functions is called every time when its started loading asset. Arguments are `(url, loader).
+
+`loader` argument is object with these methods
+
+`loader.done()` - call when the asset is done loading
+
+`loader.error()` - call on error
+
+`loader.progress()` - call with number between 0 and 1
 
 ##### Example
 
 ```javascript
-this.assets.addLoader('json', function(url, callback, error) {
+this.assets.addLoader('json', function(url, loader) {
   jsonRequest(url, {
     success: function(result) {
-      callback(result);
+      loader.done(result);
     },
     error: function() {
-      error(url);
+      loader.error(url);
     }
   });
 });
