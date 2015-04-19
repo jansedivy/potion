@@ -15,29 +15,29 @@ var Bunny = function() {
   this.object.scale.set(0.5 + Math.random() * 0.5);
   this.object.rotation = Math.random() - 0.5;
 
-  app.stage.addChild(this.object);
+  app.main.stage.addChild(this.object);
 };
 
 Bunny.prototype.update = function() {
   this.x += this.speedX;
   this.y += this.speedY;
-  this.speedY += app.gravity;
+  this.speedY += app.main.gravity;
 
-  if (this.x > app.maxX) {
+  if (this.x > app.main.maxX) {
     this.speedX *= -1;
-    this.x = app.maxX;
-  } else if (this.x < app.minX) {
+    this.x = app.main.maxX;
+  } else if (this.x < app.main.minX) {
     this.speedX *= -1;
-    this.x = app.minX;
-  } if (this.y > app.maxY) {
+    this.x = app.main.minX;
+  } if (this.y > app.main.maxY) {
     this.speedY *= -0.85;
-    this.y = app.maxY;
+    this.y = app.main.maxY;
     if (Math.random() > 0.5) {
       this.speedY -= Math.random() * 6;
     }
-  } else if (this.y < app.minY) {
+  } else if (this.y < app.main.minY) {
     this.speedY = 0;
-    this.y = app.minY;
+    this.y = app.main.minY;
   }
 
   this.object.position.x = this.x;
@@ -46,17 +46,17 @@ Bunny.prototype.update = function() {
 
 app = Potion.init(document.querySelector('.game'), {
   configure: function() {
-    this.setSize(800, 600);
-    this.config.allowHiDPI = false;
-    this.config.getCanvasContext = false;
+    app.setSize(800, 600);
+    app.config.allowHiDPI = false;
+    app.config.getCanvasContext = false;
 
-    this.renderer = new PIXI.WebGLRenderer(this.width, this.height, { view: this.canvas });
+    app.assets.load('image', 'bunny.png');
 
-    this.assets.load('image', 'bunny.png');
+    this.renderer = new PIXI.WebGLRenderer(app.width, app.height, { view: app.canvas });
   },
 
   init: function() {
-    this.assets.set('bunny.png', new PIXI.Texture(new PIXI.BaseTexture(this.assets.get('bunny.png'))));
+    app.assets.set('bunny.png', new PIXI.Texture(new PIXI.BaseTexture(app.assets.get('bunny.png'))));
 
     this.gravity = 0.75;
     this.amount = 50;

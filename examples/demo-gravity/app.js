@@ -23,11 +23,11 @@ var Particle = function(x, y) {
 
   this.object.blendMode = PIXI.blendModes.ADD;
 
-  app.stage.addChild(this.object);
+  app.main.stage.addChild(this.object);
 };
 
 Particle.prototype.update = function(time) {
-  var angle = Math.atan2(app.centerY - this.y, app.centerX - this.x);
+  var angle = Math.atan2(app.main.centerY - this.y, app.main.centerX - this.x);
 
   this.dx += Math.cos(angle) * 5 * this.speed * time;
   this.dy += Math.sin(angle) * 5 * this.speed * time;
@@ -36,7 +36,7 @@ Particle.prototype.update = function(time) {
   this.dy = this.dy + (0 - this.dy) * time/2;
 
   var speed = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2));
-  var distance = Math.sqrt(Math.pow(app.centerX - this.x, 2) + Math.pow(app.centerY - this.y, 2));
+  var distance = Math.sqrt(Math.pow(app.main.centerX - this.x, 2) + Math.pow(app.main.centerY - this.y, 2));
 
   this.r = speed / 200 + 0.2;
 
@@ -48,27 +48,27 @@ Particle.prototype.update = function(time) {
   this.object.position.y = this.y;
 
   if (speed < 100 && distance < 100) {
-    app.stage.removeChild(this.object);
+    app.main.removeChild(this.object);
     return true;
   }
 };
 
 app = Potion.init(document.querySelector('.game'), {
   configure: function() {
-    this.setSize(document.body.clientWidth, document.body.clientHeight);
-    this.config.allowHiDPI = false;
-    this.config.getCanvasContext = false;
+    app.setSize(document.body.clientWidth, document.body.clientHeight);
+    app.config.allowHiDPI = false;
+    app.config.getCanvasContext = false;
 
-    this.renderer = new PIXI.WebGLRenderer(this.width, this.height, { view: this.canvas });
+    app.assets.load('image', 'particle.png');
 
-    this.assets.load('image', 'particle.png');
+    this.renderer = new PIXI.WebGLRenderer(app.width, app.height, { view: app.canvas });
   },
 
   init: function() {
-    this.assets.set('particle.png', new PIXI.Texture(new PIXI.BaseTexture(this.assets.get('particle.png'))));
+    app.assets.set('particle.png', new PIXI.Texture(new PIXI.BaseTexture(app.assets.get('particle.png'))));
 
-    this.centerX = this.width/2;
-    this.centerY = this.height/2;
+    this.centerX = app.width/2;
+    this.centerY = app.height/2;
 
     this.prevX = null;
     this.prevY = null;
@@ -77,15 +77,15 @@ app = Potion.init(document.querySelector('.game'), {
     this.stage = new PIXI.Stage(0x080a25);
 
     window.addEventListener('resize', function() {
-      this.setSize(document.body.clientWidth, document.body.clientHeight);
+      app.setSize(document.body.clientWidth, document.body.clientHeight);
     }.bind(this));
   },
 
   resize: function() {
-    this.centerX = this.width/2;
-    this.centerY = this.height/2;
+    this.centerX = app.width/2;
+    this.centerY = app.height/2;
 
-    this.renderer.resize(this.width, this.height);
+    this.renderer.resize(app.width, app.height);
   },
 
   update: function(time) {

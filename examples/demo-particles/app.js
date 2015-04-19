@@ -2,8 +2,8 @@ var Potion = require('potion');
 
 var app = Potion.init(document.querySelector('.game'), {
   configure: function() {
-    this.setSize(document.body.clientWidth, document.body.clientHeight);
-    this.config.allowHiDPI = true;
+    app.setSize(document.body.clientWidth, document.body.clientHeight);
+    app.config.allowHiDPI = true;
   },
 
   init: function() {
@@ -22,8 +22,8 @@ var app = Potion.init(document.querySelector('.game'), {
       this.particles.push(new Particle(value.x, value.y, dx, dy));
     }
 
-    this.lastPosition.x = this.input.mouse.x;
-    this.lastPosition.y = this.input.mouse.y;
+    this.lastPosition.x = app.input.mouse.x;
+    this.lastPosition.y = app.input.mouse.y;
   },
 
   update: function(time) {
@@ -59,7 +59,7 @@ Particle.prototype.update = function(time) {
   this.r = this.r + (0 - this.r) * time;
 
   if (this.r <= 0.5) {
-    app.particles.splice(app.particles.indexOf(this), 1);
+    app.states.get('app').particles.splice(app.states.get('app').particles.indexOf(this), 1);
   }
 
   this.x += this.dx * time;

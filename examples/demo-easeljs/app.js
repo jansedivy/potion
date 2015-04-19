@@ -4,11 +4,11 @@ var Potion = require('potion');
 
 var app = Potion.init(document.querySelector('.game'), {
   configure: function() {
-    this.setSize(800, 600);
-    this.config.allowHiDPI = false;
-    this.config.getCanvasContext = false;
+    app.setSize(800, 600);
+    app.config.allowHiDPI = false;
+    app.config.getCanvasContext = false;
 
-    this.stage = new createjs.Stage(this.canvas);
+    this.stage = new createjs.Stage(app.canvas);
 
     this.circle = new createjs.Shape();
     this.circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 50);

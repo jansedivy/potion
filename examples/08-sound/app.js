@@ -2,11 +2,11 @@ var Potion = require('potion');
 
 var app = Potion.init(document.querySelector('.game'), {
   configure: function() {
-    this.assets.load('music', 'sounds/bullet.wav');
-    this.assets.load('music', 'sounds/hit.wav');
-    this.assets.load('music', 'sounds/hit2.wav');
-    this.assets.load('music', 'sounds/pickup.wav');
-    this.assets.load('music', 'sounds/power-up.wav');
+    app.assets.load('music', 'sounds/bullet.wav');
+    app.assets.load('music', 'sounds/hit.wav');
+    app.assets.load('music', 'sounds/hit2.wav');
+    app.assets.load('music', 'sounds/pickup.wav');
+    app.assets.load('music', 'sounds/power-up.wav');
 
     this.sounds = [
       'sounds/bullet.wav',
