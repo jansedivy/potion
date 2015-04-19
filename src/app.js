@@ -51,10 +51,4 @@ App.prototype.preloading = function(time) {
   }
 };
 
-App.prototype.configure = function() {};
-
-App.prototype.focus = function() {};
-
-App.prototype.blur = function() {};
-
 module.exports = App;

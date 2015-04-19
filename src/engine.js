@@ -16,16 +16,19 @@ var Loading = require('./loading');
  * @constructor
  */
 var Engine = function(container, methods) {
-  var AppClass = this._subclassApp(container, methods);
-
   container.style.position = 'relative';
 
   var canvas = document.createElement('canvas');
   canvas.style.display = 'block';
   container.appendChild(canvas);
 
-  this.app = new AppClass(canvas);
-  this.app.debug = new Debugger(this.app);
+  this.controller = new App(canvas);
+
+  this.app = methods;
+  this.controller.main = this.app;
+  this.app.app = this.controller;
+
+  this.controller.debug = new Debugger(this.controller);
 
   this.tickFunc = (function (self) { return function() { self.tick(); }; })(this);
   this.preloaderTickFunc = (function (self) { return function() { self._preloaderTick(); }; })(this);
@@ -39,30 +42,32 @@ var Engine = function(container, methods) {
 };
 
 Engine.prototype.configureApp = function() {
-  this.app.configure();
-
-  this.app.video.init();
-
-  if (this.app.config.addInputEvents) {
-    this.app.input = new Input(this.app, this.app.canvas.parentElement);
+  if (this.app.configure) {
+    this.app.configure();
   }
 
-  this.app.setSize(this.app.width, this.app.height);
+  this.controller.video.init();
+
+  if (this.controller.config.addInputEvents) {
+    this.controller.input = new Input(this.controller, this.controller.canvas.parentElement);
+  }
+
+  this.controller.setSize(this.controller.width, this.controller.height);
 
   this._setDefaultStates();
 
   this._time = Time.now();
 
-  this.app._preloader = new Loading(this.app);
+  this.controller._preloader = new Loading(this.controller);
 
-  this.app.assets.start(function() {
+  this.controller.assets.start(function() {
     window.cancelAnimationFrame(this.preloaderId);
-    this.app._preloader.exit();
+    this.controller._preloader.exit();
 
     this.start();
   }.bind(this));
 
-  if (this.app.assets.isLoading && this.app.config.showPreloader) {
+  if (this.controller.assets.isLoading && this.controller.config.showPreloader) {
     this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
   }
 };
@@ -75,13 +80,19 @@ Engine.prototype.addEvents = function() {
   var self = this;
 
   window.addEventListener('blur', function() {
-    self.app.input.resetKeys();
-    self.app.blur();
+    self.controller.input.resetKeys();
+
+    if (self.app.blur) {
+      self.app.blur();
+    }
   });
 
   window.addEventListener('focus', function() {
-    self.app.input.resetKeys();
-    self.app.focus();
+    self.controller.input.resetKeys();
+
+    if (self.app.focus) {
+      self.app.focus();
+    }
   });
 };
 
@@ -90,7 +101,7 @@ Engine.prototype.addEvents = function() {
  * @private
  */
 Engine.prototype.start = function() {
-  if (this.app.config.addInputEvents) {
+  if (this.controller.config.addInputEvents) {
     this.addEvents();
   }
 
@@ -104,25 +115,25 @@ Engine.prototype.start = function() {
 Engine.prototype.tick = function() {
   window.requestAnimationFrame(this.tickFunc);
 
-  this.app.debug.begin();
+  this.controller.debug.begin();
 
   var now = Time.now();
   var time = (now - this._time) / 1000;
   this._time = now;
 
-  this.app.debug.perf('update');
+  this.controller.debug.perf('update');
   this.update(time);
-  this.app.debug.stopPerf('update');
+  this.controller.debug.stopPerf('update');
 
-  this.app.states.exitUpdate(time);
+  this.controller.states.exitUpdate(time);
 
-  this.app.debug.perf('render');
+  this.controller.debug.perf('render');
   this.render();
-  this.app.debug.stopPerf('render');
+  this.controller.debug.stopPerf('render');
 
-  this.app.debug.render();
+  this.controller.debug.render();
 
-  this.app.debug.end();
+  this.controller.debug.end();
 };
 
 /**
@@ -131,16 +142,16 @@ Engine.prototype.tick = function() {
  * @private
  */
 Engine.prototype.update = function(time) {
-  if (time > this.app.config.maxStepTime) { time = this.app.config.maxStepTime; }
+  if (time > this.controller.config.maxStepTime) { time = this.controller.config.maxStepTime; }
 
-  if (this.app.config.fixedStep) {
+  if (this.controller.config.fixedStep) {
     this.strayTime = this.strayTime + time;
-    while (this.strayTime >= this.app.config.stepTime) {
-      this.strayTime = this.strayTime - this.app.config.stepTime;
-      this.app.states.update(this.app.config.stepTime);
+    while (this.strayTime >= this.controller.config.stepTime) {
+      this.strayTime = this.strayTime - this.controller.config.stepTime;
+      this.controller.states.update(this.controller.config.stepTime);
     }
   } else {
-    this.app.states.update(time);
+    this.controller.states.update(time);
   }
 };
 
@@ -149,13 +160,13 @@ Engine.prototype.update = function(time) {
  * @private
  */
 Engine.prototype.render = function() {
-  this.app.video.beginFrame();
+  this.controller.video.beginFrame();
 
-  this.app.video.clear();
+  this.controller.video.clear();
 
-  this.app.states.render();
+  this.controller.states.render();
 
-  this.app.video.endFrame();
+  this.controller.video.endFrame();
 };
 
 /**
@@ -169,19 +180,19 @@ Engine.prototype._preloaderTick = function() {
   var time = (now - this._time) / 1000;
   this._time = now;
 
-  this.app.preloading(time);
+  this.controller.preloading(time);
 };
 
 Engine.prototype._setDefaultStates = function() {
   var states = new StateManager();
-  states.add('app', this.app);
-  states.add('debug', this.app.debug);
+  states.add('main', this.app);
+  states.add('debug', this.controller.debug);
 
-  states.protect('app');
+  states.protect('main');
   states.protect('debug');
   states.hide('debug');
 
-  this.app.states = states;
+  this.controller.states = states;
 };
 
 Engine.prototype._subclassApp = function(container, methods) {
