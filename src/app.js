@@ -13,7 +13,6 @@ var App = function(canvas) {
   this.states = null;
   this.debug = null;
   this.input = null;
-  this.video = null;
 
   this.config = {
     allowHiDPI: true,
