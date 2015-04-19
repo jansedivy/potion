@@ -20,8 +20,8 @@ var App = function(canvas) {
     addInputEvents: true,
     showPreloader: true,
     fixedStep: false,
-    stepTime: 0.01666,
-    maxStepTime: 0.01666
+    stepTime: 1/60,
+    maxStepTime: 1/60
   };
 
   this.video = new Video(this, canvas, this.config);
