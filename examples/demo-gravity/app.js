@@ -50,7 +50,7 @@ Particle.prototype.update = function(time) {
   this.object.position.x = this.x;
   this.object.position.y = this.y;
 
-  if (speed < 100 && distance < 100000) {
+  if (speed < 100 && distance < 10000) {
     app.main.stage.removeChild(this.object);
     return true;
   }
