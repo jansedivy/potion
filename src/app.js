@@ -40,15 +40,10 @@ var App = function(canvas) {
 
   this._preloader = new Loading(this);
 
-  if (this.resize) {
-    this.resize();
-  }
+  this.setSize(this.width, this.height);
 };
 
 App.prototype.setSize = function(width, height) {
-  if (width === this.width && height === this.height) {
-    return;
-  }
   this.width = width;
   this.height = height;
 
