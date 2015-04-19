@@ -13,7 +13,7 @@ var Particle = function(x, y) {
   this.dx = Math.random() * 100 - 50;
   this.dy = Math.random() * 100 - 50;
 
-  this.speed = 250;
+  this.speed = 1250;
 
   this.object = new PIXI.Sprite(app.assets.get('particle.png'));
   this.object.tint = 0xffffff * Math.random();
@@ -27,16 +27,19 @@ var Particle = function(x, y) {
 };
 
 Particle.prototype.update = function(time) {
-  var angle = Math.atan2(app.main.centerY - this.y, app.main.centerX - this.x);
+  var dx = app.main.centerX - this.x;
+  var dy = app.main.centerY - this.y;
 
-  this.dx += Math.cos(angle) * 5 * this.speed * time;
-  this.dy += Math.sin(angle) * 5 * this.speed * time;
+  var deltaLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+
+  this.dx += dx/deltaLength * this.speed * time;
+  this.dy += dy/deltaLength * this.speed * time;
 
   this.dx = this.dx + (0 - this.dx) * time/2;
   this.dy = this.dy + (0 - this.dy) * time/2;
 
   var speed = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2));
-  var distance = Math.sqrt(Math.pow(app.main.centerX - this.x, 2) + Math.pow(app.main.centerY - this.y, 2));
+  var distance = Math.pow(app.main.centerX - this.x, 2) + Math.pow(app.main.centerY - this.y, 2);
 
   this.r = speed / 200 + 0.2;
 
@@ -47,7 +50,7 @@ Particle.prototype.update = function(time) {
   this.object.position.x = this.x;
   this.object.position.y = this.y;
 
-  if (speed < 100 && distance < 100) {
+  if (speed < 100 && distance < 100000) {
     app.main.stage.removeChild(this.object);
     return true;
   }
