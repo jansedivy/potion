@@ -1,7 +1,5 @@
 var Video = require('./video');
 var Assets = require('./assets');
-var Input = require('./input');
-var Loading = require('./loading');
 
 var App = function(canvas) {
   this.canvas = canvas;
@@ -29,18 +27,6 @@ var App = function(canvas) {
 
   this.video = new Video(this, canvas, this.config);
   this.video._isRoot = true;
-
-  this.configure();
-
-  this.video.init();
-
-  if (this.config.addInputEvents) {
-    this.input = new Input(this, canvas.parentElement);
-  }
-
-  this._preloader = new Loading(this);
-
-  this.setSize(this.width, this.height);
 };
 
 App.prototype.setSize = function(width, height) {

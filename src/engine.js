@@ -8,6 +8,9 @@ var Debugger = require('potion-debugger');
 
 var StateManager = require('./state-manager');
 
+var Input = require('./input');
+var Loading = require('./loading');
+
 /**
  * Main Engine class which calls the app methods
  * @constructor
@@ -24,14 +27,33 @@ var Engine = function(container, methods) {
   this.app = new AppClass(canvas);
   this.app.debug = new Debugger(this.app);
 
-  this._setDefaultStates();
-
   this.tickFunc = (function (self) { return function() { self.tick(); }; })(this);
   this.preloaderTickFunc = (function (self) { return function() { self._preloaderTick(); }; })(this);
 
   this.strayTime = 0;
+  this._time = 0;
+
+  setTimeout(function() {
+    this.configureApp();
+  }.bind(this), 0);
+};
+
+Engine.prototype.configureApp = function() {
+  this.app.configure();
+
+  this.app.video.init();
+
+  if (this.app.config.addInputEvents) {
+    this.app.input = new Input(this.app, this.app.canvas.parentElement);
+  }
+
+  this.app.setSize(this.app.width, this.app.height);
+
+  this._setDefaultStates();
 
   this._time = Time.now();
+
+  this.app._preloader = new Loading(this.app);
 
   this.app.assets.start(function() {
     window.cancelAnimationFrame(this.preloaderId);
