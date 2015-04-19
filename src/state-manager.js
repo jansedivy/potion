@@ -21,7 +21,7 @@ StateManager.prototype.add = function(name, state) {
 };
 
 StateManager.prototype.enable = function(name) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     if (!holder.enabled) {
       if (holder.state.enable) {
@@ -38,7 +38,7 @@ StateManager.prototype.enable = function(name) {
 };
 
 StateManager.prototype.disable = function(name) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     if (holder.enabled) {
       if (holder.state.disable) {
@@ -51,7 +51,7 @@ StateManager.prototype.disable = function(name) {
 };
 
 StateManager.prototype.hide = function(name) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     if (holder.enabled) {
       holder.changed = true;
@@ -61,7 +61,7 @@ StateManager.prototype.hide = function(name) {
 };
 
 StateManager.prototype.show = function(name) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     if (holder.enabled) {
       holder.changed = true;
@@ -71,7 +71,7 @@ StateManager.prototype.show = function(name) {
 };
 
 StateManager.prototype.pause = function(name) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     if (holder.state.pause) {
       holder.state.pause();
@@ -83,7 +83,7 @@ StateManager.prototype.pause = function(name) {
 };
 
 StateManager.prototype.unpause = function(name) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     if (holder.state.unpause) {
       holder.state.unpause();
@@ -95,14 +95,14 @@ StateManager.prototype.unpause = function(name) {
 };
 
 StateManager.prototype.protect = function(name) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     holder.protect = true;
   }
 };
 
 StateManager.prototype.unprotect = function(name) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     holder.protect = false;
   }
@@ -147,7 +147,7 @@ StateManager.prototype._newStateHolder = function(name, state) {
 };
 
 StateManager.prototype.setUpdateOrder = function(name, order) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     holder.updateOrder = order;
     this.refreshOrder();
@@ -155,7 +155,7 @@ StateManager.prototype.setUpdateOrder = function(name, order) {
 };
 
 StateManager.prototype.setRenderOrder = function(name, order) {
-  var holder = this.get(name);
+  var holder = this.getHolder(name);
   if (holder) {
     holder.renderOrder = order;
     this.refreshOrder();
@@ -163,7 +163,7 @@ StateManager.prototype.setRenderOrder = function(name, order) {
 };
 
 StateManager.prototype.destroy = function(name) {
-  var state = this.get(name);
+  var state = this.getHolder(name);
   if (state && !state.protect) {
     if (state.state.close) {
       state.state.close();
@@ -187,8 +187,12 @@ StateManager.prototype.destroyAll = function() {
   this.refreshOrder();
 };
 
-StateManager.prototype.get = function(name) {
+StateManager.prototype.getHolder = function(name) {
   return this.states[name];
+};
+
+StateManager.prototype.get = function(name) {
+  return this.states[name].state;
 };
 
 StateManager.prototype.update = function(time) {
