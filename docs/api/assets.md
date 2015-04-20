@@ -101,7 +101,7 @@ Add custom asset loader for specific file type.
 
 `loader.error()` - call on error
 
-`loader.progress()` - call with number between 0 and 1
+`loader.progress()` - optional. Call with number between 0 and 1 for better loading bar
 
 ##### Example
 
