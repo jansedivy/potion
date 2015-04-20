@@ -54,11 +54,16 @@ Engine.prototype.configureApp = function() {
 
   this._time = Time.now();
 
-  this.controller._preloader = new Loading(this.controller);
+  this._preloaderVideo = this.controller.video.createLayer({
+    allowHiDPI: true,
+    getCanvasContext: true
+  });
+
+  this._preloader = new Loading(this.controller);
 
   this.controller.assets.start(function() {
     window.cancelAnimationFrame(this.preloaderId);
-    this.controller._preloader.exit();
+    this._preloaderVideo.destroy();
 
     this.start();
   }.bind(this));
@@ -176,7 +181,11 @@ Engine.prototype._preloaderTick = function() {
   var time = (now - this._time) / 1000;
   this._time = now;
 
-  this.controller.preloading(time);
+  if (this.app.preloading) {
+    this.app.preloading(time, this._preloaderVideo);
+  } else {
+    this._preloader.render(time, this._preloaderVideo);
+  }
 };
 
 Engine.prototype._setDefaultStates = function() {

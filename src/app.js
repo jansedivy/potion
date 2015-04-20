@@ -53,10 +53,4 @@ App.prototype.setSize = function(width, height) {
   }
 };
 
-App.prototype.preloading = function(time) {
-  if (this.config.showPreloader) {
-    this._preloader.render(time);
-  }
-};
-
 module.exports = App;
