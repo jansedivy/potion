@@ -4,8 +4,6 @@ var App = require('./app');
 
 var Time = require('./time');
 
-var Debugger = require('potion-debugger');
-
 var StateManager = require('./state-manager');
 
 var Input = require('./input');
@@ -27,8 +25,6 @@ var Engine = function(container, methods) {
   this.app = methods;
   this.controller.main = this.app;
   this.app.app = this.controller;
-
-  this.controller.debug = new Debugger(this.controller);
 
   this.tickFunc = (function (self) { return function() { self.tick(); }; })(this);
   this.preloaderTickFunc = (function (self) { return function() { self._preloaderTick(); }; })(this);

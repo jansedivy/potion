@@ -1,6 +1,8 @@
 var Video = require('./video');
 var Assets = require('./assets');
 
+var Debugger = require('potion-debugger');
+
 var PotionAudio = require('potion-audio');
 
 var App = function(canvas) {
@@ -15,7 +17,7 @@ var App = function(canvas) {
   this.assets = new Assets(this);
 
   this.states = null;
-  this.debug = null;
+
   this.input = null;
 
   this.config = {
@@ -30,6 +32,8 @@ var App = function(canvas) {
 
   this.video = new Video(this, canvas, this.config);
   this.video._isRoot = true;
+
+  this.debug = new Debugger(this);
 };
 
 App.prototype.setSize = function(width, height) {
