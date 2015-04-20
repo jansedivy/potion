@@ -200,18 +200,4 @@ Engine.prototype._setDefaultStates = function() {
   this.controller.states = states;
 };
 
-Engine.prototype._subclassApp = function(container, methods) {
-  var AppClass = function(container) {
-    App.call(this, container);
-  };
-
-  AppClass.prototype = Object.create(App.prototype);
-
-  for (var method in methods) {
-    AppClass.prototype[method] = methods[method];
-  }
-
-  return AppClass;
-};
-
 module.exports = Engine;
