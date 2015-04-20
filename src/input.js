@@ -191,6 +191,11 @@ Input.prototype._addEvents = function(app) {
       var x = touch.pageX - self._container.offsetLeft;
       var y = touch.pageY - self._container.offsetTop;
 
+      if (self.mouse.x != null && self.mouse.x != null) {
+        self.mouse.dx = x - self.mouse.x;
+        self.mouse.dy = y - self.mouse.y;
+      }
+
       self.mouse.x = x;
       self.mouse.y = y;
       self.mouse.isDown = true;
