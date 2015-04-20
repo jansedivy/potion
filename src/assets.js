@@ -1,13 +1,11 @@
 var util = require('util');
 var path = require('path');
 
-var PotionAudio = require('potion-audio');
-
 var JsonLoader = require('./loader/json-loader');
 var imageLoader = require('./loader/image-loader');
 var textLoader = require('./loader/text-loader');
 
-var Assets = function() {
+var Assets = function(app) {
   this.isLoading = false;
 
   this.itemsCount = 0;
@@ -23,11 +21,9 @@ var Assets = function() {
 
   this._loaders = {};
 
-  this.audio = new PotionAudio();
-
   this.addLoader('json', JsonLoader);
 
-  var audioLoader = require('./loader/audio-loader')(this.audio);
+  var audioLoader = require('./loader/audio-loader')(app.audio);
 
   this.addLoader('mp3', audioLoader);
   this.addLoader('music', audioLoader);

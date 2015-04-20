@@ -1,6 +1,8 @@
 var Video = require('./video');
 var Assets = require('./assets');
 
+var PotionAudio = require('potion-audio');
+
 var App = function(canvas) {
   this.canvas = canvas;
 
@@ -8,7 +10,9 @@ var App = function(canvas) {
 
   this.height = 300;
 
-  this.assets = new Assets();
+  this.audio = new PotionAudio();
+
+  this.assets = new Assets(this);
 
   this.states = null;
   this.debug = null;
