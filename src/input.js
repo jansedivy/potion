@@ -17,7 +17,9 @@ var Input = function(app, container) {
     isMiddleDown: false,
     isRightDown: false,
     x: null,
-    y: null
+    y: null,
+    dx: 0,
+    dy: 0
   };
 
   this._addEvents(app);
@@ -62,6 +64,11 @@ Input.prototype._addEvents = function(app) {
   self._container.addEventListener('mousemove', function(e) {
     var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
     var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+
+    if (self.mouse.x != null && self.mouse.x != null) {
+      self.mouse.dx = x - self.mouse.x;
+      self.mouse.dy = y - self.mouse.y;
+    }
 
     self.mouse.x = x;
     self.mouse.y = y;
