@@ -73,9 +73,6 @@ app = Potion.init(document.querySelector('.game'), {
     this.centerX = app.width/2;
     this.centerY = app.height/2;
 
-    this.prevX = null;
-    this.prevY = null;
-
     this.particles = [];
     this.stage = new PIXI.Stage(0x080a25);
 
@@ -93,28 +90,17 @@ app = Potion.init(document.querySelector('.game'), {
 
   update: function(time) {
     if (app.input.mouse.isDown) {
-      if (this.prevX == null || this.prevY == null) {
-        this.prevX = app.input.mouse.x;
-        this.prevY = app.input.mouse.y;
-      }
-
       for (var i=0; i<100; i++) {
         var angle = Math.random() * Math.PI*2;
         var distance = Math.random() * 40;
 
         var particle = new Particle(Math.cos(angle) * distance + app.input.mouse.x, Math.sin(angle) * distance + app.input.mouse.y);
 
-        particle.dx += (app.input.mouse.x - this.prevX) * Math.random() * 40;
-        particle.dy += (app.input.mouse.y - this.prevY) * Math.random() * 40;
+        particle.dx += app.input.mouse.dx * Math.random() * 40;
+        particle.dy += app.input.mouse.dy * Math.random() * 40;
 
         this.particles.push(particle);
       }
-
-      this.prevX = app.input.mouse.x;
-      this.prevY = app.input.mouse.y;
-    } else {
-      this.prevX = null;
-      this.prevX = null;
     }
 
     for (var i=0, len=this.particles.length; i<len; i++) {

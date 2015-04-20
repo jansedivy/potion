@@ -8,7 +8,6 @@ var app = Potion.init(document.querySelector('.game'), {
 
   init: function() {
     this.particles = [];
-    this.lastPosition = { x: null, y: null };
 
     window.addEventListener('resize', function() {
       this.setSize(document.body.clientWidth, document.body.clientHeight);
@@ -16,14 +15,7 @@ var app = Potion.init(document.querySelector('.game'), {
   },
 
   mousemove: function(value) {
-    if (this.lastPosition.x && this.lastPosition.y) {
-      var dx = (value.x - this.lastPosition.x) * 20;
-      var dy = (value.y - this.lastPosition.y) * 20;
-      this.particles.push(new Particle(value.x, value.y, dx, dy));
-    }
-
-    this.lastPosition.x = app.input.mouse.x;
-    this.lastPosition.y = app.input.mouse.y;
+    this.particles.push(new Particle(value.x, value.y, app.input.mouse.dx * 20, app.input.mouse.dy * 20));
   },
 
   update: function(time) {
