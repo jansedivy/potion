@@ -49,6 +49,8 @@ Main function which defines what file to load. If you call this function in
 not show any preloading. When it finishes, the parsed result is stored inside
 assets object. Which you can get with `get()` method.
 
+You can defined custom loaders with `addLoader()` method
+
 `type` - file type of given path. It's used for setting up images, json, music, text files
 
 `path` - url of the file
