@@ -10,8 +10,8 @@ var app = Potion.init(document.querySelector('.game'), {
     this.particles = [];
 
     window.addEventListener('resize', function() {
-      this.setSize(document.body.clientWidth, document.body.clientHeight);
-    }.bind(this));
+      app.setSize(document.body.clientWidth, document.body.clientHeight);
+    });
   },
 
   mousemove: function(value) {
