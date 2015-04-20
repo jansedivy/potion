@@ -17,6 +17,8 @@ input.mouse.isDown // if any button is pressed
 input.mouse.x // x coordinate
 input.mouse.y // y coordinate
 input.mouse.isActive // if the cursor is over the canvas element
+input.mouse.dx // difference in pixels from last mouse move
+input.mouse.dy // difference in pixels from last mouse move
 ```
 
 Methods
