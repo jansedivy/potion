@@ -59,7 +59,7 @@ Particle.prototype.update = function(time) {
   this.r = this.r + (0 - this.r) * time;
 
   if (this.r <= 0.5) {
-    app.states.get('app').particles.splice(app.states.get('app').particles.indexOf(this), 1);
+    app.main.particles.splice(app.main.particles.indexOf(this), 1);
   }
 
   this.x += this.dx * time;
