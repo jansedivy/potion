@@ -85,7 +85,7 @@ Video.prototype.clear = function() {
 Video.prototype.createLayer = function(config) {
   config = config || {};
 
-  var container = this.canvas.parentElement;
+  var container = this.app.container;
   var canvas = document.createElement('canvas');
   canvas.width = this.width;
   canvas.height = this.height;

@@ -5,7 +5,15 @@ var Debugger = require('potion-debugger');
 
 var PotionAudio = require('potion-audio');
 
-var App = function(canvas) {
+var App = function(container) {
+  this.container = container;
+
+  container.style.position = 'relative';
+
+  var canvas = document.createElement('canvas');
+  canvas.style.display = 'block';
+  container.appendChild(canvas);
+
   this.canvas = canvas;
 
   this.width = 300;
@@ -40,9 +48,8 @@ App.prototype.setSize = function(width, height) {
   this.width = width;
   this.height = height;
 
-  var container = this.canvas.parentElement;
-  container.style.width = this.width + 'px';
-  container.style.height = this.height + 'px';
+  this.container.style.width = this.width + 'px';
+  this.container.style.height = this.height + 'px';
 
   if (this.video) {
     this.video._setSize(width, height);

@@ -5,8 +5,8 @@ for (var keyName in keys) {
   invKeys[keys[keyName]] = keyName;
 }
 
-var Input = function(app, container) {
-  this._container = container;
+var Input = function(app) {
+  this._container = app.container;
   this._keys = {};
 
   this.canControlKeys = true;

@@ -10,13 +10,9 @@ var Input = require('./input');
 var Loading = require('./loading');
 
 var Engine = function(container, methods) {
-  container.style.position = 'relative';
+  this.container = container;
 
-  var canvas = document.createElement('canvas');
-  canvas.style.display = 'block';
-  container.appendChild(canvas);
-
-  this.controller = new App(canvas);
+  this.controller = new App(container);
 
   this.app = methods;
   this.controller.main = this.app;
@@ -41,7 +37,7 @@ Engine.prototype.configureApp = function() {
   this.controller.video.init();
 
   if (this.controller.config.addInputEvents) {
-    this.controller.input = new Input(this.controller, this.controller.canvas.parentElement);
+    this.controller.input = new Input(this.controller);
   }
 
   this.controller.setSize(this.controller.width, this.controller.height);
