@@ -1,9 +1,5 @@
 var isRetina = require('./retina')();
 
-/**
- * @constructor
- * @param {HTMLCanvasElement} canvas - Canvas DOM element
- */
 var Video = function(app, canvas, config) {
   this.app = app;
 
@@ -28,10 +24,6 @@ Video.prototype.init = function() {
   this._applySizeToCanvas();
 };
 
-/**
- * Includes mixins into Video library
- * @param {object} methods - object of methods that will included in Video
- */
 Video.prototype.include = function(methods) {
   for (var method in methods) {
     this[method] = methods[method];

@@ -9,10 +9,6 @@ var StateManager = require('./state-manager');
 var Input = require('./input');
 var Loading = require('./loading');
 
-/**
- * Main Engine class which calls the app methods
- * @constructor
- */
 var Engine = function(container, methods) {
   container.style.position = 'relative';
 
@@ -73,10 +69,6 @@ Engine.prototype.configureApp = function() {
   }
 };
 
-/**
- * Add event listener for window events
- * @private
- */
 Engine.prototype.addEvents = function() {
   var self = this;
 
@@ -97,10 +89,6 @@ Engine.prototype.addEvents = function() {
   });
 };
 
-/**
- * Starts the app, adds events and run first frame
- * @private
- */
 Engine.prototype.start = function() {
   if (this.controller.config.addInputEvents) {
     this.addEvents();
@@ -109,10 +97,6 @@ Engine.prototype.start = function() {
   window.requestAnimationFrame(this.tickFunc);
 };
 
-/**
- * Main tick function in app loop
- * @private
- */
 Engine.prototype.tick = function() {
   window.requestAnimationFrame(this.tickFunc);
 
@@ -137,11 +121,6 @@ Engine.prototype.tick = function() {
   this.controller.debug.end();
 };
 
-/**
- * Updates the app
- * @param {number} time - time in seconds since last frame
- * @private
- */
 Engine.prototype.update = function(time) {
   if (time > this.controller.config.maxStepTime) { time = this.controller.config.maxStepTime; }
 
@@ -156,10 +135,6 @@ Engine.prototype.update = function(time) {
   }
 };
 
-/**
- * Renders the app
- * @private
- */
 Engine.prototype.render = function() {
   this.controller.video.beginFrame();
 
@@ -170,10 +145,6 @@ Engine.prototype.render = function() {
   this.controller.video.endFrame();
 };
 
-/**
- * Main tick function in preloader loop
- * @private
- */
 Engine.prototype._preloaderTick = function() {
   this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
 
