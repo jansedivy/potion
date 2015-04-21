@@ -21,5 +21,19 @@ var app = Potion.init(document.querySelector('.game'), {
     var index = Math.floor(Math.random() * this.sounds.length);
     var sound = app.assets.get(this.sounds[index]);
     sound.play();
+  },
+
+  render: function() {
+    app.video.ctx.fillStyle = 'black';
+    app.video.ctx.font = '20px sans-serif';
+    app.video.ctx.textAlign = 'left';
+    app.video.ctx.textBaseline = 'top';
+    app.video.ctx.fillText(app.audio.isMuted ? 'Muted' : '', 10, 10);
+  },
+
+  keydown: function(value) {
+    if (value.name === 'm') {
+      app.audio.toggleMute();
+    }
   }
 });
