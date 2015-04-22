@@ -54,7 +54,7 @@ Video.prototype.scaleCanvas = function(scale) {
   }
 };
 
-Video.prototype._setSize = function(width, height) {
+Video.prototype._resize = function(width, height) {
   this.width = width;
   this.height = height;
 
@@ -62,7 +62,7 @@ Video.prototype._setSize = function(width, height) {
 
   for (var i=0, len=this._children.length; i<len; i++) {
     var item = this._children[i];
-    item._setSize(width, height);
+    item._resize(width, height);
   }
 };
 

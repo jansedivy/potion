@@ -40,7 +40,7 @@ Engine.prototype.configureApp = function() {
     this.controller.input = new Input(this.controller);
   }
 
-  this.controller.setSize(this.controller.width, this.controller.height);
+  this.controller.resize(this.controller.width, this.controller.height);
 
   this._setDefaultStates();
 

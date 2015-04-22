@@ -44,7 +44,7 @@ var App = function(container) {
   this.debug = new Debugger(this);
 };
 
-App.prototype.setSize = function(width, height) {
+App.prototype.resize = function(width, height) {
   this.width = width;
   this.height = height;
 
@@ -52,7 +52,7 @@ App.prototype.setSize = function(width, height) {
   this.container.style.height = this.height + 'px';
 
   if (this.video) {
-    this.video._setSize(width, height);
+    this.video._resize(width, height);
   }
 
   if (this.states) {
