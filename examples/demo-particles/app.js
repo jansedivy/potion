@@ -2,7 +2,7 @@ var Potion = require('potion');
 
 var app = Potion.init(document.querySelector('.game'), {
   configure: function() {
-    app.setSize(document.body.clientWidth, document.body.clientHeight);
+    app.resize(document.body.clientWidth, document.body.clientHeight);
     app.config.allowHiDPI = true;
   },
 
@@ -10,7 +10,7 @@ var app = Potion.init(document.querySelector('.game'), {
     this.particles = [];
 
     window.addEventListener('resize', function() {
-      app.setSize(document.body.clientWidth, document.body.clientHeight);
+      app.resize(document.body.clientWidth, document.body.clientHeight);
     });
   },
 

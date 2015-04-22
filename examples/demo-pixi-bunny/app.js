@@ -46,7 +46,7 @@ Bunny.prototype.update = function() {
 
 app = Potion.init(document.querySelector('.game'), {
   configure: function() {
-    app.setSize(800, 600);
+    app.resize(800, 600);
     app.config.allowHiDPI = false;
     app.config.getCanvasContext = false;
 

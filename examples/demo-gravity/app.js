@@ -58,7 +58,7 @@ Particle.prototype.update = function(time) {
 
 app = Potion.init(document.querySelector('.game'), {
   configure: function() {
-    app.setSize(document.body.clientWidth, document.body.clientHeight);
+    app.resize(document.body.clientWidth, document.body.clientHeight);
     app.config.allowHiDPI = false;
     app.config.getCanvasContext = false;
 
@@ -77,7 +77,7 @@ app = Potion.init(document.querySelector('.game'), {
     this.stage = new PIXI.Stage(0x080a25);
 
     window.addEventListener('resize', function() {
-      app.setSize(document.body.clientWidth, document.body.clientHeight);
+      app.resize(document.body.clientWidth, document.body.clientHeight);
     }.bind(this));
   },
 
