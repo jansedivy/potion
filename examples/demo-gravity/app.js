@@ -21,7 +21,7 @@ var Particle = function(x, y) {
   this.object.position.x = this.x;
   this.object.position.y = this.y;
 
-  this.object.blendMode = PIXI.blendModes.ADD;
+  this.object.blendMode = PIXI.BLEND_MODES.ADD;
 
   app.main.stage.addChild(this.object);
 };
@@ -65,6 +65,7 @@ app = Potion.init(document.querySelector('.game'), {
     app.assets.load('image', 'particle.png');
 
     this.renderer = new PIXI.WebGLRenderer(app.width, app.height, { view: app.canvas });
+    this.renderer.backgroundColor = 0x080a25;
   },
 
   init: function() {
@@ -74,7 +75,7 @@ app = Potion.init(document.querySelector('.game'), {
     this.centerY = app.height/2;
 
     this.particles = [];
-    this.stage = new PIXI.Stage(0x080a25);
+    this.stage = new PIXI.Container();
 
     window.addEventListener('resize', function() {
       app.resize(document.body.clientWidth, document.body.clientHeight);
