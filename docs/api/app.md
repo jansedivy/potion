@@ -1,7 +1,6 @@
 # API: `App`
 
-App object is the main entry point for Potion to call update/render and all input methods.
-Potion puts this your App object into `States` so it has all the methods for updating, rendering, ...
+Object returned from Potion.init(). holds all components for communicating with Potion api like Rendering, Audio, Assets, Input, ...
 
 Properties
 ----------
