@@ -1,5 +1,5 @@
 /**
-* potion - v0.13.0
+* potion - v1.0.0-beta1
 * Copyright (c) 2015, Jan Sedivy
 *
 * Potion is licensed under the MIT License.
@@ -67,7 +67,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = {
 	  init: function init(canvas, methods) {
 	    var engine = new Engine(canvas, methods);
-	    return engine.app;
+	    return engine.controller;
 	  }
 	};
 
@@ -83,27 +83,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var Time = __webpack_require__(4);
 
-	var Debugger = __webpack_require__(6);
-
 	var StateManager = __webpack_require__(5);
 
-	/**
-	 * Main Engine class which calls the app methods
-	 * @constructor
-	 */
+	var Input = __webpack_require__(6);
+	var Loading = __webpack_require__(7);
+
 	var Engine = function Engine(container, methods) {
-	  var AppClass = this._subclassApp(container, methods);
+	  this.container = container;
 
-	  container.style.position = "relative";
+	  this.controller = new App(container);
 
-	  var canvas = document.createElement("canvas");
-	  canvas.style.display = "block";
-	  container.appendChild(canvas);
-
-	  this.app = new AppClass(canvas);
-	  this.app.debug = new Debugger(this.app);
-
-	  this._setDefaultStates();
+	  this.app = methods;
+	  this.controller.main = this.app;
+	  this.app.app = this.controller;
 
 	  this.tickFunc = (function (self) {
 	    return function () {
@@ -117,118 +109,127 @@ return /******/ (function(modules) { // webpackBootstrap
 	  })(this);
 
 	  this.strayTime = 0;
+	  this._time = 0;
+
+	  setTimeout((function () {
+	    this.configureApp();
+	  }).bind(this), 0);
+	};
+
+	Engine.prototype.configureApp = function () {
+	  if (this.app.configure) {
+	    this.app.configure();
+	  }
+
+	  this.controller.video.init();
+
+	  if (this.controller.config.addInputEvents) {
+	    this.controller.input = new Input(this.controller);
+	  }
+
+	  this.controller.resize(this.controller.width, this.controller.height);
+
+	  this._setDefaultStates();
 
 	  this._time = Time.now();
 
-	  this.app.assets.onload((function () {
+	  this._preloaderVideo = this.controller.video.createLayer({
+	    allowHiDPI: true,
+	    getCanvasContext: true
+	  });
+
+	  this._preloader = new Loading(this.controller);
+
+	  this.controller.assets.start((function () {
 	    window.cancelAnimationFrame(this.preloaderId);
-	    this.app._preloader.exit();
+	    this._preloaderVideo.destroy();
 
 	    this.start();
 	  }).bind(this));
 
-	  if (this.app.assets.isLoading && this.app.config.showPreloader) {
+	  if (this.controller.assets.isLoading && this.controller.config.showPreloader) {
 	    this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
 	  }
 	};
 
-	/**
-	 * Add event listener for window events
-	 * @private
-	 */
 	Engine.prototype.addEvents = function () {
 	  var self = this;
 
 	  window.addEventListener("blur", function () {
-	    self.app.input.resetKeys();
-	    self.app.blur();
+	    self.controller.input.resetKeys();
+
+	    if (self.app.blur) {
+	      self.app.blur();
+	    }
 	  });
 
 	  window.addEventListener("focus", function () {
-	    self.app.input.resetKeys();
-	    self.app.focus();
+	    self.controller.input.resetKeys();
+
+	    if (self.app.focus) {
+	      self.app.focus();
+	    }
 	  });
 	};
 
-	/**
-	 * Starts the app, adds events and run first frame
-	 * @private
-	 */
 	Engine.prototype.start = function () {
-	  if (this.app.config.addInputEvents) {
+	  if (this.controller.config.addInputEvents) {
 	    this.addEvents();
 	  }
 
 	  window.requestAnimationFrame(this.tickFunc);
 	};
 
-	/**
-	 * Main tick function in app loop
-	 * @private
-	 */
 	Engine.prototype.tick = function () {
 	  window.requestAnimationFrame(this.tickFunc);
 
-	  this.app.debug.begin();
+	  this.controller.debug.begin();
 
 	  var now = Time.now();
 	  var time = (now - this._time) / 1000;
 	  this._time = now;
 
-	  this.app.debug.perf("update");
+	  this.controller.debug.perf("update");
 	  this.update(time);
-	  this.app.debug.stopPerf("update");
+	  this.controller.debug.stopPerf("update");
 
-	  this.app.states.exitUpdate(time);
+	  this.controller.states.exitUpdate(time);
 
-	  this.app.debug.perf("render");
+	  this.controller.debug.perf("render");
 	  this.render();
-	  this.app.debug.stopPerf("render");
+	  this.controller.debug.stopPerf("render");
 
-	  this.app.debug.render();
+	  this.controller.debug.render();
 
-	  this.app.debug.end();
+	  this.controller.debug.end();
 	};
 
-	/**
-	 * Updates the app
-	 * @param {number} time - time in seconds since last frame
-	 * @private
-	 */
 	Engine.prototype.update = function (time) {
-	  if (time > this.app.config.maxStepTime) {
-	    time = this.app.config.maxStepTime;
+	  if (time > this.controller.config.maxStepTime) {
+	    time = this.controller.config.maxStepTime;
 	  }
 
-	  if (this.app.config.fixedStep) {
+	  if (this.controller.config.fixedStep) {
 	    this.strayTime = this.strayTime + time;
-	    while (this.strayTime >= this.app.config.stepTime) {
-	      this.strayTime = this.strayTime - this.app.config.stepTime;
-	      this.app.states.update(this.app.config.stepTime);
+	    while (this.strayTime >= this.controller.config.stepTime) {
+	      this.strayTime = this.strayTime - this.controller.config.stepTime;
+	      this.controller.states.update(this.controller.config.stepTime);
 	    }
 	  } else {
-	    this.app.states.update(time);
+	    this.controller.states.update(time);
 	  }
 	};
 
-	/**
-	 * Renders the app
-	 * @private
-	 */
 	Engine.prototype.render = function () {
-	  this.app.video.beginFrame();
+	  this.controller.video.beginFrame();
 
-	  this.app.video.clear();
+	  this.controller.video.clear();
 
-	  this.app.states.render();
+	  this.controller.states.render();
 
-	  this.app.video.endFrame();
+	  this.controller.video.endFrame();
 	};
 
-	/**
-	 * Main tick function in preloader loop
-	 * @private
-	 */
 	Engine.prototype._preloaderTick = function () {
 	  this.preloaderId = window.requestAnimationFrame(this.preloaderTickFunc);
 
@@ -236,33 +237,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var time = (now - this._time) / 1000;
 	  this._time = now;
 
-	  this.app.preloading(time);
+	  if (this.app.preloading) {
+	    this.app.preloading(time, this._preloaderVideo);
+	  } else {
+	    this._preloader.render(time, this._preloaderVideo);
+	  }
 	};
 
 	Engine.prototype._setDefaultStates = function () {
 	  var states = new StateManager();
-	  states.add("app", this.app);
-	  states.add("debug", this.app.debug);
+	  states.add("main", this.app);
+	  states.add("debug", this.controller.debug);
 
-	  states.protect("app");
+	  states.protect("main");
 	  states.protect("debug");
 	  states.hide("debug");
 
-	  this.app.states = states;
-	};
-
-	Engine.prototype._subclassApp = function (container, methods) {
-	  var AppClass = function AppClass(container) {
-	    App.call(this, container);
-	  };
-
-	  AppClass.prototype = Object.create(App.prototype);
-
-	  for (var method in methods) {
-	    AppClass.prototype[method] = methods[method];
-	  }
-
-	  return AppClass;
+	  this.controller.states = states;
 	};
 
 	module.exports = Engine;
@@ -309,24 +300,35 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var Video = __webpack_require__(7);
-	var Assets = __webpack_require__(8);
-	var Input = __webpack_require__(9);
-	var Loading = __webpack_require__(10);
+	var Video = __webpack_require__(8);
+	var Assets = __webpack_require__(9);
 
-	var App = function App(canvas) {
+	var Debugger = __webpack_require__(11);
+
+	var PotionAudio = __webpack_require__(12);
+
+	var App = function App(container) {
+	  this.container = container;
+
+	  container.style.position = "relative";
+
+	  var canvas = document.createElement("canvas");
+	  canvas.style.display = "block";
+	  container.appendChild(canvas);
+
 	  this.canvas = canvas;
 
 	  this.width = 300;
 
 	  this.height = 300;
 
-	  this.assets = new Assets();
+	  this.audio = new PotionAudio();
+
+	  this.assets = new Assets(this);
 
 	  this.states = null;
-	  this.debug = null;
+
 	  this.input = null;
-	  this.video = null;
 
 	  this.config = {
 	    allowHiDPI: true,
@@ -334,59 +336,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	    addInputEvents: true,
 	    showPreloader: true,
 	    fixedStep: false,
-	    stepTime: 0.01666,
-	    maxStepTime: 0.01666
+	    stepTime: 1 / 60,
+	    maxStepTime: 1 / 60
 	  };
 
 	  this.video = new Video(this, canvas, this.config);
 	  this.video._isRoot = true;
 
-	  this.configure();
-
-	  this.video.init();
-
-	  if (this.config.addInputEvents) {
-	    this.input = new Input(this, canvas.parentElement);
-	  }
-
-	  this._preloader = new Loading(this);
-
-	  if (this.resize) {
-	    this.resize();
-	  }
+	  this.debug = new Debugger(this);
 	};
 
-	App.prototype.setSize = function (width, height) {
-	  if (width === this.width && height === this.height) {
-	    return;
-	  }
+	App.prototype.resize = function (width, height) {
 	  this.width = width;
 	  this.height = height;
 
-	  var container = this.canvas.parentElement;
-	  container.style.width = this.width + "px";
-	  container.style.height = this.height + "px";
+	  this.container.style.width = this.width + "px";
+	  this.container.style.height = this.height + "px";
 
 	  if (this.video) {
-	    this.video._setSize(width, height);
+	    this.video._resize(width, height);
 	  }
 
 	  if (this.states) {
 	    this.states.resize();
 	  }
 	};
-
-	App.prototype.preloading = function (time) {
-	  if (this.config.showPreloader) {
-	    this._preloader.render(time);
-	  }
-	};
-
-	App.prototype.configure = function () {};
-
-	App.prototype.focus = function () {};
-
-	App.prototype.blur = function () {};
 
 	module.exports = App;
 
@@ -429,7 +403,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.enable = function (name) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    if (!holder.enabled) {
 	      if (holder.state.enable) {
@@ -446,7 +420,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.disable = function (name) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    if (holder.enabled) {
 	      if (holder.state.disable) {
@@ -459,7 +433,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.hide = function (name) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    if (holder.enabled) {
 	      holder.changed = true;
@@ -469,7 +443,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.show = function (name) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    if (holder.enabled) {
 	      holder.changed = true;
@@ -479,7 +453,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.pause = function (name) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    if (holder.state.pause) {
 	      holder.state.pause();
@@ -491,7 +465,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.unpause = function (name) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    if (holder.state.unpause) {
 	      holder.state.unpause();
@@ -503,14 +477,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.protect = function (name) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    holder.protect = true;
 	  }
 	};
 
 	StateManager.prototype.unprotect = function (name) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    holder.protect = false;
 	  }
@@ -555,7 +529,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.setUpdateOrder = function (name, order) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    holder.updateOrder = order;
 	    this.refreshOrder();
@@ -563,7 +537,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.setRenderOrder = function (name, order) {
-	  var holder = this.get(name);
+	  var holder = this.getHolder(name);
 	  if (holder) {
 	    holder.renderOrder = order;
 	    this.refreshOrder();
@@ -571,7 +545,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	StateManager.prototype.destroy = function (name) {
-	  var state = this.get(name);
+	  var state = this.getHolder(name);
 	  if (state && !state.protect) {
 	    if (state.state.close) {
 	      state.state.close();
@@ -595,8 +569,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.refreshOrder();
 	};
 
-	StateManager.prototype.get = function (name) {
+	StateManager.prototype.getHolder = function (name) {
 	  return this.states[name];
+	};
+
+	StateManager.prototype.get = function (name) {
+	  return this.states[name].state;
 	};
 
 	StateManager.prototype.update = function (time) {
@@ -731,845 +709,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var util = __webpack_require__(12);
-	var DirtyManager = __webpack_require__(11);
-
-	var ObjectPool = [];
-
-	var GetObjectFromPool = function GetObjectFromPool() {
-	  var result = ObjectPool.pop();
-
-	  if (result) {
-	    return result;
-	  }
-
-	  return {};
-	};
-
-	var indexToNumberAndLowerCaseKey = function indexToNumberAndLowerCaseKey(index) {
-	  if (index <= 9) {
-	    return 48 + index;
-	  } else if (index === 10) {
-	    return 48;
-	  } else if (index > 10 && index <= 36) {
-	    return 64 + (index - 10);
-	  } else {
-	    return null;
-	  }
-	};
-
-	var defaults = [{ name: "Show FPS", entry: "showFps", defaults: true }, { name: "Show Key Codes", entry: "showKeyCodes", defaults: true }, { name: "Show Perf Time", entry: "showPerfTime", defaults: true }];
-
-	var Debugger = function Debugger(app) {
-	  this.video = app.video.createLayer({
-	    allowHiDPI: true,
-	    getCanvasContext: true
-	  });
-
-	  this.graph = app.video.createLayer({
-	    allowHiDPI: false,
-	    getCanvasContext: true
-	  });
-
-	  this._graphHeight = 100;
-	  this._60fpsMark = this._graphHeight * 0.8;
-	  this._msToPx = this._60fpsMark / 16.66;
-
-	  this.app = app;
-
-	  this.options = defaults;
-	  this._maxLogsCounts = 10;
-
-	  for (var i = 0; i < this.options.length; i++) {
-	    var option = this.options[i];
-	    this._initOption(option);
-	  }
-
-	  this.disabled = false;
-
-	  this.fps = 0;
-	  this.fpsCount = 0;
-	  this.fpsElapsedTime = 0;
-	  this.fpsUpdateInterval = 0.5;
-	  this._framePerf = [];
-
-	  this._fontSize = 0;
-	  this._dirtyManager = new DirtyManager(this.video.canvas, this.video.ctx);
-
-	  this.logs = [];
-
-	  this._perfValues = {};
-	  this._perfNames = [];
-
-	  this.showDebug = false;
-	  this.enableDebugKeys = true;
-	  this.enableShortcuts = false;
-
-	  this.enableShortcutsKey = 220;
-
-	  this.lastKey = null;
-
-	  this._load();
-
-	  this.keyShortcuts = [{ key: 123, entry: "showDebug", type: "toggle" }];
-
-	  var self = this;
-	  this.addConfig({ name: "Show Performance Graph", entry: "showGraph", defaults: false, call: function call() {
-	      self.graph.clear();
-	    } });
-
-	  this._diff = 0;
-	  this._frameStart = 0;
-	};
-
-	Debugger.prototype.begin = function () {
-	  if (this.showDebug) {
-	    this._frameStart = window.performance.now();
-	  }
-	};
-
-	Debugger.prototype.end = function () {
-	  if (this.showDebug) {
-	    this._diff = window.performance.now() - this._frameStart;
-	  }
-	};
-
-	Debugger.prototype._setFont = function (px, font) {
-	  this._fontSize = px;
-	  this.video.ctx.font = px + "px " + font;
-	};
-
-	Debugger.prototype.addConfig = function (option) {
-	  this.options.push(option);
-	  this._initOption(option);
-	};
-
-	Debugger.prototype._initOption = function (option) {
-	  option.type = option.type || "toggle";
-	  option.defaults = option.defaults == null ? false : option.defaults;
-
-	  if (option.type === "toggle") {
-	    this[option.entry] = option.defaults;
-	  }
-	};
-
-	Debugger.prototype.clear = function () {
-	  this.logs.length = 0;
-	};
-
-	Debugger.prototype.log = function (message, color) {
-	  color = color || "white";
-	  message = typeof message === "string" ? message : util.inspect(message);
-
-	  var messages = message.replace(/\\'/g, "'").split("\n");
-
-	  for (var i = 0; i < messages.length; i++) {
-	    var msg = messages[i];
-	    if (this.logs.length >= this._maxLogsCounts) {
-	      ObjectPool.push(this.logs.shift());
-	    }
-
-	    var messageObject = GetObjectFromPool();
-	    messageObject.text = msg;
-	    messageObject.life = 10;
-	    messageObject.color = color;
-
-	    this.logs.push(messageObject);
-	  }
-	};
-
-	Debugger.prototype.update = function () {};
-
-	Debugger.prototype.exitUpdate = function (time) {
-	  if (this.disabled) {
-	    return;
-	  }
-
-	  if (this.showDebug) {
-	    this._maxLogsCounts = Math.ceil((this.app.height + 20) / 20);
-	    this.fpsCount += 1;
-	    this.fpsElapsedTime += time;
-
-	    if (this.fpsElapsedTime > this.fpsUpdateInterval) {
-	      var fps = this.fpsCount / this.fpsElapsedTime;
-
-	      if (this.showFps) {
-	        this.fps = this.fps * (1 - 0.8) + 0.8 * fps;
-	      }
-
-	      this.fpsCount = 0;
-	      this.fpsElapsedTime = 0;
-	    }
-
-	    for (var i = 0, len = this.logs.length; i < len; i++) {
-	      var log = this.logs[i];
-	      if (log) {
-	        log.life -= time;
-	        if (log.life <= 0) {
-	          var index = this.logs.indexOf(log);
-	          if (index > -1) {
-	            this.logs.splice(index, 1);
-	          }
-	        }
-	      }
-	    }
-	  }
-	};
-
-	Debugger.prototype.keydown = function (value) {
-	  if (this.disabled) {
-	    return;
-	  }
-
-	  this.lastKey = value.key;
-
-	  var i;
-
-	  if (this.enableDebugKeys) {
-	    if (value.key === this.enableShortcutsKey) {
-	      value.event.preventDefault();
-
-	      this.enableShortcuts = !this.enableShortcuts;
-	      return true;
-	    }
-
-	    if (this.enableShortcuts) {
-	      for (i = 0; i < this.options.length; i++) {
-	        var option = this.options[i];
-	        var keyIndex = i + 1;
-
-	        if (this.app.input.isKeyDown("ctrl")) {
-	          keyIndex -= 36;
-	        }
-
-	        var charId = indexToNumberAndLowerCaseKey(keyIndex);
-
-	        if (charId && value.key === charId) {
-	          value.event.preventDefault();
-
-	          if (option.type === "toggle") {
-
-	            this[option.entry] = !this[option.entry];
-	            if (option.call) {
-	              option.call();
-	            }
-
-	            this._save();
-	          } else if (option.type === "call") {
-	            option.entry();
-	          }
-
-	          return true;
-	        }
-	      }
-	    }
-	  }
-
-	  for (i = 0; i < this.keyShortcuts.length; i++) {
-	    var keyShortcut = this.keyShortcuts[i];
-	    if (keyShortcut.key === value.key) {
-	      value.event.preventDefault();
-
-	      if (keyShortcut.type === "toggle") {
-	        this[keyShortcut.entry] = !this[keyShortcut.entry];
-	        this._save();
-	      } else if (keyShortcut.type === "call") {
-	        this[keyShortcut.entry]();
-	      }
-
-	      return true;
-	    }
-	  }
-
-	  return false;
-	};
-
-	Debugger.prototype._save = function () {
-	  var data = {
-	    showDebug: this.showDebug,
-	    options: {}
-	  };
-
-	  for (var i = 0; i < this.options.length; i++) {
-	    var option = this.options[i];
-	    var value = this[option.entry];
-	    data.options[option.entry] = value;
-	  }
-
-	  window.localStorage.__potionDebug = JSON.stringify(data);
-	};
-
-	Debugger.prototype._load = function () {
-	  if (window.localStorage && window.localStorage.__potionDebug) {
-	    var data = JSON.parse(window.localStorage.__potionDebug);
-	    this.showDebug = data.showDebug;
-
-	    for (var name in data.options) {
-	      this[name] = data.options[name];
-	    }
-	  }
-	};
-
-	Debugger.prototype.render = function () {
-	  if (this.disabled) {
-	    return;
-	  }
-
-	  this._dirtyManager.clear();
-
-	  if (this.showDebug) {
-	    this.video.ctx.save();
-	    this._setFont(15, "sans-serif");
-
-	    this._renderLogs();
-	    this._renderData();
-	    this._renderShortcuts();
-
-	    this.video.ctx.restore();
-
-	    if (this.showGraph) {
-	      this.graph.ctx.drawImage(this.graph.canvas, 0, this.app.height - this._graphHeight, this.app.width, this._graphHeight, -2, this.app.height - this._graphHeight, this.app.width, this._graphHeight);
-
-	      this.graph.ctx.fillStyle = "#F2F0D8";
-	      this.graph.ctx.fillRect(this.app.width - 2, this.app.height - this._graphHeight, 2, this._graphHeight);
-
-	      this.graph.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-	      this.graph.ctx.fillRect(this.app.width - 2, this.app.height - this._60fpsMark, 2, 1);
-
-	      var last = 0;
-	      for (var i = 0; i < this._framePerf.length; i++) {
-	        var item = this._framePerf[i];
-	        var name = this._perfNames[i];
-
-	        this._drawFrameLine(item, name, last);
-
-	        last += item;
-	      }
-
-	      this._drawFrameLine(this._diff - last, "lag", last);
-	      this._framePerf.length = 0;
-	    }
-	  }
-	};
-
-	Debugger.prototype._drawFrameLine = function (value, name, last) {
-	  var background = "black";
-	  if (name === "update") {
-	    background = "#6BA5F2";
-	  } else if (name === "render") {
-	    background = "#F27830";
-	  } else if (name === "lag") {
-	    background = "#91f682";
-	  }
-	  this.graph.ctx.fillStyle = background;
-
-	  var height = (value + last) * this._msToPx;
-
-	  var x = this.app.width - 2;
-	  var y = this.app.height - height;
-
-	  this.graph.ctx.fillRect(x, y, 2, height - last * this._msToPx);
-	};
-
-	Debugger.prototype._renderLogs = function () {
-	  this.video.ctx.textAlign = "left";
-	  this.video.ctx.textBaseline = "bottom";
-
-	  for (var i = 0, len = this.logs.length; i < len; i++) {
-	    var log = this.logs[i];
-
-	    var y = -10 + this.app.height + (i - this.logs.length + 1) * 20;
-	    this._renderText(log.text, 10, y, log.color);
-	  }
-	};
-
-	Debugger.prototype.disable = function () {
-	  this.disabled = true;
-	};
-
-	Debugger.prototype.perf = function (name) {
-	  if (!this.showDebug) {
-	    return;
-	  }
-
-	  var exists = this._perfValues[name];
-
-	  if (exists == null) {
-	    this._perfNames.push(name);
-
-	    this._perfValues[name] = {
-	      name: name,
-	      value: 0,
-	      records: []
-	    };
-	  }
-
-	  var time = window.performance.now();
-
-	  var record = this._perfValues[name];
-
-	  record.value = time;
-	};
-
-	Debugger.prototype.stopPerf = function (name) {
-	  if (!this.showDebug) {
-	    return;
-	  }
-
-	  var record = this._perfValues[name];
-
-	  var time = window.performance.now();
-	  var diff = time - record.value;
-
-	  record.records.push(diff);
-	  if (record.records.length > 10) {
-	    record.records.shift();
-	  }
-
-	  var sum = 0;
-	  for (var i = 0; i < record.records.length; i++) {
-	    sum += record.records[i];
-	  }
-
-	  var avg = sum / record.records.length;
-
-	  record.value = avg;
-	  this._framePerf.push(diff);
-	};
-
-	Debugger.prototype._renderData = function () {
-	  this.video.ctx.textAlign = "right";
-	  this.video.ctx.textBaseline = "top";
-
-	  var x = this.app.width - 14;
-	  var y = 14;
-
-	  if (this.showFps) {
-	    this._renderText(Math.round(this.fps) + " fps", x, y);
-	  }
-
-	  y += 24;
-
-	  this._setFont(15, "sans-serif");
-
-	  if (this.showKeyCodes) {
-	    var buttonName = "";
-	    if (this.app.input.mouse.isLeftDown) {
-	      buttonName = "left";
-	    } else if (this.app.input.mouse.isRightDown) {
-	      buttonName = "right";
-	    } else if (this.app.input.mouse.isMiddleDown) {
-	      buttonName = "middle";
-	    }
-
-	    this._renderText("key " + this.lastKey, x, y, this.app.input.isKeyDown(this.lastKey) ? "#e9dc7c" : "white");
-	    this._renderText("btn " + buttonName, x - 60, y, this.app.input.mouse.isDown ? "#e9dc7c" : "white");
-	  }
-
-	  if (this.showPerfTime) {
-	    for (var i = 0; i < this._perfNames.length; i++) {
-	      var name = this._perfNames[i];
-	      var value = this._perfValues[name];
-
-	      y += 24;
-	      this._renderText(name + ": " + value.value.toFixed(3) + "ms", x, y);
-	    }
-	  }
-	};
-
-	Debugger.prototype._renderShortcuts = function () {
-	  if (this.enableShortcuts) {
-	    var height = 28;
-
-	    this._setFont(20, "Helvetica Neue, sans-serif");
-	    this.video.ctx.textAlign = "left";
-	    this.video.ctx.textBaseline = "top";
-	    var maxPerCollumn = Math.floor((this.app.height - 14) / height);
-
-	    for (var i = 0; i < this.options.length; i++) {
-	      var option = this.options[i];
-	      var x = 14 + Math.floor(i / maxPerCollumn) * 320;
-	      var y = 14 + i % maxPerCollumn * height;
-
-	      var keyIndex = i + 1;
-	      var charId = indexToNumberAndLowerCaseKey(keyIndex);
-
-	      var isOn = this[option.entry];
-
-	      var shortcut = String.fromCharCode(charId);
-
-	      if (!charId) {
-	        shortcut = "^+" + String.fromCharCode(indexToNumberAndLowerCaseKey(keyIndex - 36));
-	      }
-
-	      var text = "[" + shortcut + "] " + option.name;
-	      if (option.type === "toggle") {
-	        text += " (" + (isOn ? "ON" : "OFF") + ")";
-	      } else if (option.type === "call") {
-	        text += " (CALL)";
-	      }
-
-	      var color = "rgba(255, 255, 255, 1)";
-	      var outline = "rgba(0, 0, 0, 1)";
-
-	      if (!isOn) {
-	        color = "rgba(255, 255, 255, .7)";
-	        outline = "rgba(0, 0, 0, .7)";
-	      }
-
-	      this._renderText(text, x, y, color, outline);
-	    }
-	  }
-	};
-
-	Debugger.prototype._renderText = function (text, x, y, color, outline) {
-	  color = color || "white";
-	  outline = outline || "black";
-	  this.video.ctx.fillStyle = color;
-	  this.video.ctx.lineJoin = "round";
-	  this.video.ctx.strokeStyle = outline;
-	  this.video.ctx.lineWidth = 3;
-	  this.video.ctx.strokeText(text, x, y);
-	  this.video.ctx.fillText(text, x, y);
-
-	  var width = this.video.ctx.measureText(text).width;
-
-	  var dx = x - 5;
-	  var dy = y;
-	  var dwidth = width + 10;
-	  var dheight = this._fontSize + 10;
-
-	  if (this.video.ctx.textAlign === "right") {
-	    dx = x - 5 - width;
-	  }
-
-	  this._dirtyManager.addRect(dx, dy, dwidth, dheight);
-	};
-
-	module.exports = Debugger;
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = __webpack_require__(13)();
-
-	/**
-	 * @constructor
-	 * @param {HTMLCanvasElement} canvas - Canvas DOM element
-	 */
-	var Video = function Video(app, canvas, config) {
-	  this.app = app;
-
-	  this.config = config;
-
-	  this.canvas = canvas;
-
-	  this.width = app.width;
-
-	  this.height = app.height;
-
-	  this._parent = null;
-	  this._isRoot = false;
-	  this._children = [];
-	};
-
-	Video.prototype.init = function () {
-	  if (this.config.getCanvasContext) {
-	    this.ctx = this.canvas.getContext("2d");
-	  }
-
-	  this._applySizeToCanvas();
-	};
-
-	/**
-	 * Includes mixins into Video library
-	 * @param {object} methods - object of methods that will included in Video
-	 */
-	Video.prototype.include = function (methods) {
-	  for (var method in methods) {
-	    this[method] = methods[method];
-	  }
-	};
-
-	Video.prototype.beginFrame = function () {};
-
-	Video.prototype.endFrame = function () {};
-
-	Video.prototype.destroy = function () {
-	  if (!this._isRoot) {
-	    var index = this._parent._children.indexOf(this);
-	    if (index !== -1) {
-	      this._parent._children.splice(index, 1);
-	    }
-	  }
-
-	  this.canvas.parentElement.removeChild(this.canvas);
-	};
-
-	Video.prototype.scaleCanvas = function (scale) {
-	  this.canvas.width *= scale;
-	  this.canvas.height *= scale;
-
-	  if (this.ctx) {
-	    this.ctx.scale(scale, scale);
-	  }
-	};
-
-	Video.prototype._setSize = function (width, height) {
-	  this.width = width;
-	  this.height = height;
-
-	  this._applySizeToCanvas();
-
-	  for (var i = 0, len = this._children.length; i < len; i++) {
-	    var item = this._children[i];
-	    item._setSize(width, height);
-	  }
-	};
-
-	Video.prototype._applySizeToCanvas = function () {
-	  this.canvas.width = this.width;
-	  this.canvas.height = this.height;
-
-	  this.canvas.style.width = this.width + "px";
-	  this.canvas.style.height = this.height + "px";
-
-	  if (this.config.allowHiDPI && isRetina) {
-	    this.scaleCanvas(2);
-	  }
-	};
-
-	Video.prototype.clear = function () {
-	  if (this.ctx) {
-	    this.ctx.clearRect(0, 0, this.width, this.height);
-	  }
-	};
-
-	Video.prototype.createLayer = function (config) {
-	  config = config || {};
-
-	  var container = this.canvas.parentElement;
-	  var canvas = document.createElement("canvas");
-	  canvas.width = this.width;
-	  canvas.height = this.height;
-	  canvas.style.position = "absolute";
-	  canvas.style.top = "0px";
-	  canvas.style.left = "0px";
-	  container.appendChild(canvas);
-
-	  var video = new Video(this.app, canvas, config);
-
-	  video._parent = this;
-	  video._isRoot = false;
-
-	  video.init();
-
-	  this._children.push(video);
-
-	  return video;
-	};
-
-	module.exports = Video;
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
-
-	var util = __webpack_require__(12);
-	var path = __webpack_require__(18);
-
-	var PotionAudio = __webpack_require__(19);
-
-	var JsonLoader = __webpack_require__(14);
-	var imageLoader = __webpack_require__(15);
-	var textLoader = __webpack_require__(16);
-
-	/**
-	 * Class for managing and loading asset files
-	 * @constructor
-	 */
-	var Assets = function Assets() {
-	  /**
-	   * Is currently loading any assets
-	   * @type {boolean}
-	   */
-	  this.isLoading = false;
-
-	  this.itemsCount = 0;
-	  this.loadedItemsCount = 0;
-	  this.progress = 0;
-
-	  this._thingsToLoad = 0;
-	  this._data = {};
-	  this._preloading = true;
-
-	  this._callback = null;
-
-	  this._toLoad = [];
-
-	  this._loaders = {};
-
-	  this.audio = new PotionAudio();
-
-	  this.addLoader("json", JsonLoader);
-
-	  this.addLoader("mp3", this.audio.load.bind(this.audio));
-	  this.addLoader("music", this.audio.load.bind(this.audio));
-	  this.addLoader("sound", this.audio.load.bind(this.audio));
-
-	  this.addLoader("image", imageLoader);
-	  this.addLoader("texture", imageLoader);
-	  this.addLoader("sprite", imageLoader);
-	};
-
-	Assets.prototype.addLoader = function (name, fn) {
-	  this._loaders[name] = fn;
-	};
-
-	/**
-	 * Starts loading stored assets urls and runs given callback after everything is loaded
-	 * @param {function} callback - callback function
-	 */
-	Assets.prototype.onload = function (callback) {
-	  this._callback = callback;
-
-	  if (this._thingsToLoad === 0) {
-	    this.isLoading = false;
-	    this._preloading = false;
-	    process.nextTick(function () {
-	      callback();
-	    });
-	  } else {
-	    var self = this;
-	    this._toLoad.forEach(function (current) {
-	      self._loadAssetFile(current, function (data) {
-	        self._save(current.url, data, current.callback);
-	      });
-	    });
-	  }
-	};
-
-	/**
-	 * Getter for loaded assets
-	 * @param {string} name - url of stored asset
-	 */
-	Assets.prototype.get = function (name) {
-	  return this._data[path.normalize(name)];
-	};
-
-	Assets.prototype.remove = function (name) {
-	  this.set(name, null);
-	};
-
-	/**
-	 * Used for storing some value in assets module
-	 * useful for overrating values
-	 * @param {string} name - url of the asset
-	 * @param {any} value - value to be stored
-	 */
-	Assets.prototype.set = function (name, value) {
-	  this._data[path.normalize(name)] = value;
-	};
-
-	/**
-	 * Stores url so it can be loaded later
-	 * @param {string} type - type of asset
-	 * @param {string} url - url of given asset
-	 * @param {function} callback - callback function
-	 */
-	Assets.prototype.load = function (type, url, callback) {
-	  var loadObject = { type: type, url: url != null ? path.normalize(url) : null, callback: callback };
-
-	  if (this._preloading) {
-	    this.isLoading = true;
-	    this.itemsCount += 1;
-	    this._thingsToLoad += 1;
-
-	    this._toLoad.push(loadObject);
-	  } else {
-	    var self = this;
-	    this._loadAssetFile(loadObject, function (data) {
-	      self.set(loadObject.url, data);
-	      if (callback) {
-	        callback(data);
-	      }
-	    });
-	  }
-	};
-
-	Assets.prototype._finishedOneFile = function () {
-	  this.progress = this.loadedItemsCount / this.itemsCount;
-	  this._thingsToLoad -= 1;
-	  this.loadedItemsCount += 1;
-
-	  if (this._thingsToLoad === 0) {
-	    var self = this;
-	    setTimeout(function () {
-	      self._callback();
-	      self._preloading = false;
-	      self.isLoading = false;
-	    }, 0);
-	  }
-	};
-
-	Assets.prototype._error = function (url) {
-	  console.warn("Error loading \"" + url + "\" asset");
-	};
-
-	Assets.prototype._save = function (url, data, callback) {
-	  this.set(url, data);
-	  if (callback) {
-	    callback(data);
-	  }
-	  this._finishedOneFile();
-	};
-
-	Assets.prototype._handleCustomLoading = function (loading) {
-	  var self = this;
-	  var done = function done(name, value) {
-	    self._save(name, value);
-	  };
-	  loading(done);
-	};
-
-	Assets.prototype._loadAssetFile = function (file, callback) {
-	  var type = file.type;
-	  var url = file.url;
-
-	  if (util.isFunction(type)) {
-	    this._handleCustomLoading(type);
-	    return;
-	  }
-
-	  type = type.toLowerCase();
-
-	  var loader = this._loaders[type] || textLoader;
-	  loader(url, callback, this._error.bind(this));
-	};
-
-	module.exports = Assets;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20)))
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var keys = __webpack_require__(17);
+	var keys = __webpack_require__(10);
 
 	var invKeys = {};
 	for (var keyName in keys) {
 	  invKeys[keys[keyName]] = keyName;
 	}
 
-	var Input = function Input(app, container) {
-	  this._container = container;
+	var Input = function Input(app) {
+	  this._container = app.container;
 	  this._keys = {};
 
 	  this.canControlKeys = true;
@@ -1580,7 +728,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    isMiddleDown: false,
 	    isRightDown: false,
 	    x: null,
-	    y: null
+	    y: null,
+	    dx: 0,
+	    dy: 0
 	  };
 
 	  this._addEvents(app);
@@ -1608,6 +758,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    x: null,
 	    y: null,
 	    button: null,
+	    isTouch: false,
 	    event: null,
 	    stateStopEvent: function stateStopEvent() {
 	      app.states._preventEvent = true;
@@ -1627,6 +778,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
 	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
 
+	    if (self.mouse.x != null && self.mouse.x != null) {
+	      self.mouse.dx = x - self.mouse.x;
+	      self.mouse.dy = y - self.mouse.y;
+	    }
+
 	    self.mouse.x = x;
 	    self.mouse.y = y;
 	    self.mouse.isActive = true;
@@ -1635,6 +791,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    mouseEvent.y = y;
 	    mouseEvent.button = null;
 	    mouseEvent.event = e;
+	    mouseEvent.isTouch = false;
 
 	    app.states.mousemove(mouseEvent);
 	  });
@@ -1663,6 +820,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    mouseEvent.y = y;
 	    mouseEvent.button = e.button;
 	    mouseEvent.event = e;
+	    mouseEvent.isTouch = false;
 
 	    app.states.mouseup(mouseEvent);
 	  }, false);
@@ -1707,6 +865,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    mouseEvent.y = y;
 	    mouseEvent.button = e.button;
 	    mouseEvent.event = e;
+	    mouseEvent.isTouch = false;
 
 	    app.states.mousedown(mouseEvent);
 	  }, false);
@@ -1730,6 +889,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      mouseEvent.y = y;
 	      mouseEvent.button = 1;
 	      mouseEvent.event = e;
+	      mouseEvent.isTouch = true;
 
 	      app.states.mousedown(mouseEvent);
 	    }
@@ -1744,6 +904,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var x = touch.pageX - self._container.offsetLeft;
 	      var y = touch.pageY - self._container.offsetTop;
 
+	      if (self.mouse.x != null && self.mouse.x != null) {
+	        self.mouse.dx = x - self.mouse.x;
+	        self.mouse.dy = y - self.mouse.y;
+	      }
+
 	      self.mouse.x = x;
 	      self.mouse.y = y;
 	      self.mouse.isDown = true;
@@ -1753,6 +918,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      mouseEvent.x = x;
 	      mouseEvent.y = y;
 	      mouseEvent.event = e;
+	      mouseEvent.isTouch = true;
 
 	      app.states.mousemove(mouseEvent);
 	    }
@@ -1777,6 +943,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    mouseEvent.x = x;
 	    mouseEvent.y = y;
 	    mouseEvent.event = e;
+	    mouseEvent.isTouch = true;
 
 	    app.states.mouseup(mouseEvent);
 	  });
@@ -1809,7 +976,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Input;
 
 /***/ },
-/* 10 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1818,85 +985,464 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.app = app;
 
 	  this.barWidth = 0;
-
-	  this.video = app.video.createLayer({
-	    allowHiDPI: true,
-	    getCanvasContext: true
-	  });
 	};
 
-	Loading.prototype.render = function (time) {
-	  this.video.clear();
+	Loading.prototype.render = function (time, video) {
+	  video.clear();
 
 	  var color1 = "#b9ff71";
 	  var color2 = "#8ac250";
 	  var color3 = "#648e38";
 
-	  var width = Math.min(this.app.width * 2 / 3, 300);
+	  var width = Math.min(video.width * 2 / 3, 300);
 	  var height = 20;
 
-	  var y = (this.app.height - height) / 2;
-	  var x = (this.app.width - width) / 2;
+	  var y = (video.height - height) / 2;
+	  var x = (video.width - width) / 2;
 
 	  var currentWidth = width * this.app.assets.progress;
 	  this.barWidth = this.barWidth + (currentWidth - this.barWidth) * time * 10;
 
-	  this.video.ctx.fillStyle = color2;
-	  this.video.ctx.fillRect(0, 0, this.app.width, this.app.height);
+	  video.ctx.fillStyle = color2;
+	  video.ctx.fillRect(0, 0, video.width, video.height);
 
-	  this.video.ctx.font = "400 40px sans-serif";
-	  this.video.ctx.textAlign = "center";
-	  this.video.ctx.textBaseline = "bottom";
+	  video.ctx.font = "400 40px sans-serif";
+	  video.ctx.textAlign = "center";
+	  video.ctx.textBaseline = "bottom";
 
-	  this.video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-	  this.video.ctx.fillText("Potion.js", this.app.width / 2, y + 2);
+	  video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+	  video.ctx.fillText("Potion.js", video.width / 2, y + 2);
 
-	  this.video.ctx.fillStyle = "#d1ffa1";
-	  this.video.ctx.fillText("Potion.js", this.app.width / 2, y);
+	  video.ctx.fillStyle = "#d1ffa1";
+	  video.ctx.fillText("Potion.js", video.width / 2, y);
 
-	  this.video.ctx.strokeStyle = this.video.ctx.fillStyle = color3;
-	  this.video.ctx.fillRect(x, y + 15, width, height);
+	  video.ctx.strokeStyle = video.ctx.fillStyle = color3;
+	  video.ctx.fillRect(x, y + 15, width, height);
 
-	  this.video.ctx.lineWidth = 2;
-	  this.video.ctx.beginPath();
-	  this.video.ctx.rect(x - 5, y + 10, width + 10, height + 10);
-	  this.video.ctx.closePath();
-	  this.video.ctx.stroke();
+	  video.ctx.lineWidth = 2;
+	  video.ctx.beginPath();
+	  video.ctx.rect(x - 5, y + 10, width + 10, height + 10);
+	  video.ctx.closePath();
+	  video.ctx.stroke();
 
-	  this.video.ctx.strokeStyle = this.video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-	  this.video.ctx.fillRect(x, y + 15, this.barWidth, height + 2);
+	  video.ctx.strokeStyle = video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+	  video.ctx.fillRect(x, y + 15, this.barWidth, height + 2);
 
-	  this.video.ctx.lineWidth = 2;
-	  this.video.ctx.beginPath();
+	  video.ctx.lineWidth = 2;
+	  video.ctx.beginPath();
 
-	  this.video.ctx.moveTo(x + this.barWidth, y + 12);
-	  this.video.ctx.lineTo(x - 5, y + 12);
-	  this.video.ctx.lineTo(x - 5, y + 10 + height + 12);
-	  this.video.ctx.lineTo(x + this.barWidth, y + 10 + height + 12);
+	  video.ctx.moveTo(x + this.barWidth, y + 12);
+	  video.ctx.lineTo(x - 5, y + 12);
+	  video.ctx.lineTo(x - 5, y + 10 + height + 12);
+	  video.ctx.lineTo(x + this.barWidth, y + 10 + height + 12);
 
-	  this.video.ctx.stroke();
-	  this.video.ctx.closePath();
+	  video.ctx.stroke();
+	  video.ctx.closePath();
 
-	  this.video.ctx.strokeStyle = this.video.ctx.fillStyle = color1;
-	  this.video.ctx.fillRect(x, y + 15, this.barWidth, height);
+	  video.ctx.strokeStyle = video.ctx.fillStyle = color1;
+	  video.ctx.fillRect(x, y + 15, this.barWidth, height);
 
-	  this.video.ctx.lineWidth = 2;
-	  this.video.ctx.beginPath();
+	  video.ctx.lineWidth = 2;
+	  video.ctx.beginPath();
 
-	  this.video.ctx.moveTo(x + this.barWidth, y + 10);
-	  this.video.ctx.lineTo(x - 5, y + 10);
-	  this.video.ctx.lineTo(x - 5, y + 10 + height + 10);
-	  this.video.ctx.lineTo(x + this.barWidth, y + 10 + height + 10);
+	  video.ctx.moveTo(x + this.barWidth, y + 10);
+	  video.ctx.lineTo(x - 5, y + 10);
+	  video.ctx.lineTo(x - 5, y + 10 + height + 10);
+	  video.ctx.lineTo(x + this.barWidth, y + 10 + height + 10);
 
-	  this.video.ctx.stroke();
-	  this.video.ctx.closePath();
-	};
-
-	Loading.prototype.exit = function () {
-	  this.video.destroy();
+	  video.ctx.stroke();
+	  video.ctx.closePath();
 	};
 
 	module.exports = Loading;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = __webpack_require__(13)();
+
+	var Video = function Video(app, canvas, config) {
+	  this.app = app;
+
+	  this.config = config;
+
+	  this.canvas = canvas;
+
+	  this.width = app.width;
+
+	  this.height = app.height;
+
+	  this._parent = null;
+	  this._isRoot = false;
+	  this._children = [];
+	};
+
+	Video.prototype.init = function () {
+	  if (this.config.getCanvasContext) {
+	    this.ctx = this.canvas.getContext("2d");
+	  }
+
+	  this._applySizeToCanvas();
+	};
+
+	Video.prototype.include = function (methods) {
+	  for (var method in methods) {
+	    this[method] = methods[method];
+	  }
+	};
+
+	Video.prototype.beginFrame = function () {};
+
+	Video.prototype.endFrame = function () {};
+
+	Video.prototype.destroy = function () {
+	  if (!this._isRoot) {
+	    var index = this._parent._children.indexOf(this);
+	    if (index !== -1) {
+	      this._parent._children.splice(index, 1);
+	    }
+	  }
+
+	  this.canvas.parentElement.removeChild(this.canvas);
+	};
+
+	Video.prototype.scaleCanvas = function (scale) {
+	  this.canvas.width *= scale;
+	  this.canvas.height *= scale;
+
+	  if (this.ctx) {
+	    this.ctx.scale(scale, scale);
+	  }
+	};
+
+	Video.prototype._resize = function (width, height) {
+	  this.width = width;
+	  this.height = height;
+
+	  this._applySizeToCanvas();
+
+	  for (var i = 0, len = this._children.length; i < len; i++) {
+	    var item = this._children[i];
+	    item._resize(width, height);
+	  }
+	};
+
+	Video.prototype._applySizeToCanvas = function () {
+	  this.canvas.width = this.width;
+	  this.canvas.height = this.height;
+
+	  this.canvas.style.width = this.width + "px";
+	  this.canvas.style.height = this.height + "px";
+
+	  if (this.config.allowHiDPI && isRetina) {
+	    this.scaleCanvas(2);
+	  }
+	};
+
+	Video.prototype.clear = function () {
+	  if (this.ctx) {
+	    this.ctx.clearRect(0, 0, this.width, this.height);
+	  }
+	};
+
+	Video.prototype.createLayer = function (config) {
+	  config = config || {};
+
+	  var container = this.app.container;
+	  var canvas = document.createElement("canvas");
+	  canvas.width = this.width;
+	  canvas.height = this.height;
+	  canvas.style.position = "absolute";
+	  canvas.style.top = "0px";
+	  canvas.style.left = "0px";
+	  container.appendChild(canvas);
+
+	  var video = new Video(this.app, canvas, config);
+
+	  video._parent = this;
+	  video._isRoot = false;
+
+	  video.init();
+
+	  this._children.push(video);
+
+	  return video;
+	};
+
+	module.exports = Video;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var util = __webpack_require__(19);
+	var path = __webpack_require__(18);
+
+	var JsonLoader = __webpack_require__(14);
+	var imageLoader = __webpack_require__(15);
+	var textLoader = __webpack_require__(16);
+
+	var Assets = function Assets(app) {
+	  this.isLoading = false;
+
+	  this.itemsCount = 0;
+	  this.progress = 0;
+
+	  this._thingsToLoad = 0;
+	  this._data = {};
+	  this._preloading = true;
+
+	  this._callback = null;
+
+	  this._toLoad = [];
+
+	  this._loaders = {};
+
+	  this.addLoader("json", JsonLoader);
+
+	  var audioLoader = __webpack_require__(17)(app.audio);
+
+	  this.addLoader("mp3", audioLoader);
+	  this.addLoader("music", audioLoader);
+	  this.addLoader("sound", audioLoader);
+
+	  this.addLoader("image", imageLoader);
+	  this.addLoader("texture", imageLoader);
+	  this.addLoader("sprite", imageLoader);
+	};
+
+	Assets.prototype.addLoader = function (name, fn) {
+	  this._loaders[name] = fn;
+	};
+
+	Assets.prototype.start = function (callback) {
+	  this._callback = callback;
+
+	  this._toLoad.forEach((function (current) {
+	    this._loadAssetFile(current, (function (name, data) {
+	      this.set(name, data);
+	      if (current.callback) {
+	        current.callback(data);
+	      }
+
+	      this._finishedQueuedFile();
+	    }).bind(this));
+	  }).bind(this));
+
+	  this._thingsToLoad = this.itemsCount;
+
+	  if (this._thingsToLoad === 0) {
+	    this._done();
+	  }
+	};
+
+	Assets.prototype.get = function (name) {
+	  return this._data[path.normalize(name)];
+	};
+
+	Assets.prototype.set = function (name, value) {
+	  this._data[path.normalize(name)] = value;
+	};
+
+	Assets.prototype.remove = function (name) {
+	  this.set(name, null);
+	};
+
+	Assets.prototype.load = function (type, url, callback) {
+	  var loadObject = {
+	    type: type,
+	    url: url != null ? path.normalize(url) : null,
+	    callback: callback,
+	    progress: 0
+	  };
+
+	  if (this._preloading) {
+	    this._queueFile(loadObject);
+	  } else {
+	    this._loadAssetFile(loadObject, (function (name, data) {
+	      this.set(name, data);
+	      if (callback) {
+	        callback(data);
+	      }
+	    }).bind(this));
+	  }
+	};
+
+	Assets.prototype._queueFile = function (loadObject) {
+	  this.isLoading = true;
+	  this.itemsCount += 1;
+
+	  this._toLoad.push(loadObject);
+	};
+
+	Assets.prototype._finishedQueuedFile = function () {
+	  this._thingsToLoad -= 1;
+
+	  if (this._thingsToLoad === 0) {
+	    this._done();
+	  }
+	};
+
+	Assets.prototype._updateProgress = function () {
+	  var sum = 0;
+
+	  for (var i = 0; i < this._toLoad.length; i++) {
+	    sum += this._toLoad[i].progress;
+	  }
+
+	  this.progress = sum / this._toLoad.length;
+	};
+
+	Assets.prototype._error = function (url) {
+	  console.warn("Error loading \"" + url + "\" asset");
+	};
+
+	Assets.prototype._handleCustomLoading = function (loading, loader) {
+	  loading(function (name, value) {
+	    loader.done(value, name);
+	  });
+	};
+
+	Assets.prototype._loadAssetFile = function (file, callback) {
+	  var type = file.type;
+	  var url = file.url;
+
+	  var manager = {
+	    done: (function (data, name) {
+	      name = name == null ? file.url : name;
+
+	      file.progress = 1;
+	      callback(name, data);
+	      this._updateProgress();
+	    }).bind(this),
+
+	    error: (function () {
+	      this._error.bind(this);
+	    }).bind(this),
+
+	    progress: (function (percent) {
+	      file.progress = percent;
+	      this._updateProgress();
+	    }).bind(this)
+	  };
+
+	  if (util.isFunction(type)) {
+	    this._handleCustomLoading(type, manager);
+	  } else {
+	    type = type.toLowerCase();
+	    var loader = this._loaders[type] || textLoader;
+	    loader(url, manager);
+	  }
+	};
+
+	Assets.prototype._done = function () {
+	  this.isLoading = false;
+	  this._preloading = false;
+	  setTimeout(this._callback, 0);
+	};
+
+	module.exports = Assets;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = {
+	  backspace: 8,
+	  tab: 9,
+	  enter: 13,
+	  pause: 19,
+	  caps: 20,
+	  esc: 27,
+	  space: 32,
+	  page_up: 33,
+	  page_down: 34,
+	  end: 35,
+	  home: 36,
+	  left: 37,
+	  up: 38,
+	  right: 39,
+	  down: 40,
+	  insert: 45,
+	  "delete": 46,
+	  "0": 48,
+	  "1": 49,
+	  "2": 50,
+	  "3": 51,
+	  "4": 52,
+	  "5": 53,
+	  "6": 54,
+	  "7": 55,
+	  "8": 56,
+	  "9": 57,
+	  a: 65,
+	  b: 66,
+	  c: 67,
+	  d: 68,
+	  e: 69,
+	  f: 70,
+	  g: 71,
+	  h: 72,
+	  i: 73,
+	  j: 74,
+	  k: 75,
+	  l: 76,
+	  m: 77,
+	  n: 78,
+	  o: 79,
+	  p: 80,
+	  q: 81,
+	  r: 82,
+	  s: 83,
+	  t: 84,
+	  u: 85,
+	  v: 86,
+	  w: 87,
+	  x: 88,
+	  y: 89,
+	  z: 90,
+	  numpad_0: 96,
+	  numpad_1: 97,
+	  numpad_2: 98,
+	  numpad_3: 99,
+	  numpad_4: 100,
+	  numpad_5: 101,
+	  numpad_6: 102,
+	  numpad_7: 103,
+	  numpad_8: 104,
+	  numpad_9: 105,
+	  multiply: 106,
+	  add: 107,
+	  substract: 109,
+	  decimal: 110,
+	  divide: 111,
+	  f1: 112,
+	  f2: 113,
+	  f3: 114,
+	  f4: 115,
+	  f5: 116,
+	  f6: 117,
+	  f7: 118,
+	  f8: 119,
+	  f9: 120,
+	  f10: 121,
+	  f11: 122,
+	  f12: 123,
+	  shift: 16,
+	  ctrl: 17,
+	  alt: 18,
+	  plus: 187,
+	  comma: 188,
+	  minus: 189,
+	  period: 190
+	};
 
 /***/ },
 /* 11 */
@@ -1904,49 +1450,388 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var DirtyManager = function DirtyManager(canvas, ctx) {
-	  this.ctx = ctx;
-	  this.canvas = canvas;
-
-	  this.top = canvas.height;
-	  this.left = canvas.width;
-	  this.bottom = 0;
-	  this.right = 0;
-
-	  this.isDirty = false;
-	};
-
-	DirtyManager.prototype.addRect = function (left, top, width, height) {
-	  var right = left + width;
-	  var bottom = top + height;
-
-	  this.top = top < this.top ? top : this.top;
-	  this.left = left < this.left ? left : this.left;
-	  this.bottom = bottom > this.bottom ? bottom : this.bottom;
-	  this.right = right > this.right ? right : this.right;
-
-	  this.isDirty = true;
-	};
-
-	DirtyManager.prototype.clear = function () {
-	  if (!this.isDirty) {
-	    return;
-	  }
-
-	  this.ctx.clearRect(this.left, this.top, this.right - this.left, this.bottom - this.top);
-
-	  this.left = this.canvas.width;
-	  this.top = this.canvas.height;
-	  this.right = 0;
-	  this.bottom = 0;
-
-	  this.isDirty = false;
-	};
-
-	module.exports = DirtyManager;
+	module.exports = __webpack_require__(20);
 
 /***/ },
 /* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = __webpack_require__(21);
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, loader) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+
+	  request.addEventListener("progress", function (e) {
+	    var percent = e.loaded / e.total;
+	    loader.progress(percent);
+	  });
+
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return loader.error(url);
+	    }
+
+	    var data = JSON.parse(this.response);
+	    loader.done(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, loader) {
+	  var URL = window.URL || window.webkitURL;
+
+	  if (URL && "createObjectURL" in URL && "Uint8Array" in window && "Blob" in window) {
+	    var request = new XMLHttpRequest();
+
+	    request.open("GET", url, true);
+	    request.responseType = "arraybuffer";
+
+	    request.addEventListener("progress", function (e) {
+	      var percent = e.loaded / e.total;
+	      loader.progress(percent);
+	    });
+
+	    request.onload = function () {
+	      if (request.status !== 200) {
+	        return loader.error(url);
+	      }
+
+	      var data = this.response;
+	      var blob = new Blob([new Uint8Array(data)], { type: "image/png" });
+	      var image = new Image();
+	      image.src = URL.createObjectURL(blob);
+	      loader.done(image);
+	    };
+	    request.send();
+
+	    return;
+	  }
+
+	  var image = new Image();
+	  image.onload = function () {
+	    loader.done(image);
+	  };
+	  image.onerror = function () {
+	    loader.error(url);
+	  };
+	  image.src = url;
+	};
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (url, loader) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+
+	  request.addEventListener("progress", function (e) {
+	    var percent = e.loaded / e.total;
+	    loader.progress(percent);
+	  });
+
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return loader.error(url);
+	    }
+
+	    var data = this.response;
+	    loader.done(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function (manager) {
+	  return function (url, loader) {
+	    manager.load(url, {
+	      done: function done(data) {
+	        loader.done(data);
+	      },
+
+	      progress: function progress(e) {
+	        var percent = e.loaded / e.total;
+	        loader.progress(percent);
+	      }
+	    });
+	  };
+	};
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	// resolves . and .. elements in a path array with directory names there
+	// must be no slashes, empty elements, or device names (c:\) in the array
+	// (so also no leading and trailing slashes - it does not distinguish
+	// relative and absolute paths)
+	"use strict";
+
+	function normalizeArray(parts, allowAboveRoot) {
+	  // if the path tries to go above the root, `up` ends up > 0
+	  var up = 0;
+	  for (var i = parts.length - 1; i >= 0; i--) {
+	    var last = parts[i];
+	    if (last === ".") {
+	      parts.splice(i, 1);
+	    } else if (last === "..") {
+	      parts.splice(i, 1);
+	      up++;
+	    } else if (up) {
+	      parts.splice(i, 1);
+	      up--;
+	    }
+	  }
+
+	  // if the path is allowed to go above the root, restore leading ..s
+	  if (allowAboveRoot) {
+	    for (; up--; up) {
+	      parts.unshift("..");
+	    }
+	  }
+
+	  return parts;
+	}
+
+	// Split a filename into [root, dir, basename, ext], unix version
+	// 'root' is just a slash, or nothing.
+	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+	var splitPath = function splitPath(filename) {
+	  return splitPathRe.exec(filename).slice(1);
+	};
+
+	// path.resolve([from ...], to)
+	// posix version
+	exports.resolve = function () {
+	  var resolvedPath = "",
+	      resolvedAbsolute = false;
+
+	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+	    var path = i >= 0 ? arguments[i] : process.cwd();
+
+	    // Skip empty and invalid entries
+	    if (typeof path !== "string") {
+	      throw new TypeError("Arguments to path.resolve must be strings");
+	    } else if (!path) {
+	      continue;
+	    }
+
+	    resolvedPath = path + "/" + resolvedPath;
+	    resolvedAbsolute = path.charAt(0) === "/";
+	  }
+
+	  // At this point the path should be resolved to a full absolute path, but
+	  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+	  // Normalize the path
+	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
+	    return !!p;
+	  }), !resolvedAbsolute).join("/");
+
+	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
+	};
+
+	// path.normalize(path)
+	// posix version
+	exports.normalize = function (path) {
+	  var isAbsolute = exports.isAbsolute(path),
+	      trailingSlash = substr(path, -1) === "/";
+
+	  // Normalize the path
+	  path = normalizeArray(filter(path.split("/"), function (p) {
+	    return !!p;
+	  }), !isAbsolute).join("/");
+
+	  if (!path && !isAbsolute) {
+	    path = ".";
+	  }
+	  if (path && trailingSlash) {
+	    path += "/";
+	  }
+
+	  return (isAbsolute ? "/" : "") + path;
+	};
+
+	// posix version
+	exports.isAbsolute = function (path) {
+	  return path.charAt(0) === "/";
+	};
+
+	// posix version
+	exports.join = function () {
+	  var paths = Array.prototype.slice.call(arguments, 0);
+	  return exports.normalize(filter(paths, function (p, index) {
+	    if (typeof p !== "string") {
+	      throw new TypeError("Arguments to path.join must be strings");
+	    }
+	    return p;
+	  }).join("/"));
+	};
+
+	// path.relative(from, to)
+	// posix version
+	exports.relative = function (from, to) {
+	  from = exports.resolve(from).substr(1);
+	  to = exports.resolve(to).substr(1);
+
+	  function trim(arr) {
+	    var start = 0;
+	    for (; start < arr.length; start++) {
+	      if (arr[start] !== "") break;
+	    }
+
+	    var end = arr.length - 1;
+	    for (; end >= 0; end--) {
+	      if (arr[end] !== "") break;
+	    }
+
+	    if (start > end) {
+	      return [];
+	    }return arr.slice(start, end - start + 1);
+	  }
+
+	  var fromParts = trim(from.split("/"));
+	  var toParts = trim(to.split("/"));
+
+	  var length = Math.min(fromParts.length, toParts.length);
+	  var samePartsLength = length;
+	  for (var i = 0; i < length; i++) {
+	    if (fromParts[i] !== toParts[i]) {
+	      samePartsLength = i;
+	      break;
+	    }
+	  }
+
+	  var outputParts = [];
+	  for (var i = samePartsLength; i < fromParts.length; i++) {
+	    outputParts.push("..");
+	  }
+
+	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+	  return outputParts.join("/");
+	};
+
+	exports.sep = "/";
+	exports.delimiter = ":";
+
+	exports.dirname = function (path) {
+	  var result = splitPath(path),
+	      root = result[0],
+	      dir = result[1];
+
+	  if (!root && !dir) {
+	    // No dirname whatsoever
+	    return ".";
+	  }
+
+	  if (dir) {
+	    // It has a dirname, strip trailing slash
+	    dir = dir.substr(0, dir.length - 1);
+	  }
+
+	  return root + dir;
+	};
+
+	exports.basename = function (path, ext) {
+	  var f = splitPath(path)[2];
+	  // TODO: make this comparison case-insensitive on windows?
+	  if (ext && f.substr(-1 * ext.length) === ext) {
+	    f = f.substr(0, f.length - ext.length);
+	  }
+	  return f;
+	};
+
+	exports.extname = function (path) {
+	  return splitPath(path)[3];
+	};
+
+	function filter(xs, f) {
+	  if (xs.filter) {
+	    return xs.filter(f);
+	  }var res = [];
+	  for (var i = 0; i < xs.length; i++) {
+	    if (f(xs[i], i, xs)) res.push(xs[i]);
+	  }
+	  return res;
+	}
+
+	// String.prototype.substr - negative index don't work in IE8
+	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
+	  return str.substr(start, len);
+	} : function (str, start, len) {
+	  if (start < 0) start = str.length + start;
+	  return str.substr(start, len);
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
+
+/***/ },
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2446,7 +2331,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(21);
+	exports.isBuffer = __webpack_require__(23);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -2483,7 +2368,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(23);
+	exports.inherits = __webpack_require__(26);
 
 	exports._extend = function (origin, add) {
 	  // Don't do anything if add isn't an object
@@ -2500,422 +2385,736 @@ return /******/ (function(modules) { // webpackBootstrap
 	function hasOwnProperty(obj, prop) {
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(20)))
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return error(url);
-	    }
-
-	    var data = JSON.parse(this.response);
-	    callback(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var image = new Image();
-	  image.onload = function () {
-	    callback(image);
-	  };
-	  image.onerror = function () {
-	    error(url);
-	  };
-	  image.src = url;
-	};
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, callback, error) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return error(url);
-	    }
-
-	    var data = this.response;
-	    callback(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = {
-	  backspace: 8,
-	  tab: 9,
-	  enter: 13,
-	  pause: 19,
-	  caps: 20,
-	  esc: 27,
-	  space: 32,
-	  page_up: 33,
-	  page_down: 34,
-	  end: 35,
-	  home: 36,
-	  left: 37,
-	  up: 38,
-	  right: 39,
-	  down: 40,
-	  insert: 45,
-	  "delete": 46,
-	  "0": 48,
-	  "1": 49,
-	  "2": 50,
-	  "3": 51,
-	  "4": 52,
-	  "5": 53,
-	  "6": 54,
-	  "7": 55,
-	  "8": 56,
-	  "9": 57,
-	  a: 65,
-	  b: 66,
-	  c: 67,
-	  d: 68,
-	  e: 69,
-	  f: 70,
-	  g: 71,
-	  h: 72,
-	  i: 73,
-	  j: 74,
-	  k: 75,
-	  l: 76,
-	  m: 77,
-	  n: 78,
-	  o: 79,
-	  p: 80,
-	  q: 81,
-	  r: 82,
-	  s: 83,
-	  t: 84,
-	  u: 85,
-	  v: 86,
-	  w: 87,
-	  x: 88,
-	  y: 89,
-	  z: 90,
-	  numpad_0: 96,
-	  numpad_1: 97,
-	  numpad_2: 98,
-	  numpad_3: 99,
-	  numpad_4: 100,
-	  numpad_5: 101,
-	  numpad_6: 102,
-	  numpad_7: 103,
-	  numpad_8: 104,
-	  numpad_9: 105,
-	  multiply: 106,
-	  add: 107,
-	  substract: 109,
-	  decimal: 110,
-	  divide: 111,
-	  f1: 112,
-	  f2: 113,
-	  f3: 114,
-	  f4: 115,
-	  f5: 116,
-	  f6: 117,
-	  f7: 118,
-	  f8: 119,
-	  f9: 120,
-	  f10: 121,
-	  f11: 122,
-	  f12: 123,
-	  shift: 16,
-	  ctrl: 17,
-	  alt: 18,
-	  plus: 187,
-	  comma: 188,
-	  minus: 189,
-	  period: 190
-	};
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-	// resolves . and .. elements in a path array with directory names there
-	// must be no slashes, empty elements, or device names (c:\) in the array
-	// (so also no leading and trailing slashes - it does not distinguish
-	// relative and absolute paths)
-	"use strict";
-
-	function normalizeArray(parts, allowAboveRoot) {
-	  // if the path tries to go above the root, `up` ends up > 0
-	  var up = 0;
-	  for (var i = parts.length - 1; i >= 0; i--) {
-	    var last = parts[i];
-	    if (last === ".") {
-	      parts.splice(i, 1);
-	    } else if (last === "..") {
-	      parts.splice(i, 1);
-	      up++;
-	    } else if (up) {
-	      parts.splice(i, 1);
-	      up--;
-	    }
-	  }
-
-	  // if the path is allowed to go above the root, restore leading ..s
-	  if (allowAboveRoot) {
-	    for (; up--; up) {
-	      parts.unshift("..");
-	    }
-	  }
-
-	  return parts;
-	}
-
-	// Split a filename into [root, dir, basename, ext], unix version
-	// 'root' is just a slash, or nothing.
-	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-	var splitPath = function splitPath(filename) {
-	  return splitPathRe.exec(filename).slice(1);
-	};
-
-	// path.resolve([from ...], to)
-	// posix version
-	exports.resolve = function () {
-	  var resolvedPath = "",
-	      resolvedAbsolute = false;
-
-	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-	    var path = i >= 0 ? arguments[i] : process.cwd();
-
-	    // Skip empty and invalid entries
-	    if (typeof path !== "string") {
-	      throw new TypeError("Arguments to path.resolve must be strings");
-	    } else if (!path) {
-	      continue;
-	    }
-
-	    resolvedPath = path + "/" + resolvedPath;
-	    resolvedAbsolute = path.charAt(0) === "/";
-	  }
-
-	  // At this point the path should be resolved to a full absolute path, but
-	  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-	  // Normalize the path
-	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
-	    return !!p;
-	  }), !resolvedAbsolute).join("/");
-
-	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
-	};
-
-	// path.normalize(path)
-	// posix version
-	exports.normalize = function (path) {
-	  var isAbsolute = exports.isAbsolute(path),
-	      trailingSlash = substr(path, -1) === "/";
-
-	  // Normalize the path
-	  path = normalizeArray(filter(path.split("/"), function (p) {
-	    return !!p;
-	  }), !isAbsolute).join("/");
-
-	  if (!path && !isAbsolute) {
-	    path = ".";
-	  }
-	  if (path && trailingSlash) {
-	    path += "/";
-	  }
-
-	  return (isAbsolute ? "/" : "") + path;
-	};
-
-	// posix version
-	exports.isAbsolute = function (path) {
-	  return path.charAt(0) === "/";
-	};
-
-	// posix version
-	exports.join = function () {
-	  var paths = Array.prototype.slice.call(arguments, 0);
-	  return exports.normalize(filter(paths, function (p, index) {
-	    if (typeof p !== "string") {
-	      throw new TypeError("Arguments to path.join must be strings");
-	    }
-	    return p;
-	  }).join("/"));
-	};
-
-	// path.relative(from, to)
-	// posix version
-	exports.relative = function (from, to) {
-	  from = exports.resolve(from).substr(1);
-	  to = exports.resolve(to).substr(1);
-
-	  function trim(arr) {
-	    var start = 0;
-	    for (; start < arr.length; start++) {
-	      if (arr[start] !== "") break;
-	    }
-
-	    var end = arr.length - 1;
-	    for (; end >= 0; end--) {
-	      if (arr[end] !== "") break;
-	    }
-
-	    if (start > end) {
-	      return [];
-	    }return arr.slice(start, end - start + 1);
-	  }
-
-	  var fromParts = trim(from.split("/"));
-	  var toParts = trim(to.split("/"));
-
-	  var length = Math.min(fromParts.length, toParts.length);
-	  var samePartsLength = length;
-	  for (var i = 0; i < length; i++) {
-	    if (fromParts[i] !== toParts[i]) {
-	      samePartsLength = i;
-	      break;
-	    }
-	  }
-
-	  var outputParts = [];
-	  for (var i = samePartsLength; i < fromParts.length; i++) {
-	    outputParts.push("..");
-	  }
-
-	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-	  return outputParts.join("/");
-	};
-
-	exports.sep = "/";
-	exports.delimiter = ":";
-
-	exports.dirname = function (path) {
-	  var result = splitPath(path),
-	      root = result[0],
-	      dir = result[1];
-
-	  if (!root && !dir) {
-	    // No dirname whatsoever
-	    return ".";
-	  }
-
-	  if (dir) {
-	    // It has a dirname, strip trailing slash
-	    dir = dir.substr(0, dir.length - 1);
-	  }
-
-	  return root + dir;
-	};
-
-	exports.basename = function (path, ext) {
-	  var f = splitPath(path)[2];
-	  // TODO: make this comparison case-insensitive on windows?
-	  if (ext && f.substr(-1 * ext.length) === ext) {
-	    f = f.substr(0, f.length - ext.length);
-	  }
-	  return f;
-	};
-
-	exports.extname = function (path) {
-	  return splitPath(path)[3];
-	};
-
-	function filter(xs, f) {
-	  if (xs.filter) {
-	    return xs.filter(f);
-	  }var res = [];
-	  for (var i = 0; i < xs.length; i++) {
-	    if (f(xs[i], i, xs)) res.push(xs[i]);
-	  }
-	  return res;
-	}
-
-	// String.prototype.substr - negative index don't work in IE8
-	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
-	  return str.substr(start, len);
-	} : function (str, start, len) {
-	  if (start < 0) start = str.length + start;
-	  return str.substr(start, len);
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20)))
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = __webpack_require__(22);
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(24)))
 
 /***/ },
 /* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var util = __webpack_require__(19);
+	var DirtyManager = __webpack_require__(22);
+
+	var ObjectPool = [];
+
+	var GetObjectFromPool = function GetObjectFromPool() {
+	  var result = ObjectPool.pop();
+
+	  if (result) {
+	    return result;
+	  }
+
+	  return {};
+	};
+
+	var indexToNumberAndLowerCaseKey = function indexToNumberAndLowerCaseKey(index) {
+	  if (index <= 9) {
+	    return 48 + index;
+	  } else if (index === 10) {
+	    return 48;
+	  } else if (index > 10 && index <= 36) {
+	    return 64 + (index - 10);
+	  } else {
+	    return null;
+	  }
+	};
+
+	var defaults = [{ name: "Show FPS", entry: "showFps", defaults: true }, { name: "Show Key Codes", entry: "showKeyCodes", defaults: true }, { name: "Show Monitor Values", entry: "showMonitorValues", defaults: true }];
+
+	var Debugger = function Debugger(app) {
+	  this.video = app.video.createLayer({
+	    allowHiDPI: true,
+	    getCanvasContext: true
+	  });
+
+	  this.graph = app.video.createLayer({
+	    allowHiDPI: false,
+	    getCanvasContext: true
+	  });
+
+	  this._graphHeight = 100;
+	  this._60fpsMark = this._graphHeight * 0.8;
+	  this._msToPx = this._60fpsMark / 16.66;
+
+	  this.app = app;
+
+	  this.options = defaults;
+	  this._maxLogsCounts = 10;
+
+	  for (var i = 0; i < this.options.length; i++) {
+	    var option = this.options[i];
+	    this._initOption(option);
+	  }
+
+	  this.disabled = false;
+
+	  this.fps = 0;
+	  this.fpsCount = 0;
+	  this.fpsElapsedTime = 0;
+	  this.fpsUpdateInterval = 0.5;
+	  this._framePerf = [];
+
+	  this._fontSize = 0;
+	  this._dirtyManager = new DirtyManager(this.video.canvas, this.video.ctx);
+
+	  this.logs = [];
+
+	  this._perfValues = {};
+	  this._perfNames = [];
+
+	  this.showDebug = false;
+	  this.enableDebugKeys = true;
+	  this.enableShortcuts = false;
+
+	  this.enableShortcutsKey = 220;
+
+	  this.lastKey = "";
+
+	  this._monitor = {};
+
+	  this._load();
+
+	  this.keyShortcuts = [{ key: 123, entry: "showDebug", type: "toggle" }];
+
+	  var self = this;
+	  this.addConfig({ name: "Show Performance Graph", entry: "showGraph", defaults: false, call: function call() {
+	      self.graph.clear();
+	    } });
+
+	  this._diff = 0;
+	  this._frameStart = 0;
+	};
+
+	Debugger.prototype.begin = function () {
+	  if (this.showDebug) {
+	    this._frameStart = window.performance.now();
+	  }
+	};
+
+	Debugger.prototype.end = function () {
+	  if (this.showDebug) {
+	    this._diff = window.performance.now() - this._frameStart;
+	  }
+	};
+
+	Debugger.prototype._setFont = function (px, font) {
+	  this._fontSize = px;
+	  this.video.ctx.font = px + "px " + font;
+	};
+
+	Debugger.prototype.addConfig = function (option) {
+	  this.options.push(option);
+	  this._initOption(option);
+	};
+
+	Debugger.prototype._initOption = function (option) {
+	  option.type = option.type || "toggle";
+	  option.defaults = option.defaults == null ? false : option.defaults;
+
+	  if (option.type === "toggle") {
+	    this[option.entry] = option.defaults;
+	  }
+	};
+
+	Debugger.prototype.clear = function () {
+	  this.logs.length = 0;
+	};
+
+	Debugger.prototype.log = function (message, color) {
+	  color = color || "white";
+	  message = typeof message === "string" ? message : util.inspect(message);
+
+	  var messages = message.replace(/\\'/g, "'").split("\n");
+
+	  for (var i = 0; i < messages.length; i++) {
+	    var msg = messages[i];
+	    if (this.logs.length >= this._maxLogsCounts) {
+	      ObjectPool.push(this.logs.shift());
+	    }
+
+	    var messageObject = GetObjectFromPool();
+	    messageObject.text = msg;
+	    messageObject.life = 10;
+	    messageObject.color = color;
+
+	    this.logs.push(messageObject);
+	  }
+	};
+
+	Debugger.prototype.update = function () {};
+
+	Debugger.prototype.exitUpdate = function (time) {
+	  if (this.disabled) {
+	    return;
+	  }
+
+	  if (this.showDebug) {
+	    this._maxLogsCounts = Math.ceil((this.app.height + 20) / 20);
+	    this.fpsCount += 1;
+	    this.fpsElapsedTime += time;
+
+	    if (this.fpsElapsedTime > this.fpsUpdateInterval) {
+	      var fps = this.fpsCount / this.fpsElapsedTime;
+
+	      if (this.showFps) {
+	        this.fps = this.fps * (1 - 0.8) + 0.8 * fps;
+	      }
+
+	      this.fpsCount = 0;
+	      this.fpsElapsedTime = 0;
+	    }
+
+	    for (var i = 0, len = this.logs.length; i < len; i++) {
+	      var log = this.logs[i];
+	      if (log) {
+	        log.life -= time;
+	        if (log.life <= 0) {
+	          var index = this.logs.indexOf(log);
+	          if (index > -1) {
+	            this.logs.splice(index, 1);
+	          }
+	        }
+	      }
+	    }
+
+	    for (var i = 0; i < this._perfNames.length; i++) {
+	      var name = this._perfNames[i];
+	      var value = this._perfValues[name];
+	      this.monitor(name, value.value.toFixed(3) + " sec");
+	    }
+	  }
+	};
+
+	Debugger.prototype.keydown = function (value) {
+	  if (this.disabled) {
+	    return;
+	  }
+
+	  this.lastKey = value.key;
+
+	  var i;
+
+	  if (this.enableDebugKeys) {
+	    if (value.key === this.enableShortcutsKey) {
+	      value.event.preventDefault();
+
+	      this.enableShortcuts = !this.enableShortcuts;
+	      return true;
+	    }
+
+	    if (this.enableShortcuts) {
+	      for (i = 0; i < this.options.length; i++) {
+	        var option = this.options[i];
+	        var keyIndex = i + 1;
+
+	        if (this.app.input.isKeyDown("ctrl")) {
+	          keyIndex -= 36;
+	        }
+
+	        var charId = indexToNumberAndLowerCaseKey(keyIndex);
+
+	        if (charId && value.key === charId) {
+	          value.event.preventDefault();
+
+	          if (option.type === "toggle") {
+
+	            this[option.entry] = !this[option.entry];
+	            if (option.call) {
+	              option.call();
+	            }
+
+	            this._save();
+	          } else if (option.type === "call") {
+	            option.entry();
+	          }
+
+	          return true;
+	        }
+	      }
+	    }
+	  }
+
+	  for (i = 0; i < this.keyShortcuts.length; i++) {
+	    var keyShortcut = this.keyShortcuts[i];
+	    if (keyShortcut.key === value.key) {
+	      value.event.preventDefault();
+
+	      if (keyShortcut.type === "toggle") {
+	        this[keyShortcut.entry] = !this[keyShortcut.entry];
+	        this._save();
+	      } else if (keyShortcut.type === "call") {
+	        this[keyShortcut.entry]();
+	      }
+
+	      return true;
+	    }
+	  }
+
+	  return false;
+	};
+
+	Debugger.prototype._save = function () {
+	  var data = {
+	    showDebug: this.showDebug,
+	    options: {}
+	  };
+
+	  for (var i = 0; i < this.options.length; i++) {
+	    var option = this.options[i];
+	    var value = this[option.entry];
+	    data.options[option.entry] = value;
+	  }
+
+	  window.localStorage.__potionDebug = JSON.stringify(data);
+	};
+
+	Debugger.prototype._load = function () {
+	  if (window.localStorage && window.localStorage.__potionDebug) {
+	    var data = JSON.parse(window.localStorage.__potionDebug);
+	    this.showDebug = data.showDebug;
+
+	    for (var name in data.options) {
+	      this[name] = data.options[name];
+	    }
+	  }
+	};
+
+	Debugger.prototype.render = function () {
+	  if (this.disabled) {
+	    return;
+	  }
+
+	  this._dirtyManager.clear();
+
+	  if (this.showDebug) {
+	    this.video.ctx.save();
+	    this._setFont(15, "sans-serif");
+
+	    this._renderLogs();
+	    this._renderData();
+	    this._renderShortcuts();
+
+	    this.video.ctx.restore();
+
+	    if (this.showMonitorValues) {
+	      var i = 0;
+	      for (var key in this._monitor) {
+	        var value = this._monitor[key];
+	        this._setFont(15, "sans-serif");
+
+	        this.video.ctx.textAlign = "right";
+	        this.video.ctx.textBaseline = "bottom";
+
+	        this._renderText(key, this.app.width - 14, this.app.height - 28 - 5 - 40 * i, "#e9dc7c");
+	        value = typeof value === "string" ? value : util.inspect(value);
+	        this._renderText(value, this.app.width - 14, this.app.height - 14 - 40 * i);
+
+	        i += 1;
+	      }
+	    }
+
+	    if (this.showGraph) {
+	      this.graph.ctx.drawImage(this.graph.canvas, 0, this.app.height - this._graphHeight, this.app.width, this._graphHeight, -2, this.app.height - this._graphHeight, this.app.width, this._graphHeight);
+
+	      this.graph.ctx.fillStyle = "#F2F0D8";
+	      this.graph.ctx.fillRect(this.app.width - 2, this.app.height - this._graphHeight, 2, this._graphHeight);
+
+	      this.graph.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+	      this.graph.ctx.fillRect(this.app.width - 2, this.app.height - this._60fpsMark, 2, 1);
+
+	      var last = 0;
+	      for (var i = 0; i < this._framePerf.length; i++) {
+	        var item = this._framePerf[i];
+	        var name = this._perfNames[i];
+
+	        this._drawFrameLine(item, name, last);
+
+	        last += item;
+	      }
+
+	      this._drawFrameLine(this._diff - last, "lag", last);
+	      this._framePerf.length = 0;
+	    }
+	  }
+	};
+
+	Debugger.prototype._drawFrameLine = function (value, name, last) {
+	  var background = "black";
+	  if (name === "update") {
+	    background = "#6BA5F2";
+	  } else if (name === "render") {
+	    background = "#F27830";
+	  } else if (name === "lag") {
+	    background = "#91f682";
+	  }
+	  this.graph.ctx.fillStyle = background;
+
+	  var height = (value + last) * this._msToPx;
+
+	  var x = this.app.width - 2;
+	  var y = this.app.height - height;
+
+	  this.graph.ctx.fillRect(x, y, 2, height - last * this._msToPx);
+	};
+
+	Debugger.prototype._renderLogs = function () {
+	  this.video.ctx.textAlign = "left";
+	  this.video.ctx.textBaseline = "bottom";
+
+	  for (var i = 0, len = this.logs.length; i < len; i++) {
+	    var log = this.logs[i];
+
+	    var y = -10 + this.app.height + (i - this.logs.length + 1) * 20;
+	    this._renderText(log.text, 10, y, log.color);
+	  }
+	};
+
+	Debugger.prototype.disable = function () {
+	  this.disabled = true;
+	  this.showDebug = false;
+	};
+
+	Debugger.prototype.monitor = function (name, value) {
+	  this._monitor[name] = value;
+	};
+
+	Debugger.prototype.perf = function (name) {
+	  if (!this.showDebug) {
+	    return;
+	  }
+
+	  var exists = this._perfValues[name];
+
+	  if (exists == null) {
+	    this._perfNames.push(name);
+
+	    this._perfValues[name] = {
+	      name: name,
+	      value: 0,
+	      records: []
+	    };
+	  }
+
+	  var time = window.performance.now();
+
+	  var record = this._perfValues[name];
+
+	  record.value = time;
+	};
+
+	Debugger.prototype.stopPerf = function (name) {
+	  if (!this.showDebug) {
+	    return;
+	  }
+
+	  var record = this._perfValues[name];
+
+	  var time = window.performance.now();
+	  var diff = time - record.value;
+
+	  record.records.push(diff);
+	  if (record.records.length > 10) {
+	    record.records.shift();
+	  }
+
+	  var sum = 0;
+	  for (var i = 0; i < record.records.length; i++) {
+	    sum += record.records[i];
+	  }
+
+	  var avg = sum / record.records.length;
+
+	  record.value = avg;
+	  this._framePerf.push(diff);
+	};
+
+	Debugger.prototype._renderData = function () {
+	  this.video.ctx.textAlign = "right";
+	  this.video.ctx.textBaseline = "top";
+
+	  var x = this.app.width - 14;
+	  var y = 14;
+
+	  if (this.showFps) {
+	    this._renderText(Math.round(this.fps) + " fps", x, y);
+	  }
+
+	  y += 24;
+
+	  this._setFont(15, "sans-serif");
+
+	  if (this.showKeyCodes) {
+	    var buttonName = "";
+	    if (this.app.input.mouse.isLeftDown) {
+	      buttonName = "left";
+	    } else if (this.app.input.mouse.isRightDown) {
+	      buttonName = "right";
+	    } else if (this.app.input.mouse.isMiddleDown) {
+	      buttonName = "middle";
+	    }
+
+	    this._renderText("key " + this.lastKey, x, y, this.app.input.isKeyDown(this.lastKey) ? "#e9dc7c" : "white");
+	    this._renderText("btn " + buttonName, x - 60, y, this.app.input.mouse.isDown ? "#e9dc7c" : "white");
+	  }
+	};
+
+	Debugger.prototype._renderShortcuts = function () {
+	  if (this.enableShortcuts) {
+	    var height = 28;
+
+	    this._setFont(20, "Helvetica Neue, sans-serif");
+	    this.video.ctx.textAlign = "left";
+	    this.video.ctx.textBaseline = "top";
+	    var maxPerCollumn = Math.floor((this.app.height - 14) / height);
+
+	    for (var i = 0; i < this.options.length; i++) {
+	      var option = this.options[i];
+	      var x = 14 + Math.floor(i / maxPerCollumn) * 320;
+	      var y = 14 + i % maxPerCollumn * height;
+
+	      var keyIndex = i + 1;
+	      var charId = indexToNumberAndLowerCaseKey(keyIndex);
+
+	      var isOn = this[option.entry];
+
+	      var shortcut = String.fromCharCode(charId);
+
+	      if (!charId) {
+	        shortcut = "^+" + String.fromCharCode(indexToNumberAndLowerCaseKey(keyIndex - 36));
+	      }
+
+	      var text = "[" + shortcut + "] " + option.name;
+	      if (option.type === "toggle") {
+	        text += " (" + (isOn ? "ON" : "OFF") + ")";
+	      } else if (option.type === "call") {
+	        text += " (CALL)";
+	      }
+
+	      var color = "rgba(255, 255, 255, 1)";
+	      var outline = "rgba(0, 0, 0, 1)";
+
+	      if (!isOn) {
+	        color = "rgba(255, 255, 255, .7)";
+	        outline = "rgba(0, 0, 0, .7)";
+	      }
+
+	      this._renderText(text, x, y, color, outline);
+	    }
+	  }
+	};
+
+	Debugger.prototype._renderText = function (text, x, y, color, outline) {
+	  color = color || "white";
+	  outline = outline || "black";
+	  this.video.ctx.fillStyle = color;
+	  this.video.ctx.lineJoin = "round";
+	  this.video.ctx.strokeStyle = outline;
+	  this.video.ctx.lineWidth = 3;
+	  this.video.ctx.strokeText(text, x, y);
+	  this.video.ctx.fillText(text, x, y);
+
+	  var width = this.video.ctx.measureText(text).width;
+
+	  var dx = x - 5;
+	  var dy = y;
+	  var dwidth = width + 10;
+	  var dheight = this._fontSize + 10;
+
+	  if (this.video.ctx.textAlign === "right") {
+	    dx = x - 5 - width;
+	  }
+
+	  this._dirtyManager.addRect(dx, dy, dwidth, dheight);
+	};
+
+	module.exports = Debugger;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var util = __webpack_require__(19);
+	var LoadedAudio = __webpack_require__(25);
+
+	var AudioManager = function AudioManager() {
+	  var AudioContext = window.AudioContext || window.webkitAudioContext;
+
+	  this._ctx = new AudioContext();
+	  this._masterGain = this._ctx.createGain();
+	  this._volume = 1;
+	  this.isMuted = false;
+
+	  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
+	  if (iOS) {
+	    this._enableiOS();
+	  }
+	};
+
+	AudioManager.prototype._enableiOS = function () {
+	  var self = this;
+
+	  var touch = (function (_touch) {
+	    var _touchWrapper = function touch() {
+	      return _touch.apply(this, arguments);
+	    };
+
+	    _touchWrapper.toString = function () {
+	      return _touch.toString();
+	    };
+
+	    return _touchWrapper;
+	  })(function () {
+	    var buffer = self._ctx.createBuffer(1, 1, 22050);
+	    var source = self._ctx.createBufferSource();
+	    source.buffer = buffer;
+	    source.connect(self._ctx.destination);
+	    source.start(0);
+
+	    window.removeEventListener("touchstart", touch, false);
+	  });
+
+	  window.addEventListener("touchstart", touch, false);
+	};
+
+	AudioManager.prototype.mute = function () {
+	  this.isMuted = true;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.unmute = function () {
+	  this.isMuted = false;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.toggleMute = function () {
+	  this.isMuted = !this.isMuted;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype._updateMute = function () {
+	  this._masterGain.gain.value = this.isMuted ? 0 : this._volume;
+	};
+
+	AudioManager.prototype.setVolume = function (volume) {
+	  this._volume = volume;
+	  this._masterGain.gain.value = volume;
+	};
+
+	AudioManager.prototype.load = function (url, callback) {
+	  var loader = {
+	    done: function done() {},
+	    error: function error() {},
+	    progress: function progress() {}
+	  };
+
+	  if (callback && util.isFunction(callback)) {
+	    loader.done = callback;
+	  } else {
+	    if (callback.done) {
+	      loader.done = callback.done;
+	    }
+
+	    if (callback.error) {
+	      loader.error = callback.error;
+	    }
+
+	    if (callback.progress) {
+	      loader.progress = callback.progress;
+	    }
+	  }
+
+	  var self = this;
+
+	  var request = new XMLHttpRequest();
+	  request.open("GET", url, true);
+	  request.responseType = "arraybuffer";
+
+	  request.addEventListener("progress", function (e) {
+	    loader.progress(e);
+	  });
+
+	  request.onload = function () {
+	    self.decodeAudioData(request.response, function (source) {
+	      loader.done(source);
+	    });
+	  };
+	  request.send();
+	};
+
+	AudioManager.prototype.decodeAudioData = function (data, callback) {
+	  var self = this;
+
+	  this._ctx.decodeAudioData(data, function (result) {
+	    var audio = new LoadedAudio(self._ctx, result, self._masterGain);
+
+	    callback(audio);
+	  });
+	};
+
+	module.exports = AudioManager;
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var DirtyManager = function DirtyManager(canvas, ctx) {
+	  this.ctx = ctx;
+	  this.canvas = canvas;
+
+	  this.top = canvas.height;
+	  this.left = canvas.width;
+	  this.bottom = 0;
+	  this.right = 0;
+
+	  this.isDirty = false;
+	};
+
+	DirtyManager.prototype.addRect = function (left, top, width, height) {
+	  var right = left + width;
+	  var bottom = top + height;
+
+	  this.top = top < this.top ? top : this.top;
+	  this.left = left < this.left ? left : this.left;
+	  this.bottom = bottom > this.bottom ? bottom : this.bottom;
+	  this.right = right > this.right ? right : this.right;
+
+	  this.isDirty = true;
+	};
+
+	DirtyManager.prototype.clear = function () {
+	  if (!this.isDirty) {
+	    return;
+	  }
+
+	  this.ctx.clearRect(this.left, this.top, this.right - this.left, this.bottom - this.top);
+
+	  this.left = this.canvas.width;
+	  this.top = this.canvas.height;
+	  this.right = 0;
+	  this.bottom = 0;
+
+	  this.isDirty = false;
+	};
+
+	module.exports = DirtyManager;
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = function isBuffer(arg) {
+	  return arg && typeof arg === "object" && typeof arg.copy === "function" && typeof arg.fill === "function" && typeof arg.readUInt8 === "function";
+	};
+
+/***/ },
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser
@@ -2984,150 +3183,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 21 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	module.exports = function isBuffer(arg) {
-	  return arg && typeof arg === "object" && typeof arg.copy === "function" && typeof arg.fill === "function" && typeof arg.readUInt8 === "function";
-	};
-
-/***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var LoadedAudio = __webpack_require__(24);
-
-	var AudioManager = function AudioManager() {
-	  var AudioContext = window.AudioContext || window.webkitAudioContext;
-
-	  this._ctx = new AudioContext();
-	  this._masterGain = this._ctx.createGain();
-	  this._volume = 1;
-	  this.isMuted = false;
-
-	  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
-	  if (iOS) {
-	    this._enableiOS();
-	  }
-	};
-
-	AudioManager.prototype._enableiOS = function () {
-	  var self = this;
-
-	  var touch = (function (_touch) {
-	    var _touchWrapper = function touch() {
-	      return _touch.apply(this, arguments);
-	    };
-
-	    _touchWrapper.toString = function () {
-	      return _touch.toString();
-	    };
-
-	    return _touchWrapper;
-	  })(function () {
-	    var buffer = self._ctx.createBuffer(1, 1, 22050);
-	    var source = self._ctx.createBufferSource();
-	    source.buffer = buffer;
-	    source.connect(self._ctx.destination);
-	    source.start(0);
-
-	    window.removeEventListener("touchstart", touch, false);
-	  });
-
-	  window.addEventListener("touchstart", touch, false);
-	};
-
-	AudioManager.prototype.mute = function () {
-	  this.isMuted = true;
-	  this._updateMute();
-	};
-
-	AudioManager.prototype.unmute = function () {
-	  this.isMuted = false;
-	  this._updateMute();
-	};
-
-	AudioManager.prototype.toggleMute = function () {
-	  this.isMuted = !this.isMuted;
-	  this._updateMute();
-	};
-
-	AudioManager.prototype._updateMute = function () {
-	  this._masterGain.gain.value = this.isMuted ? 0 : this._volume;
-	};
-
-	AudioManager.prototype.setVolume = function (volume) {
-	  this._volume = volume;
-	  this._masterGain.gain.value = volume;
-	};
-
-	AudioManager.prototype.load = function (url, callback) {
-	  var self = this;
-
-	  var request = new XMLHttpRequest();
-	  request.open("GET", url, true);
-	  request.responseType = "arraybuffer";
-	  request.onload = function () {
-	    self.decodeAudioData(request.response, function (source) {
-	      callback(source);
-	    });
-	  };
-	  request.send();
-	};
-
-	AudioManager.prototype.decodeAudioData = function (data, callback) {
-	  var self = this;
-
-	  this._ctx.decodeAudioData(data, function (result) {
-	    var audio = new LoadedAudio(self._ctx, result, self._masterGain);
-
-	    callback(audio);
-	  });
-	};
-
-	module.exports = AudioManager;
-
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	if (typeof Object.create === "function") {
-	  // implementation from standard node.js 'util' module
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    ctor.prototype = Object.create(superCtor.prototype, {
-	      constructor: {
-	        value: ctor,
-	        enumerable: false,
-	        writable: true,
-	        configurable: true
-	      }
-	    });
-	  };
-	} else {
-	  // old school shim for old browsers
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    var TempCtor = function TempCtor() {};
-	    TempCtor.prototype = superCtor.prototype;
-	    ctor.prototype = new TempCtor();
-	    ctor.prototype.constructor = ctor;
-	  };
-	}
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var PlayingAudio = __webpack_require__(25);
+	var PlayingAudio = __webpack_require__(27);
 
 	var LoadedAudio = function LoadedAudio(ctx, buffer, masterGain) {
 	  this._ctx = ctx;
@@ -3187,7 +3248,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = LoadedAudio;
 
 /***/ },
-/* 25 */
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	if (typeof Object.create === "function") {
+	  // implementation from standard node.js 'util' module
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    ctor.prototype = Object.create(superCtor.prototype, {
+	      constructor: {
+	        value: ctor,
+	        enumerable: false,
+	        writable: true,
+	        configurable: true
+	      }
+	    });
+	  };
+	} else {
+	  // old school shim for old browsers
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    var TempCtor = function TempCtor() {};
+	    TempCtor.prototype = superCtor.prototype;
+	    ctor.prototype = new TempCtor();
+	    ctor.prototype.constructor = ctor;
+	  };
+	}
+
+/***/ },
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3203,6 +3294,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	PlayingAudio.prototype.stop = function () {
 	  this._source.stop(0);
+	};
+
+	PlayingAudio.prototype.loop = function () {
+	  this._source.loop = true;
 	};
 
 	module.exports = PlayingAudio;
