@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/potion.svg)](http://badge.fury.io/js/potion)
 
-Potion is a game library with very simple and powerful abstractions.
+Potion is a game library with simple and useful abstractions.
 
 - Asset loader
 - Input event handling
