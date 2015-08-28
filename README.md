@@ -44,7 +44,7 @@ var Potion = require('potion');
 
 var app = Potion.init(document.querySelector('.container'), {
   configure: function() {
-    app.setSize(400, 400);
+    app.resize(400, 400);
   },
 
   init: function() {
