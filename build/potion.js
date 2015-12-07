@@ -1,5 +1,5 @@
 /**
-* potion - v1.0.0-beta1
+* potion - v1.0.0
 * Copyright (c) 2015, Jan Sedivy
 *
 * Potion is licensed under the MIT License.
@@ -1180,8 +1180,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var util = __webpack_require__(19);
-	var path = __webpack_require__(18);
+	var util = __webpack_require__(18);
+	var path = __webpack_require__(19);
 
 	var JsonLoader = __webpack_require__(14);
 	var imageLoader = __webpack_require__(15);
@@ -1450,7 +1450,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	module.exports = __webpack_require__(20);
+	module.exports = __webpack_require__(21);
 
 /***/ },
 /* 12 */
@@ -1458,7 +1458,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	module.exports = __webpack_require__(21);
+	module.exports = __webpack_require__(20);
 
 /***/ },
 /* 13 */
@@ -1603,235 +1603,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-	// resolves . and .. elements in a path array with directory names there
-	// must be no slashes, empty elements, or device names (c:\) in the array
-	// (so also no leading and trailing slashes - it does not distinguish
-	// relative and absolute paths)
-	"use strict";
-
-	function normalizeArray(parts, allowAboveRoot) {
-	  // if the path tries to go above the root, `up` ends up > 0
-	  var up = 0;
-	  for (var i = parts.length - 1; i >= 0; i--) {
-	    var last = parts[i];
-	    if (last === ".") {
-	      parts.splice(i, 1);
-	    } else if (last === "..") {
-	      parts.splice(i, 1);
-	      up++;
-	    } else if (up) {
-	      parts.splice(i, 1);
-	      up--;
-	    }
-	  }
-
-	  // if the path is allowed to go above the root, restore leading ..s
-	  if (allowAboveRoot) {
-	    for (; up--; up) {
-	      parts.unshift("..");
-	    }
-	  }
-
-	  return parts;
-	}
-
-	// Split a filename into [root, dir, basename, ext], unix version
-	// 'root' is just a slash, or nothing.
-	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-	var splitPath = function splitPath(filename) {
-	  return splitPathRe.exec(filename).slice(1);
-	};
-
-	// path.resolve([from ...], to)
-	// posix version
-	exports.resolve = function () {
-	  var resolvedPath = "",
-	      resolvedAbsolute = false;
-
-	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-	    var path = i >= 0 ? arguments[i] : process.cwd();
-
-	    // Skip empty and invalid entries
-	    if (typeof path !== "string") {
-	      throw new TypeError("Arguments to path.resolve must be strings");
-	    } else if (!path) {
-	      continue;
-	    }
-
-	    resolvedPath = path + "/" + resolvedPath;
-	    resolvedAbsolute = path.charAt(0) === "/";
-	  }
-
-	  // At this point the path should be resolved to a full absolute path, but
-	  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-	  // Normalize the path
-	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
-	    return !!p;
-	  }), !resolvedAbsolute).join("/");
-
-	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
-	};
-
-	// path.normalize(path)
-	// posix version
-	exports.normalize = function (path) {
-	  var isAbsolute = exports.isAbsolute(path),
-	      trailingSlash = substr(path, -1) === "/";
-
-	  // Normalize the path
-	  path = normalizeArray(filter(path.split("/"), function (p) {
-	    return !!p;
-	  }), !isAbsolute).join("/");
-
-	  if (!path && !isAbsolute) {
-	    path = ".";
-	  }
-	  if (path && trailingSlash) {
-	    path += "/";
-	  }
-
-	  return (isAbsolute ? "/" : "") + path;
-	};
-
-	// posix version
-	exports.isAbsolute = function (path) {
-	  return path.charAt(0) === "/";
-	};
-
-	// posix version
-	exports.join = function () {
-	  var paths = Array.prototype.slice.call(arguments, 0);
-	  return exports.normalize(filter(paths, function (p, index) {
-	    if (typeof p !== "string") {
-	      throw new TypeError("Arguments to path.join must be strings");
-	    }
-	    return p;
-	  }).join("/"));
-	};
-
-	// path.relative(from, to)
-	// posix version
-	exports.relative = function (from, to) {
-	  from = exports.resolve(from).substr(1);
-	  to = exports.resolve(to).substr(1);
-
-	  function trim(arr) {
-	    var start = 0;
-	    for (; start < arr.length; start++) {
-	      if (arr[start] !== "") break;
-	    }
-
-	    var end = arr.length - 1;
-	    for (; end >= 0; end--) {
-	      if (arr[end] !== "") break;
-	    }
-
-	    if (start > end) {
-	      return [];
-	    }return arr.slice(start, end - start + 1);
-	  }
-
-	  var fromParts = trim(from.split("/"));
-	  var toParts = trim(to.split("/"));
-
-	  var length = Math.min(fromParts.length, toParts.length);
-	  var samePartsLength = length;
-	  for (var i = 0; i < length; i++) {
-	    if (fromParts[i] !== toParts[i]) {
-	      samePartsLength = i;
-	      break;
-	    }
-	  }
-
-	  var outputParts = [];
-	  for (var i = samePartsLength; i < fromParts.length; i++) {
-	    outputParts.push("..");
-	  }
-
-	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-	  return outputParts.join("/");
-	};
-
-	exports.sep = "/";
-	exports.delimiter = ":";
-
-	exports.dirname = function (path) {
-	  var result = splitPath(path),
-	      root = result[0],
-	      dir = result[1];
-
-	  if (!root && !dir) {
-	    // No dirname whatsoever
-	    return ".";
-	  }
-
-	  if (dir) {
-	    // It has a dirname, strip trailing slash
-	    dir = dir.substr(0, dir.length - 1);
-	  }
-
-	  return root + dir;
-	};
-
-	exports.basename = function (path, ext) {
-	  var f = splitPath(path)[2];
-	  // TODO: make this comparison case-insensitive on windows?
-	  if (ext && f.substr(-1 * ext.length) === ext) {
-	    f = f.substr(0, f.length - ext.length);
-	  }
-	  return f;
-	};
-
-	exports.extname = function (path) {
-	  return splitPath(path)[3];
-	};
-
-	function filter(xs, f) {
-	  if (xs.filter) {
-	    return xs.filter(f);
-	  }var res = [];
-	  for (var i = 0; i < xs.length; i++) {
-	    if (f(xs[i], i, xs)) res.push(xs[i]);
-	  }
-	  return res;
-	}
-
-	// String.prototype.substr - negative index don't work in IE8
-	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
-	  return str.substr(start, len);
-	} : function (str, start, len) {
-	  if (start < 0) start = str.length + start;
-	  return str.substr(start, len);
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
-
-/***/ },
-/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2331,7 +2102,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(23);
+	exports.isBuffer = __webpack_require__(24);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -2385,7 +2156,236 @@ return /******/ (function(modules) { // webpackBootstrap
 	function hasOwnProperty(obj, prop) {
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(24)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(25)))
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	// resolves . and .. elements in a path array with directory names there
+	// must be no slashes, empty elements, or device names (c:\) in the array
+	// (so also no leading and trailing slashes - it does not distinguish
+	// relative and absolute paths)
+	"use strict";
+
+	function normalizeArray(parts, allowAboveRoot) {
+	  // if the path tries to go above the root, `up` ends up > 0
+	  var up = 0;
+	  for (var i = parts.length - 1; i >= 0; i--) {
+	    var last = parts[i];
+	    if (last === ".") {
+	      parts.splice(i, 1);
+	    } else if (last === "..") {
+	      parts.splice(i, 1);
+	      up++;
+	    } else if (up) {
+	      parts.splice(i, 1);
+	      up--;
+	    }
+	  }
+
+	  // if the path is allowed to go above the root, restore leading ..s
+	  if (allowAboveRoot) {
+	    for (; up--; up) {
+	      parts.unshift("..");
+	    }
+	  }
+
+	  return parts;
+	}
+
+	// Split a filename into [root, dir, basename, ext], unix version
+	// 'root' is just a slash, or nothing.
+	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+	var splitPath = function splitPath(filename) {
+	  return splitPathRe.exec(filename).slice(1);
+	};
+
+	// path.resolve([from ...], to)
+	// posix version
+	exports.resolve = function () {
+	  var resolvedPath = "",
+	      resolvedAbsolute = false;
+
+	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+	    var path = i >= 0 ? arguments[i] : process.cwd();
+
+	    // Skip empty and invalid entries
+	    if (typeof path !== "string") {
+	      throw new TypeError("Arguments to path.resolve must be strings");
+	    } else if (!path) {
+	      continue;
+	    }
+
+	    resolvedPath = path + "/" + resolvedPath;
+	    resolvedAbsolute = path.charAt(0) === "/";
+	  }
+
+	  // At this point the path should be resolved to a full absolute path, but
+	  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+	  // Normalize the path
+	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
+	    return !!p;
+	  }), !resolvedAbsolute).join("/");
+
+	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
+	};
+
+	// path.normalize(path)
+	// posix version
+	exports.normalize = function (path) {
+	  var isAbsolute = exports.isAbsolute(path),
+	      trailingSlash = substr(path, -1) === "/";
+
+	  // Normalize the path
+	  path = normalizeArray(filter(path.split("/"), function (p) {
+	    return !!p;
+	  }), !isAbsolute).join("/");
+
+	  if (!path && !isAbsolute) {
+	    path = ".";
+	  }
+	  if (path && trailingSlash) {
+	    path += "/";
+	  }
+
+	  return (isAbsolute ? "/" : "") + path;
+	};
+
+	// posix version
+	exports.isAbsolute = function (path) {
+	  return path.charAt(0) === "/";
+	};
+
+	// posix version
+	exports.join = function () {
+	  var paths = Array.prototype.slice.call(arguments, 0);
+	  return exports.normalize(filter(paths, function (p, index) {
+	    if (typeof p !== "string") {
+	      throw new TypeError("Arguments to path.join must be strings");
+	    }
+	    return p;
+	  }).join("/"));
+	};
+
+	// path.relative(from, to)
+	// posix version
+	exports.relative = function (from, to) {
+	  from = exports.resolve(from).substr(1);
+	  to = exports.resolve(to).substr(1);
+
+	  function trim(arr) {
+	    var start = 0;
+	    for (; start < arr.length; start++) {
+	      if (arr[start] !== "") break;
+	    }
+
+	    var end = arr.length - 1;
+	    for (; end >= 0; end--) {
+	      if (arr[end] !== "") break;
+	    }
+
+	    if (start > end) {
+	      return [];
+	    }return arr.slice(start, end - start + 1);
+	  }
+
+	  var fromParts = trim(from.split("/"));
+	  var toParts = trim(to.split("/"));
+
+	  var length = Math.min(fromParts.length, toParts.length);
+	  var samePartsLength = length;
+	  for (var i = 0; i < length; i++) {
+	    if (fromParts[i] !== toParts[i]) {
+	      samePartsLength = i;
+	      break;
+	    }
+	  }
+
+	  var outputParts = [];
+	  for (var i = samePartsLength; i < fromParts.length; i++) {
+	    outputParts.push("..");
+	  }
+
+	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+	  return outputParts.join("/");
+	};
+
+	exports.sep = "/";
+	exports.delimiter = ":";
+
+	exports.dirname = function (path) {
+	  var result = splitPath(path),
+	      root = result[0],
+	      dir = result[1];
+
+	  if (!root && !dir) {
+	    // No dirname whatsoever
+	    return ".";
+	  }
+
+	  if (dir) {
+	    // It has a dirname, strip trailing slash
+	    dir = dir.substr(0, dir.length - 1);
+	  }
+
+	  return root + dir;
+	};
+
+	exports.basename = function (path, ext) {
+	  var f = splitPath(path)[2];
+	  // TODO: make this comparison case-insensitive on windows?
+	  if (ext && f.substr(-1 * ext.length) === ext) {
+	    f = f.substr(0, f.length - ext.length);
+	  }
+	  return f;
+	};
+
+	exports.extname = function (path) {
+	  return splitPath(path)[3];
+	};
+
+	function filter(xs, f) {
+	  if (xs.filter) {
+	    return xs.filter(f);
+	  }var res = [];
+	  for (var i = 0; i < xs.length; i++) {
+	    if (f(xs[i], i, xs)) res.push(xs[i]);
+	  }
+	  return res;
+	}
+
+	// String.prototype.substr - negative index don't work in IE8
+	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
+	  return str.substr(start, len);
+	} : function (str, start, len) {
+	  if (start < 0) start = str.length + start;
+	  return str.substr(start, len);
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(25)))
 
 /***/ },
 /* 20 */
@@ -2393,8 +2393,134 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var util = __webpack_require__(19);
-	var DirtyManager = __webpack_require__(22);
+	var util = __webpack_require__(18);
+	var LoadedAudio = __webpack_require__(22);
+
+	var AudioManager = function AudioManager() {
+	  var AudioContext = window.AudioContext || window.webkitAudioContext;
+
+	  this._ctx = new AudioContext();
+	  this._masterGain = this._ctx.createGain();
+	  this._volume = 1;
+	  this.isMuted = false;
+
+	  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
+	  if (iOS) {
+	    this._enableiOS();
+	  }
+	};
+
+	AudioManager.prototype._enableiOS = function () {
+	  var self = this;
+
+	  var touch = (function (_touch) {
+	    var _touchWrapper = function touch() {
+	      return _touch.apply(this, arguments);
+	    };
+
+	    _touchWrapper.toString = function () {
+	      return _touch.toString();
+	    };
+
+	    return _touchWrapper;
+	  })(function () {
+	    var buffer = self._ctx.createBuffer(1, 1, 22050);
+	    var source = self._ctx.createBufferSource();
+	    source.buffer = buffer;
+	    source.connect(self._ctx.destination);
+	    source.start(0);
+
+	    window.removeEventListener("touchstart", touch, false);
+	  });
+
+	  window.addEventListener("touchstart", touch, false);
+	};
+
+	AudioManager.prototype.mute = function () {
+	  this.isMuted = true;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.unmute = function () {
+	  this.isMuted = false;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.toggleMute = function () {
+	  this.isMuted = !this.isMuted;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype._updateMute = function () {
+	  this._masterGain.gain.value = this.isMuted ? 0 : this._volume;
+	};
+
+	AudioManager.prototype.setVolume = function (volume) {
+	  this._volume = volume;
+	  this._masterGain.gain.value = volume;
+	};
+
+	AudioManager.prototype.load = function (url, callback) {
+	  var loader = {
+	    done: function done() {},
+	    error: function error() {},
+	    progress: function progress() {}
+	  };
+
+	  if (callback && util.isFunction(callback)) {
+	    loader.done = callback;
+	  } else {
+	    if (callback.done) {
+	      loader.done = callback.done;
+	    }
+
+	    if (callback.error) {
+	      loader.error = callback.error;
+	    }
+
+	    if (callback.progress) {
+	      loader.progress = callback.progress;
+	    }
+	  }
+
+	  var self = this;
+
+	  var request = new XMLHttpRequest();
+	  request.open("GET", url, true);
+	  request.responseType = "arraybuffer";
+
+	  request.addEventListener("progress", function (e) {
+	    loader.progress(e);
+	  });
+
+	  request.onload = function () {
+	    self.decodeAudioData(request.response, function (source) {
+	      loader.done(source);
+	    });
+	  };
+	  request.send();
+	};
+
+	AudioManager.prototype.decodeAudioData = function (data, callback) {
+	  var self = this;
+
+	  this._ctx.decodeAudioData(data, function (result) {
+	    var audio = new LoadedAudio(self._ctx, result, self._masterGain);
+
+	    callback(audio);
+	  });
+	};
+
+	module.exports = AudioManager;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var util = __webpack_require__(18);
+	var DirtyManager = __webpack_require__(23);
 
 	var ObjectPool = [];
 
@@ -2931,133 +3057,72 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Debugger;
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var util = __webpack_require__(19);
-	var LoadedAudio = __webpack_require__(25);
+	var PlayingAudio = __webpack_require__(27);
 
-	var AudioManager = function AudioManager() {
-	  var AudioContext = window.AudioContext || window.webkitAudioContext;
-
-	  this._ctx = new AudioContext();
-	  this._masterGain = this._ctx.createGain();
-	  this._volume = 1;
-	  this.isMuted = false;
-
-	  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
-	  if (iOS) {
-	    this._enableiOS();
-	  }
+	var LoadedAudio = function LoadedAudio(ctx, buffer, masterGain) {
+	  this._ctx = ctx;
+	  this._masterGain = masterGain;
+	  this._buffer = buffer;
+	  this._buffer.loop = false;
 	};
 
-	AudioManager.prototype._enableiOS = function () {
-	  var self = this;
+	LoadedAudio.prototype._createSound = function (gain) {
+	  var source = this._ctx.createBufferSource();
+	  source.buffer = this._buffer;
 
-	  var touch = (function (_touch) {
-	    var _touchWrapper = function touch() {
-	      return _touch.apply(this, arguments);
-	    };
+	  this._masterGain.connect(this._ctx.destination);
 
-	    _touchWrapper.toString = function () {
-	      return _touch.toString();
-	    };
+	  gain.connect(this._masterGain);
 
-	    return _touchWrapper;
-	  })(function () {
-	    var buffer = self._ctx.createBuffer(1, 1, 22050);
-	    var source = self._ctx.createBufferSource();
-	    source.buffer = buffer;
-	    source.connect(self._ctx.destination);
-	    source.start(0);
+	  source.connect(gain);
 
-	    window.removeEventListener("touchstart", touch, false);
-	  });
-
-	  window.addEventListener("touchstart", touch, false);
+	  return source;
 	};
 
-	AudioManager.prototype.mute = function () {
-	  this.isMuted = true;
-	  this._updateMute();
+	LoadedAudio.prototype.play = function () {
+	  var gain = this._ctx.createGain();
+
+	  var sound = this._createSound(gain);
+
+	  sound.start(0);
+
+	  return new PlayingAudio(sound, gain);
 	};
 
-	AudioManager.prototype.unmute = function () {
-	  this.isMuted = false;
-	  this._updateMute();
+	LoadedAudio.prototype.fadeIn = function (value, time) {
+	  var gain = this._ctx.createGain();
+
+	  var sound = this._createSound(gain);
+
+	  gain.gain.setValueAtTime(0, 0);
+	  gain.gain.linearRampToValueAtTime(0.01, 0);
+	  gain.gain.linearRampToValueAtTime(value, time);
+
+	  sound.start(0);
+
+	  return new PlayingAudio(sound, gain);
 	};
 
-	AudioManager.prototype.toggleMute = function () {
-	  this.isMuted = !this.isMuted;
-	  this._updateMute();
+	LoadedAudio.prototype.loop = function () {
+	  var gain = this._ctx.createGain();
+
+	  var sound = this._createSound(gain);
+
+	  sound.loop = true;
+	  sound.start(0);
+
+	  return new PlayingAudio(sound, gain);
 	};
 
-	AudioManager.prototype._updateMute = function () {
-	  this._masterGain.gain.value = this.isMuted ? 0 : this._volume;
-	};
-
-	AudioManager.prototype.setVolume = function (volume) {
-	  this._volume = volume;
-	  this._masterGain.gain.value = volume;
-	};
-
-	AudioManager.prototype.load = function (url, callback) {
-	  var loader = {
-	    done: function done() {},
-	    error: function error() {},
-	    progress: function progress() {}
-	  };
-
-	  if (callback && util.isFunction(callback)) {
-	    loader.done = callback;
-	  } else {
-	    if (callback.done) {
-	      loader.done = callback.done;
-	    }
-
-	    if (callback.error) {
-	      loader.error = callback.error;
-	    }
-
-	    if (callback.progress) {
-	      loader.progress = callback.progress;
-	    }
-	  }
-
-	  var self = this;
-
-	  var request = new XMLHttpRequest();
-	  request.open("GET", url, true);
-	  request.responseType = "arraybuffer";
-
-	  request.addEventListener("progress", function (e) {
-	    loader.progress(e);
-	  });
-
-	  request.onload = function () {
-	    self.decodeAudioData(request.response, function (source) {
-	      loader.done(source);
-	    });
-	  };
-	  request.send();
-	};
-
-	AudioManager.prototype.decodeAudioData = function (data, callback) {
-	  var self = this;
-
-	  this._ctx.decodeAudioData(data, function (result) {
-	    var audio = new LoadedAudio(self._ctx, result, self._masterGain);
-
-	    callback(audio);
-	  });
-	};
-
-	module.exports = AudioManager;
+	module.exports = LoadedAudio;
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3104,7 +3169,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = DirtyManager;
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3114,7 +3179,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser
@@ -3181,71 +3246,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	process.umask = function () {
 	    return 0;
 	};
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var PlayingAudio = __webpack_require__(27);
-
-	var LoadedAudio = function LoadedAudio(ctx, buffer, masterGain) {
-	  this._ctx = ctx;
-	  this._masterGain = masterGain;
-	  this._buffer = buffer;
-	  this._buffer.loop = false;
-	};
-
-	LoadedAudio.prototype._createSound = function (gain) {
-	  var source = this._ctx.createBufferSource();
-	  source.buffer = this._buffer;
-
-	  this._masterGain.connect(this._ctx.destination);
-
-	  gain.connect(this._masterGain);
-
-	  source.connect(gain);
-
-	  return source;
-	};
-
-	LoadedAudio.prototype.play = function () {
-	  var gain = this._ctx.createGain();
-
-	  var sound = this._createSound(gain);
-
-	  sound.start(0);
-
-	  return new PlayingAudio(sound, gain);
-	};
-
-	LoadedAudio.prototype.fadeIn = function (value, time) {
-	  var gain = this._ctx.createGain();
-
-	  var sound = this._createSound(gain);
-
-	  gain.gain.setValueAtTime(0, 0);
-	  gain.gain.linearRampToValueAtTime(0.01, 0);
-	  gain.gain.linearRampToValueAtTime(value, time);
-
-	  sound.start(0);
-
-	  return new PlayingAudio(sound, gain);
-	};
-
-	LoadedAudio.prototype.loop = function () {
-	  var gain = this._ctx.createGain();
-
-	  var sound = this._createSound(gain);
-
-	  sound.loop = true;
-	  sound.start(0);
-
-	  return new PlayingAudio(sound, gain);
-	};
-
-	module.exports = LoadedAudio;
 
 /***/ },
 /* 26 */
