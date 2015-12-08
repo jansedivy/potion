@@ -48,8 +48,7 @@ App.prototype.resize = function(width, height) {
   this.width = width;
   this.height = height;
 
-  this.container.style.width = this.width + 'px';
-  this.container.style.height = this.height + 'px';
+  this.scale(width, height);
 
   if (this.video) {
     this.video._resize(width, height);
@@ -58,6 +57,11 @@ App.prototype.resize = function(width, height) {
   if (this.states) {
     this.states.resize();
   }
+};
+
+App.prototype.scale = function(width, height) {
+  this.container.style.width = width + 'px';
+  this.container.style.height = height + 'px';
 };
 
 module.exports = App;
