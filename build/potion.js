@@ -1,5 +1,5 @@
 /**
-* potion - v1.0.0
+* potion - v1.1.0
 * Copyright (c) 2015, Jan Sedivy
 *
 * Potion is licensed under the MIT License.
@@ -117,6 +117,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	Engine.prototype.configureApp = function () {
+	  this.controller.resize(this.controller.width, this.controller.height);
+
 	  if (this.app.configure) {
 	    this.app.configure();
 	  }
@@ -126,8 +128,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.controller.config.addInputEvents) {
 	    this.controller.input = new Input(this.controller);
 	  }
-
-	  this.controller.resize(this.controller.width, this.controller.height);
 
 	  this._setDefaultStates();
 
@@ -303,9 +303,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Video = __webpack_require__(8);
 	var Assets = __webpack_require__(9);
 
-	var Debugger = __webpack_require__(11);
+	var Debugger = __webpack_require__(12);
 
-	var PotionAudio = __webpack_require__(12);
+	var PotionAudio = __webpack_require__(11);
 
 	var App = function App(container) {
 	  this.container = container;
@@ -319,8 +319,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.canvas = canvas;
 
 	  this.width = 300;
-
 	  this.height = 300;
+
+	  this._containerWidth = this.width;
+	  this._containerHeight = this.height;
 
 	  this.audio = new PotionAudio();
 
@@ -344,14 +346,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.video._isRoot = true;
 
 	  this.debug = new Debugger(this);
+
+	  this.scaleX = 1;
+	  this.scaleY = 1;
 	};
 
 	App.prototype.resize = function (width, height) {
 	  this.width = width;
 	  this.height = height;
 
-	  this.container.style.width = this.width + "px";
-	  this.container.style.height = this.height + "px";
+	  this.scale(width, height);
 
 	  if (this.video) {
 	    this.video._resize(width, height);
@@ -360,6 +364,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (this.states) {
 	    this.states.resize();
 	  }
+
+	  this.scaleX = this._containerWidth / width;
+	  this.scaleY = this._containerHeight / height;
+	};
+
+	App.prototype.scale = function (width, height) {
+	  this.scaleX = width / this.width;
+	  this.scaleY = height / this.height;
+
+	  this._containerWidth = width;
+	  this._containerHeight = height;
+
+	  this.container.style.width = width + "px";
+	  this.container.style.height = height + "px";
 	};
 
 	module.exports = App;
@@ -775,8 +793,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 
 	  self._container.addEventListener("mousemove", function (e) {
-	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+	    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
+	    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
 
 	    if (self.mouse.x != null && self.mouse.x != null) {
 	      self.mouse.dx = x - self.mouse.x;
@@ -799,8 +817,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  self._container.addEventListener("mouseup", function (e) {
 	    e.preventDefault();
 
-	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+	    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
+	    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
 
 	    switch (e.button) {
 	      case 0:
@@ -841,8 +859,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  self._container.addEventListener("mousedown", function (e) {
 	    e.preventDefault();
 
-	    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-	    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+	    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
+	    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
 
 	    self.mouse.x = x;
 	    self.mouse.y = y;
@@ -876,8 +894,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var i = 0; i < e.touches.length; i++) {
 	      var touch = e.touches[i];
 
-	      var x = touch.pageX - self._container.offsetLeft;
-	      var y = touch.pageY - self._container.offsetTop;
+	      var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
+	      var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
 
 	      self.mouse.x = x;
 	      self.mouse.y = y;
@@ -901,8 +919,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var i = 0; i < e.touches.length; i++) {
 	      var touch = e.touches[i];
 
-	      var x = touch.pageX - self._container.offsetLeft;
-	      var y = touch.pageY - self._container.offsetTop;
+	      var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
+	      var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
 
 	      if (self.mouse.x != null && self.mouse.x != null) {
 	        self.mouse.dx = x - self.mouse.x;
@@ -929,8 +947,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var touch = e.changedTouches[0];
 
-	    var x = touch.pageX - self._container.offsetLeft;
-	    var y = touch.pageY - self._container.offsetTop;
+	    var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
+	    var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
 
 	    self.mouse.x = x;
 	    self.mouse.y = y;
@@ -1122,6 +1140,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.width = width;
 	  this.height = height;
 
+	  this.canvas.style.width = "100%";
+	  this.canvas.style.height = "100%";
+
 	  this._applySizeToCanvas();
 
 	  for (var i = 0, len = this._children.length; i < len; i++) {
@@ -1133,9 +1154,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	Video.prototype._applySizeToCanvas = function () {
 	  this.canvas.width = this.width;
 	  this.canvas.height = this.height;
-
-	  this.canvas.style.width = this.width + "px";
-	  this.canvas.style.height = this.height + "px";
 
 	  if (this.config.allowHiDPI && isRetina) {
 	    this.scaleCanvas(2);
@@ -2394,132 +2412,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	"use strict";
 
 	var util = __webpack_require__(18);
-	var LoadedAudio = __webpack_require__(22);
-
-	var AudioManager = function AudioManager() {
-	  var AudioContext = window.AudioContext || window.webkitAudioContext;
-
-	  this._ctx = new AudioContext();
-	  this._masterGain = this._ctx.createGain();
-	  this._volume = 1;
-	  this.isMuted = false;
-
-	  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
-	  if (iOS) {
-	    this._enableiOS();
-	  }
-	};
-
-	AudioManager.prototype._enableiOS = function () {
-	  var self = this;
-
-	  var touch = (function (_touch) {
-	    var _touchWrapper = function touch() {
-	      return _touch.apply(this, arguments);
-	    };
-
-	    _touchWrapper.toString = function () {
-	      return _touch.toString();
-	    };
-
-	    return _touchWrapper;
-	  })(function () {
-	    var buffer = self._ctx.createBuffer(1, 1, 22050);
-	    var source = self._ctx.createBufferSource();
-	    source.buffer = buffer;
-	    source.connect(self._ctx.destination);
-	    source.start(0);
-
-	    window.removeEventListener("touchstart", touch, false);
-	  });
-
-	  window.addEventListener("touchstart", touch, false);
-	};
-
-	AudioManager.prototype.mute = function () {
-	  this.isMuted = true;
-	  this._updateMute();
-	};
-
-	AudioManager.prototype.unmute = function () {
-	  this.isMuted = false;
-	  this._updateMute();
-	};
-
-	AudioManager.prototype.toggleMute = function () {
-	  this.isMuted = !this.isMuted;
-	  this._updateMute();
-	};
-
-	AudioManager.prototype._updateMute = function () {
-	  this._masterGain.gain.value = this.isMuted ? 0 : this._volume;
-	};
-
-	AudioManager.prototype.setVolume = function (volume) {
-	  this._volume = volume;
-	  this._masterGain.gain.value = volume;
-	};
-
-	AudioManager.prototype.load = function (url, callback) {
-	  var loader = {
-	    done: function done() {},
-	    error: function error() {},
-	    progress: function progress() {}
-	  };
-
-	  if (callback && util.isFunction(callback)) {
-	    loader.done = callback;
-	  } else {
-	    if (callback.done) {
-	      loader.done = callback.done;
-	    }
-
-	    if (callback.error) {
-	      loader.error = callback.error;
-	    }
-
-	    if (callback.progress) {
-	      loader.progress = callback.progress;
-	    }
-	  }
-
-	  var self = this;
-
-	  var request = new XMLHttpRequest();
-	  request.open("GET", url, true);
-	  request.responseType = "arraybuffer";
-
-	  request.addEventListener("progress", function (e) {
-	    loader.progress(e);
-	  });
-
-	  request.onload = function () {
-	    self.decodeAudioData(request.response, function (source) {
-	      loader.done(source);
-	    });
-	  };
-	  request.send();
-	};
-
-	AudioManager.prototype.decodeAudioData = function (data, callback) {
-	  var self = this;
-
-	  this._ctx.decodeAudioData(data, function (result) {
-	    var audio = new LoadedAudio(self._ctx, result, self._masterGain);
-
-	    callback(audio);
-	  });
-	};
-
-	module.exports = AudioManager;
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var util = __webpack_require__(18);
 	var DirtyManager = __webpack_require__(23);
 
 	var ObjectPool = [];
@@ -3055,6 +2947,132 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = Debugger;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var util = __webpack_require__(18);
+	var LoadedAudio = __webpack_require__(22);
+
+	var AudioManager = function AudioManager() {
+	  var AudioContext = window.AudioContext || window.webkitAudioContext;
+
+	  this._ctx = new AudioContext();
+	  this._masterGain = this._ctx.createGain();
+	  this._volume = 1;
+	  this.isMuted = false;
+
+	  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
+	  if (iOS) {
+	    this._enableiOS();
+	  }
+	};
+
+	AudioManager.prototype._enableiOS = function () {
+	  var self = this;
+
+	  var touch = (function (_touch) {
+	    var _touchWrapper = function touch() {
+	      return _touch.apply(this, arguments);
+	    };
+
+	    _touchWrapper.toString = function () {
+	      return _touch.toString();
+	    };
+
+	    return _touchWrapper;
+	  })(function () {
+	    var buffer = self._ctx.createBuffer(1, 1, 22050);
+	    var source = self._ctx.createBufferSource();
+	    source.buffer = buffer;
+	    source.connect(self._ctx.destination);
+	    source.start(0);
+
+	    window.removeEventListener("touchstart", touch, false);
+	  });
+
+	  window.addEventListener("touchstart", touch, false);
+	};
+
+	AudioManager.prototype.mute = function () {
+	  this.isMuted = true;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.unmute = function () {
+	  this.isMuted = false;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.toggleMute = function () {
+	  this.isMuted = !this.isMuted;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype._updateMute = function () {
+	  this._masterGain.gain.value = this.isMuted ? 0 : this._volume;
+	};
+
+	AudioManager.prototype.setVolume = function (volume) {
+	  this._volume = volume;
+	  this._masterGain.gain.value = volume;
+	};
+
+	AudioManager.prototype.load = function (url, callback) {
+	  var loader = {
+	    done: function done() {},
+	    error: function error() {},
+	    progress: function progress() {}
+	  };
+
+	  if (callback && util.isFunction(callback)) {
+	    loader.done = callback;
+	  } else {
+	    if (callback.done) {
+	      loader.done = callback.done;
+	    }
+
+	    if (callback.error) {
+	      loader.error = callback.error;
+	    }
+
+	    if (callback.progress) {
+	      loader.progress = callback.progress;
+	    }
+	  }
+
+	  var self = this;
+
+	  var request = new XMLHttpRequest();
+	  request.open("GET", url, true);
+	  request.responseType = "arraybuffer";
+
+	  request.addEventListener("progress", function (e) {
+	    loader.progress(e);
+	  });
+
+	  request.onload = function () {
+	    self.decodeAudioData(request.response, function (source) {
+	      loader.done(source);
+	    });
+	  };
+	  request.send();
+	};
+
+	AudioManager.prototype.decodeAudioData = function (data, callback) {
+	  var self = this;
+
+	  this._ctx.decodeAudioData(data, function (result) {
+	    var audio = new LoadedAudio(self._ctx, result, self._masterGain);
+
+	    callback(audio);
+	  });
+	};
+
+	module.exports = AudioManager;
 
 /***/ },
 /* 22 */
