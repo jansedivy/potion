@@ -70,8 +70,8 @@ Video.prototype._applySizeToCanvas = function() {
   this.canvas.width = this.width;
   this.canvas.height = this.height;
 
-  this.canvas.style.width = this.width + 'px';
-  this.canvas.style.height = this.height + 'px';
+  this.canvas.style.width = '100%';
+  this.canvas.style.height = '100%';
 
   if (this.config.allowHiDPI && isRetina) {
     this.scaleCanvas(2);
