@@ -30,6 +30,8 @@ var Engine = function(container, methods) {
 };
 
 Engine.prototype.configureApp = function() {
+  this.controller.resize(this.controller.width, this.controller.height);
+
   if (this.app.configure) {
     this.app.configure();
   }
@@ -39,8 +41,6 @@ Engine.prototype.configureApp = function() {
   if (this.controller.config.addInputEvents) {
     this.controller.input = new Input(this.controller);
   }
-
-  this.controller.resize(this.controller.width, this.controller.height);
 
   this._setDefaultStates();
 

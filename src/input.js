@@ -62,8 +62,8 @@ Input.prototype._addEvents = function(app) {
   };
 
   self._container.addEventListener('mousemove', function(e) {
-    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
+    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
 
     if (self.mouse.x != null && self.mouse.x != null) {
       self.mouse.dx = x - self.mouse.x;
@@ -86,8 +86,8 @@ Input.prototype._addEvents = function(app) {
   self._container.addEventListener('mouseup', function(e) {
     e.preventDefault();
 
-    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
+    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
 
     switch (e.button) {
       case 0:
@@ -128,8 +128,8 @@ Input.prototype._addEvents = function(app) {
   self._container.addEventListener('mousedown', function(e) {
     e.preventDefault();
 
-    var x = e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX;
-    var y = e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY;
+    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
+    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
 
     self.mouse.x = x;
     self.mouse.y = y;
@@ -163,8 +163,8 @@ Input.prototype._addEvents = function(app) {
     for (var i=0; i<e.touches.length; i++) {
       var touch = e.touches[i];
 
-      var x = touch.pageX - self._container.offsetLeft;
-      var y = touch.pageY - self._container.offsetTop;
+      var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
+      var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
 
       self.mouse.x = x;
       self.mouse.y = y;
@@ -188,8 +188,8 @@ Input.prototype._addEvents = function(app) {
     for (var i=0; i<e.touches.length; i++) {
       var touch = e.touches[i];
 
-      var x = touch.pageX - self._container.offsetLeft;
-      var y = touch.pageY - self._container.offsetTop;
+      var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
+      var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
 
       if (self.mouse.x != null && self.mouse.x != null) {
         self.mouse.dx = x - self.mouse.x;
@@ -216,8 +216,8 @@ Input.prototype._addEvents = function(app) {
 
     var touch = e.changedTouches[0];
 
-    var x = touch.pageX - self._container.offsetLeft;
-    var y = touch.pageY - self._container.offsetTop;
+    var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
+    var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
 
     self.mouse.x = x;
     self.mouse.y = y;

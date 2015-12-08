@@ -17,8 +17,10 @@ var App = function(container) {
   this.canvas = canvas;
 
   this.width = 300;
-
   this.height = 300;
+
+  this._containerWidth = this.width;
+  this._containerHeight = this.height;
 
   this.audio = new PotionAudio();
 
@@ -42,6 +44,9 @@ var App = function(container) {
   this.video._isRoot = true;
 
   this.debug = new Debugger(this);
+
+  this.scaleX = 1;
+  this.scaleY = 1;
 };
 
 App.prototype.resize = function(width, height) {
@@ -57,9 +62,18 @@ App.prototype.resize = function(width, height) {
   if (this.states) {
     this.states.resize();
   }
+
+  this.scaleX = this._containerWidth / width;
+  this.scaleY = this._containerHeight / height;
 };
 
 App.prototype.scale = function(width, height) {
+  this.scaleX = width / this.width;
+  this.scaleY = height / this.height;
+
+  this._containerWidth = width;
+  this._containerHeight = height;
+
   this.container.style.width = width + 'px';
   this.container.style.height = height + 'px';
 };
