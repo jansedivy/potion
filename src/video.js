@@ -100,6 +100,7 @@ Video.prototype.createLayer = function(config) {
   video._isRoot = false;
 
   video.init();
+  video._resize(this.width, this.height);
 
   this._children.push(video);
 
