@@ -7,9 +7,6 @@ var Video = function(app, canvas, config) {
 
   this.canvas = canvas;
 
-  this.canvas.style.width = '100%';
-  this.canvas.style.height = '100%';
-
   this.width = app.width;
 
   this.height = app.height;
@@ -60,6 +57,9 @@ Video.prototype.scaleCanvas = function(scale) {
 Video.prototype._resize = function(width, height) {
   this.width = width;
   this.height = height;
+
+  this.canvas.style.width = '100%';
+  this.canvas.style.height = '100%';
 
   this._applySizeToCanvas();
 
