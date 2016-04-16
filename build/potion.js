@@ -1,5 +1,5 @@
 /**
-* potion - v1.1.1
+* potion - v1.1.2
 * Copyright (c) 2015, Jan Sedivy
 *
 * Potion is licensed under the MIT License.
@@ -8,7 +8,7 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
-		define(factory);
+		define([], factory);
 	else if(typeof exports === 'object')
 		exports["Potion"] = factory();
 	else
@@ -81,12 +81,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var App = __webpack_require__(3);
 
-	var Time = __webpack_require__(4);
+	var Time = __webpack_require__(25);
 
-	var StateManager = __webpack_require__(5);
+	var StateManager = __webpack_require__(26);
 
-	var Input = __webpack_require__(6);
-	var Loading = __webpack_require__(7);
+	var Input = __webpack_require__(27);
+	var Loading = __webpack_require__(29);
 
 	var Engine = function Engine(container, methods) {
 	  this.container = container;
@@ -260,7 +260,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	"use strict";
 
@@ -300,12 +300,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	var Video = __webpack_require__(8);
-	var Assets = __webpack_require__(9);
+	var Video = __webpack_require__(4);
+	var Assets = __webpack_require__(6);
 
-	var Debugger = __webpack_require__(11);
+	var Debugger = __webpack_require__(18);
 
-	var PotionAudio = __webpack_require__(12);
+	var PotionAudio = __webpack_require__(21);
 
 	var App = function App(container) {
 	  this.container = container;
@@ -388,699 +388,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 
-	module.exports = (function () {
-	  return window.performance || Date;
-	})();
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var renderOrderSort = function renderOrderSort(a, b) {
-	  return a.renderOrder < b.renderOrder;
-	};
-
-	var updateOrderSort = function updateOrderSort(a, b) {
-	  return a.updateOrder < b.updateOrder;
-	};
-
-	var StateManager = function StateManager() {
-	  this.states = {};
-	  this.renderOrder = [];
-	  this.updateOrder = [];
-
-	  this._preventEvent = false;
-	};
-
-	StateManager.prototype.add = function (name, state) {
-	  this.states[name] = this._newStateHolder(name, state);
-	  this.refreshOrder();
-	  return state;
-	};
-
-	StateManager.prototype.enable = function (name) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    if (!holder.enabled) {
-	      if (holder.state.enable) {
-	        holder.state.enable();
-	      }
-	      holder.enabled = true;
-	      holder.changed = true;
-
-	      if (holder.paused) {
-	        this.unpause(name);
-	      }
-	    }
-	  }
-	};
-
-	StateManager.prototype.disable = function (name) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    if (holder.enabled) {
-	      if (holder.state.disable) {
-	        holder.state.disable();
-	      }
-	      holder.changed = true;
-	      holder.enabled = false;
-	    }
-	  }
-	};
-
-	StateManager.prototype.hide = function (name) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    if (holder.enabled) {
-	      holder.changed = true;
-	      holder.render = false;
-	    }
-	  }
-	};
-
-	StateManager.prototype.show = function (name) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    if (holder.enabled) {
-	      holder.changed = true;
-	      holder.render = true;
-	    }
-	  }
-	};
-
-	StateManager.prototype.pause = function (name) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    if (holder.state.pause) {
-	      holder.state.pause();
-	    }
-
-	    holder.changed = true;
-	    holder.paused = true;
-	  }
-	};
-
-	StateManager.prototype.unpause = function (name) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    if (holder.state.unpause) {
-	      holder.state.unpause();
-	    }
-
-	    holder.changed = true;
-	    holder.paused = false;
-	  }
-	};
-
-	StateManager.prototype.protect = function (name) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    holder.protect = true;
-	  }
-	};
-
-	StateManager.prototype.unprotect = function (name) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    holder.protect = false;
-	  }
-	};
-
-	StateManager.prototype.refreshOrder = function () {
-	  this.renderOrder.length = 0;
-	  this.updateOrder.length = 0;
-
-	  for (var name in this.states) {
-	    var holder = this.states[name];
-	    if (holder) {
-	      this.renderOrder.push(holder);
-	      this.updateOrder.push(holder);
-	    }
-	  }
-
-	  this.renderOrder.sort(renderOrderSort);
-	  this.updateOrder.sort(updateOrderSort);
-	};
-
-	StateManager.prototype._newStateHolder = function (name, state) {
-	  var holder = {};
-	  holder.name = name;
-	  holder.state = state;
-
-	  holder.protect = false;
-
-	  holder.enabled = true;
-	  holder.paused = false;
-
-	  holder.render = true;
-
-	  holder.initialized = false;
-	  holder.updated = false;
-	  holder.changed = true;
-
-	  holder.updateOrder = 0;
-	  holder.renderOrder = 0;
-
-	  return holder;
-	};
-
-	StateManager.prototype.setUpdateOrder = function (name, order) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    holder.updateOrder = order;
-	    this.refreshOrder();
-	  }
-	};
-
-	StateManager.prototype.setRenderOrder = function (name, order) {
-	  var holder = this.getHolder(name);
-	  if (holder) {
-	    holder.renderOrder = order;
-	    this.refreshOrder();
-	  }
-	};
-
-	StateManager.prototype.destroy = function (name) {
-	  var state = this.getHolder(name);
-	  if (state && !state.protect) {
-	    if (state.state.close) {
-	      state.state.close();
-	    }
-	    delete this.states[name];
-	    this.refreshOrder();
-	  }
-	};
-
-	StateManager.prototype.destroyAll = function () {
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (!state.protect) {
-	      if (state.state.close) {
-	        state.state.close();
-	      }
-	      delete this.states[state.name];
-	    }
-	  }
-
-	  this.refreshOrder();
-	};
-
-	StateManager.prototype.getHolder = function (name) {
-	  return this.states[name];
-	};
-
-	StateManager.prototype.get = function (name) {
-	  return this.states[name].state;
-	};
-
-	StateManager.prototype.update = function (time) {
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-
-	    if (state) {
-	      state.changed = false;
-
-	      if (state.enabled) {
-	        if (!state.initialized && state.state.init) {
-	          state.initialized = true;
-	          state.state.init();
-	        }
-
-	        if (state.state.update && !state.paused) {
-	          state.state.update(time);
-	          state.updated = true;
-	        }
-	      }
-	    }
-	  }
-	};
-
-	StateManager.prototype.exitUpdate = function (time) {
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-
-	    if (state && state.enabled && state.state.exitUpdate && !state.paused) {
-	      state.state.exitUpdate(time);
-	    }
-	  }
-	};
-
-	StateManager.prototype.render = function () {
-	  for (var i = 0, len = this.renderOrder.length; i < len; i++) {
-	    var state = this.renderOrder[i];
-	    if (state && state.enabled && (state.updated || !state.state.update) && state.render && state.state.render) {
-	      state.state.render();
-	    }
-	  }
-	};
-	StateManager.prototype.mousemove = function (value) {
-	  this._preventEvent = false;
-
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (state && state.enabled && !state.changed && state.state.mousemove && !state.paused) {
-	      state.state.mousemove(value);
-	    }
-
-	    if (this._preventEvent) {
-	      break;
-	    }
-	  }
-	};
-
-	StateManager.prototype.mouseup = function (value) {
-	  this._preventEvent = false;
-
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (state && state.enabled && !state.changed && state.state.mouseup && !state.paused) {
-	      state.state.mouseup(value);
-	    }
-
-	    if (this._preventEvent) {
-	      break;
-	    }
-	  }
-	};
-
-	StateManager.prototype.mousedown = function (value) {
-	  this._preventEvent = false;
-
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (state && state.enabled && !state.changed && state.state.mousedown && !state.paused) {
-	      state.state.mousedown(value);
-	    }
-
-	    if (this._preventEvent) {
-	      break;
-	    }
-	  }
-	};
-
-	StateManager.prototype.keyup = function (value) {
-	  this._preventEvent = false;
-
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (state && state.enabled && !state.changed && state.state.keyup && !state.paused) {
-	      state.state.keyup(value);
-	    }
-
-	    if (this._preventEvent) {
-	      break;
-	    }
-	  }
-	};
-
-	StateManager.prototype.keydown = function (value) {
-	  this._preventEvent = false;
-
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (state && state.enabled && !state.changed && state.state.keydown && !state.paused) {
-	      state.state.keydown(value);
-	    }
-
-	    if (this._preventEvent) {
-	      break;
-	    }
-	  }
-	};
-
-	StateManager.prototype.resize = function () {
-	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
-	    var state = this.updateOrder[i];
-	    if (state && state.enabled && state.state.resize) {
-	      state.state.resize();
-	    }
-	  }
-	};
-
-	module.exports = StateManager;
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var keys = __webpack_require__(10);
-
-	var invKeys = {};
-	for (var keyName in keys) {
-	  invKeys[keys[keyName]] = keyName;
-	}
-
-	var Input = function Input(app) {
-	  this._container = app.container;
-	  this._keys = {};
-
-	  this.canControlKeys = true;
-
-	  this.mouse = {
-	    isDown: false,
-	    isLeftDown: false,
-	    isMiddleDown: false,
-	    isRightDown: false,
-	    x: null,
-	    y: null,
-	    dx: 0,
-	    dy: 0
-	  };
-
-	  this._addEvents(app);
-	};
-
-	Input.prototype.resetKeys = function () {
-	  this._keys = {};
-	};
-
-	Input.prototype.isKeyDown = function (key) {
-	  if (key == null) {
-	    return false;
-	  }
-
-	  if (this.canControlKeys) {
-	    var code = typeof key === "number" ? key : keys[key.toLowerCase()];
-	    return this._keys[code];
-	  }
-	};
-
-	Input.prototype._addEvents = function (app) {
-	  var self = this;
-
-	  var mouseEvent = {
-	    x: null,
-	    y: null,
-	    button: null,
-	    isTouch: false,
-	    event: null,
-	    stateStopEvent: function stateStopEvent() {
-	      app.states._preventEvent = true;
-	    }
-	  };
-
-	  var keyboardEvent = {
-	    key: null,
-	    name: null,
-	    event: null,
-	    stateStopEvent: function stateStopEvent() {
-	      app.states._preventEvent = true;
-	    }
-	  };
-
-	  self._container.addEventListener("mousemove", function (e) {
-	    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
-	    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
-
-	    if (self.mouse.x != null && self.mouse.x != null) {
-	      self.mouse.dx = x - self.mouse.x;
-	      self.mouse.dy = y - self.mouse.y;
-	    }
-
-	    self.mouse.x = x;
-	    self.mouse.y = y;
-	    self.mouse.isActive = true;
-
-	    mouseEvent.x = x;
-	    mouseEvent.y = y;
-	    mouseEvent.button = null;
-	    mouseEvent.event = e;
-	    mouseEvent.isTouch = false;
-
-	    app.states.mousemove(mouseEvent);
-	  });
-
-	  self._container.addEventListener("mouseup", function (e) {
-	    e.preventDefault();
-
-	    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
-	    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
-
-	    switch (e.button) {
-	      case 0:
-	        self.mouse.isLeftDown = false;
-	        break;
-	      case 1:
-	        self.mouse.isMiddleDown = false;
-	        break;
-	      case 2:
-	        self.mouse.isRightDown = false;
-	        break;
-	    }
-
-	    self.mouse.isDown = self.mouse.isLeftDown || self.mouse.isRightDown || self.mouse.isMiddleDown;
-
-	    mouseEvent.x = x;
-	    mouseEvent.y = y;
-	    mouseEvent.button = e.button;
-	    mouseEvent.event = e;
-	    mouseEvent.isTouch = false;
-
-	    app.states.mouseup(mouseEvent);
-	  }, false);
-
-	  self._container.addEventListener("mouseleave", function () {
-	    self.mouse.isActive = false;
-
-	    self.mouse.isDown = false;
-	    self.mouse.isLeftDown = false;
-	    self.mouse.isRightDown = false;
-	    self.mouse.isMiddleDown = false;
-	  });
-
-	  self._container.addEventListener("mouseenter", function () {
-	    self.mouse.isActive = true;
-	  });
-
-	  self._container.addEventListener("mousedown", function (e) {
-	    e.preventDefault();
-
-	    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
-	    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
-
-	    self.mouse.x = x;
-	    self.mouse.y = y;
-	    self.mouse.isDown = true;
-	    self.mouse.isActive = true;
-
-	    switch (e.button) {
-	      case 0:
-	        self.mouse.isLeftDown = true;
-	        break;
-	      case 1:
-	        self.mouse.isMiddleDown = true;
-	        break;
-	      case 2:
-	        self.mouse.isRightDown = true;
-	        break;
-	    }
-
-	    mouseEvent.x = x;
-	    mouseEvent.y = y;
-	    mouseEvent.button = e.button;
-	    mouseEvent.event = e;
-	    mouseEvent.isTouch = false;
-
-	    app.states.mousedown(mouseEvent);
-	  }, false);
-
-	  self._container.addEventListener("touchstart", function (e) {
-	    e.preventDefault();
-
-	    for (var i = 0; i < e.touches.length; i++) {
-	      var touch = e.touches[i];
-
-	      var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
-	      var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
-
-	      self.mouse.x = x;
-	      self.mouse.y = y;
-	      self.mouse.isDown = true;
-	      self.mouse.isLeftDown = true;
-	      self.mouse.isActive = true;
-
-	      mouseEvent.x = x;
-	      mouseEvent.y = y;
-	      mouseEvent.button = 1;
-	      mouseEvent.event = e;
-	      mouseEvent.isTouch = true;
-
-	      app.states.mousedown(mouseEvent);
-	    }
-	  });
-
-	  self._container.addEventListener("touchmove", function (e) {
-	    e.preventDefault();
-
-	    for (var i = 0; i < e.touches.length; i++) {
-	      var touch = e.touches[i];
-
-	      var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
-	      var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
-
-	      if (self.mouse.x != null && self.mouse.x != null) {
-	        self.mouse.dx = x - self.mouse.x;
-	        self.mouse.dy = y - self.mouse.y;
-	      }
-
-	      self.mouse.x = x;
-	      self.mouse.y = y;
-	      self.mouse.isDown = true;
-	      self.mouse.isLeftDown = true;
-	      self.mouse.isActive = true;
-
-	      mouseEvent.x = x;
-	      mouseEvent.y = y;
-	      mouseEvent.event = e;
-	      mouseEvent.isTouch = true;
-
-	      app.states.mousemove(mouseEvent);
-	    }
-	  });
-
-	  self._container.addEventListener("touchend", function (e) {
-	    e.preventDefault();
-
-	    var touch = e.changedTouches[0];
-
-	    var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
-	    var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
-
-	    self.mouse.x = x;
-	    self.mouse.y = y;
-	    self.mouse.isActive = false;
-	    self.mouse.isDown = false;
-	    self.mouse.isLeftDown = false;
-	    self.mouse.isRightDown = false;
-	    self.mouse.isMiddleDown = false;
-
-	    mouseEvent.x = x;
-	    mouseEvent.y = y;
-	    mouseEvent.event = e;
-	    mouseEvent.isTouch = true;
-
-	    app.states.mouseup(mouseEvent);
-	  });
-
-	  self._container.addEventListener("contextmenu", function (e) {
-	    e.preventDefault();
-	  });
-
-	  document.addEventListener("keydown", function (e) {
-	    self._keys[e.keyCode] = true;
-
-	    keyboardEvent.key = e.which;
-	    keyboardEvent.name = invKeys[e.which];
-	    keyboardEvent.event = e;
-
-	    app.states.keydown(keyboardEvent);
-	  });
-
-	  document.addEventListener("keyup", function (e) {
-	    self._keys[e.keyCode] = false;
-
-	    keyboardEvent.key = e.which;
-	    keyboardEvent.name = invKeys[e.which];
-	    keyboardEvent.event = e;
-
-	    app.states.keyup(keyboardEvent);
-	  });
-	};
-
-	module.exports = Input;
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var Loading = function Loading(app) {
-	  this.app = app;
-
-	  this.barWidth = 0;
-	};
-
-	Loading.prototype.render = function (time, video) {
-	  video.clear();
-
-	  var color1 = "#b9ff71";
-	  var color2 = "#8ac250";
-	  var color3 = "#648e38";
-
-	  var width = Math.min(video.width * 2 / 3, 300);
-	  var height = 20;
-
-	  var y = (video.height - height) / 2;
-	  var x = (video.width - width) / 2;
-
-	  var currentWidth = width * this.app.assets.progress;
-	  this.barWidth = this.barWidth + (currentWidth - this.barWidth) * time * 10;
-
-	  video.ctx.fillStyle = color2;
-	  video.ctx.fillRect(0, 0, video.width, video.height);
-
-	  video.ctx.font = "400 40px sans-serif";
-	  video.ctx.textAlign = "center";
-	  video.ctx.textBaseline = "bottom";
-
-	  video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-	  video.ctx.fillText("Potion.js", video.width / 2, y + 2);
-
-	  video.ctx.fillStyle = "#d1ffa1";
-	  video.ctx.fillText("Potion.js", video.width / 2, y);
-
-	  video.ctx.strokeStyle = video.ctx.fillStyle = color3;
-	  video.ctx.fillRect(x, y + 15, width, height);
-
-	  video.ctx.lineWidth = 2;
-	  video.ctx.beginPath();
-	  video.ctx.rect(x - 5, y + 10, width + 10, height + 10);
-	  video.ctx.closePath();
-	  video.ctx.stroke();
-
-	  video.ctx.strokeStyle = video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-	  video.ctx.fillRect(x, y + 15, this.barWidth, height + 2);
-
-	  video.ctx.lineWidth = 2;
-	  video.ctx.beginPath();
-
-	  video.ctx.moveTo(x + this.barWidth, y + 12);
-	  video.ctx.lineTo(x - 5, y + 12);
-	  video.ctx.lineTo(x - 5, y + 10 + height + 12);
-	  video.ctx.lineTo(x + this.barWidth, y + 10 + height + 12);
-
-	  video.ctx.stroke();
-	  video.ctx.closePath();
-
-	  video.ctx.strokeStyle = video.ctx.fillStyle = color1;
-	  video.ctx.fillRect(x, y + 15, this.barWidth, height);
-
-	  video.ctx.lineWidth = 2;
-	  video.ctx.beginPath();
-
-	  video.ctx.moveTo(x + this.barWidth, y + 10);
-	  video.ctx.lineTo(x - 5, y + 10);
-	  video.ctx.lineTo(x - 5, y + 10 + height + 10);
-	  video.ctx.lineTo(x + this.barWidth, y + 10 + height + 10);
-
-	  video.ctx.stroke();
-	  video.ctx.closePath();
-	};
-
-	module.exports = Loading;
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = __webpack_require__(13)();
+	var isRetina = __webpack_require__(5)();
 
 	var Video = function Video(app, canvas, config) {
 	  this.app = app;
@@ -1194,16 +502,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Video;
 
 /***/ },
-/* 9 */
+/* 5 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var isRetina = function isRetina() {
+	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
+
+	  if (window.devicePixelRatio > 1) {
+	    return true;
+	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	    return true;
+	  }return false;
+	};
+
+	module.exports = isRetina;
+
+/***/ },
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var util = __webpack_require__(19);
-	var path = __webpack_require__(18);
+	var util = __webpack_require__(7);
+	var path = __webpack_require__(11);
 
-	var JsonLoader = __webpack_require__(14);
-	var imageLoader = __webpack_require__(15);
+	var JsonLoader = __webpack_require__(12);
+	var imageLoader = __webpack_require__(13);
 	var textLoader = __webpack_require__(16);
 
 	var Assets = function Assets(app) {
@@ -1368,489 +694,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Assets;
 
 /***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = {
-	  backspace: 8,
-	  tab: 9,
-	  enter: 13,
-	  pause: 19,
-	  caps: 20,
-	  esc: 27,
-	  space: 32,
-	  page_up: 33,
-	  page_down: 34,
-	  end: 35,
-	  home: 36,
-	  left: 37,
-	  up: 38,
-	  right: 39,
-	  down: 40,
-	  insert: 45,
-	  "delete": 46,
-	  "0": 48,
-	  "1": 49,
-	  "2": 50,
-	  "3": 51,
-	  "4": 52,
-	  "5": 53,
-	  "6": 54,
-	  "7": 55,
-	  "8": 56,
-	  "9": 57,
-	  a: 65,
-	  b: 66,
-	  c: 67,
-	  d: 68,
-	  e: 69,
-	  f: 70,
-	  g: 71,
-	  h: 72,
-	  i: 73,
-	  j: 74,
-	  k: 75,
-	  l: 76,
-	  m: 77,
-	  n: 78,
-	  o: 79,
-	  p: 80,
-	  q: 81,
-	  r: 82,
-	  s: 83,
-	  t: 84,
-	  u: 85,
-	  v: 86,
-	  w: 87,
-	  x: 88,
-	  y: 89,
-	  z: 90,
-	  numpad_0: 96,
-	  numpad_1: 97,
-	  numpad_2: 98,
-	  numpad_3: 99,
-	  numpad_4: 100,
-	  numpad_5: 101,
-	  numpad_6: 102,
-	  numpad_7: 103,
-	  numpad_8: 104,
-	  numpad_9: 105,
-	  multiply: 106,
-	  add: 107,
-	  substract: 109,
-	  decimal: 110,
-	  divide: 111,
-	  f1: 112,
-	  f2: 113,
-	  f3: 114,
-	  f4: 115,
-	  f5: 116,
-	  f6: 117,
-	  f7: 118,
-	  f8: 119,
-	  f9: 120,
-	  f10: 121,
-	  f11: 122,
-	  f12: 123,
-	  shift: 16,
-	  ctrl: 17,
-	  alt: 18,
-	  plus: 187,
-	  comma: 188,
-	  minus: 189,
-	  period: 190
-	};
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = __webpack_require__(21);
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = __webpack_require__(20);
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var isRetina = function isRetina() {
-	  var mediaQuery = "(-webkit-min-device-pixel-ratio: 1.5),  (min--moz-device-pixel-ratio: 1.5),  (-o-min-device-pixel-ratio: 3/2),  (min-resolution: 1.5dppx)";
-
-	  if (window.devicePixelRatio > 1) {
-	    return true;
-	  }if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
-	    return true;
-	  }return false;
-	};
-
-	module.exports = isRetina;
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, loader) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-
-	  request.addEventListener("progress", function (e) {
-	    var percent = e.loaded / e.total;
-	    loader.progress(percent);
-	  });
-
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return loader.error(url);
-	    }
-
-	    var data = JSON.parse(this.response);
-	    loader.done(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, loader) {
-	  var URL = window.URL || window.webkitURL;
-
-	  if (URL && "createObjectURL" in URL && "Uint8Array" in window && "Blob" in window) {
-	    var request = new XMLHttpRequest();
-
-	    request.open("GET", url, true);
-	    request.responseType = "arraybuffer";
-
-	    request.addEventListener("progress", function (e) {
-	      var percent = e.loaded / e.total;
-	      loader.progress(percent);
-	    });
-
-	    request.onload = function () {
-	      if (request.status !== 200) {
-	        return loader.error(url);
-	      }
-
-	      var data = this.response;
-	      var blob = new Blob([new Uint8Array(data)], { type: "image/png" });
-	      var image = new Image();
-	      image.src = URL.createObjectURL(blob);
-	      loader.done(image);
-	    };
-	    request.send();
-
-	    return;
-	  }
-
-	  var image = new Image();
-	  image.onload = function () {
-	    loader.done(image);
-	  };
-	  image.onerror = function () {
-	    loader.error(url);
-	  };
-	  image.src = url;
-	};
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (url, loader) {
-	  var request = new XMLHttpRequest();
-
-	  request.open("GET", url, true);
-	  request.responseType = "text";
-
-	  request.addEventListener("progress", function (e) {
-	    var percent = e.loaded / e.total;
-	    loader.progress(percent);
-	  });
-
-	  request.onload = function () {
-	    if (request.status !== 200) {
-	      return loader.error(url);
-	    }
-
-	    var data = this.response;
-	    loader.done(data);
-	  };
-	  request.send();
-	};
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function (manager) {
-	  return function (url, loader) {
-	    manager.load(url, {
-	      done: function done(data) {
-	        loader.done(data);
-	      },
-
-	      progress: function progress(e) {
-	        var percent = e.loaded / e.total;
-	        loader.progress(percent);
-	      }
-	    });
-	  };
-	};
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
-	//
-	// Permission is hereby granted, free of charge, to any person obtaining a
-	// copy of this software and associated documentation files (the
-	// "Software"), to deal in the Software without restriction, including
-	// without limitation the rights to use, copy, modify, merge, publish,
-	// distribute, sublicense, and/or sell copies of the Software, and to permit
-	// persons to whom the Software is furnished to do so, subject to the
-	// following conditions:
-	//
-	// The above copyright notice and this permission notice shall be included
-	// in all copies or substantial portions of the Software.
-	//
-	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-	// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-	// resolves . and .. elements in a path array with directory names there
-	// must be no slashes, empty elements, or device names (c:\) in the array
-	// (so also no leading and trailing slashes - it does not distinguish
-	// relative and absolute paths)
-	"use strict";
-
-	function normalizeArray(parts, allowAboveRoot) {
-	  // if the path tries to go above the root, `up` ends up > 0
-	  var up = 0;
-	  for (var i = parts.length - 1; i >= 0; i--) {
-	    var last = parts[i];
-	    if (last === ".") {
-	      parts.splice(i, 1);
-	    } else if (last === "..") {
-	      parts.splice(i, 1);
-	      up++;
-	    } else if (up) {
-	      parts.splice(i, 1);
-	      up--;
-	    }
-	  }
-
-	  // if the path is allowed to go above the root, restore leading ..s
-	  if (allowAboveRoot) {
-	    for (; up--; up) {
-	      parts.unshift("..");
-	    }
-	  }
-
-	  return parts;
-	}
-
-	// Split a filename into [root, dir, basename, ext], unix version
-	// 'root' is just a slash, or nothing.
-	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-	var splitPath = function splitPath(filename) {
-	  return splitPathRe.exec(filename).slice(1);
-	};
-
-	// path.resolve([from ...], to)
-	// posix version
-	exports.resolve = function () {
-	  var resolvedPath = "",
-	      resolvedAbsolute = false;
-
-	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-	    var path = i >= 0 ? arguments[i] : process.cwd();
-
-	    // Skip empty and invalid entries
-	    if (typeof path !== "string") {
-	      throw new TypeError("Arguments to path.resolve must be strings");
-	    } else if (!path) {
-	      continue;
-	    }
-
-	    resolvedPath = path + "/" + resolvedPath;
-	    resolvedAbsolute = path.charAt(0) === "/";
-	  }
-
-	  // At this point the path should be resolved to a full absolute path, but
-	  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-	  // Normalize the path
-	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
-	    return !!p;
-	  }), !resolvedAbsolute).join("/");
-
-	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
-	};
-
-	// path.normalize(path)
-	// posix version
-	exports.normalize = function (path) {
-	  var isAbsolute = exports.isAbsolute(path),
-	      trailingSlash = substr(path, -1) === "/";
-
-	  // Normalize the path
-	  path = normalizeArray(filter(path.split("/"), function (p) {
-	    return !!p;
-	  }), !isAbsolute).join("/");
-
-	  if (!path && !isAbsolute) {
-	    path = ".";
-	  }
-	  if (path && trailingSlash) {
-	    path += "/";
-	  }
-
-	  return (isAbsolute ? "/" : "") + path;
-	};
-
-	// posix version
-	exports.isAbsolute = function (path) {
-	  return path.charAt(0) === "/";
-	};
-
-	// posix version
-	exports.join = function () {
-	  var paths = Array.prototype.slice.call(arguments, 0);
-	  return exports.normalize(filter(paths, function (p, index) {
-	    if (typeof p !== "string") {
-	      throw new TypeError("Arguments to path.join must be strings");
-	    }
-	    return p;
-	  }).join("/"));
-	};
-
-	// path.relative(from, to)
-	// posix version
-	exports.relative = function (from, to) {
-	  from = exports.resolve(from).substr(1);
-	  to = exports.resolve(to).substr(1);
-
-	  function trim(arr) {
-	    var start = 0;
-	    for (; start < arr.length; start++) {
-	      if (arr[start] !== "") break;
-	    }
-
-	    var end = arr.length - 1;
-	    for (; end >= 0; end--) {
-	      if (arr[end] !== "") break;
-	    }
-
-	    if (start > end) {
-	      return [];
-	    }return arr.slice(start, end - start + 1);
-	  }
-
-	  var fromParts = trim(from.split("/"));
-	  var toParts = trim(to.split("/"));
-
-	  var length = Math.min(fromParts.length, toParts.length);
-	  var samePartsLength = length;
-	  for (var i = 0; i < length; i++) {
-	    if (fromParts[i] !== toParts[i]) {
-	      samePartsLength = i;
-	      break;
-	    }
-	  }
-
-	  var outputParts = [];
-	  for (var i = samePartsLength; i < fromParts.length; i++) {
-	    outputParts.push("..");
-	  }
-
-	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-	  return outputParts.join("/");
-	};
-
-	exports.sep = "/";
-	exports.delimiter = ":";
-
-	exports.dirname = function (path) {
-	  var result = splitPath(path),
-	      root = result[0],
-	      dir = result[1];
-
-	  if (!root && !dir) {
-	    // No dirname whatsoever
-	    return ".";
-	  }
-
-	  if (dir) {
-	    // It has a dirname, strip trailing slash
-	    dir = dir.substr(0, dir.length - 1);
-	  }
-
-	  return root + dir;
-	};
-
-	exports.basename = function (path, ext) {
-	  var f = splitPath(path)[2];
-	  // TODO: make this comparison case-insensitive on windows?
-	  if (ext && f.substr(-1 * ext.length) === ext) {
-	    f = f.substr(0, f.length - ext.length);
-	  }
-	  return f;
-	};
-
-	exports.extname = function (path) {
-	  return splitPath(path)[3];
-	};
-
-	function filter(xs, f) {
-	  if (xs.filter) {
-	    return xs.filter(f);
-	  }var res = [];
-	  for (var i = 0; i < xs.length; i++) {
-	    if (f(xs[i], i, xs)) res.push(xs[i]);
-	  }
-	  return res;
-	}
-
-	// String.prototype.substr - negative index don't work in IE8
-	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
-	  return str.substr(start, len);
-	} : function (str, start, len) {
-	  if (start < 0) start = str.length + start;
-	  return str.substr(start, len);
-	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(25)))
-
-/***/ },
-/* 19 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2350,7 +1194,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(24);
+	exports.isBuffer = __webpack_require__(9);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -2387,7 +1231,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(26);
+	exports.inherits = __webpack_require__(10);
 
 	exports._extend = function (origin, add) {
 	  // Don't do anything if add isn't an object
@@ -2404,142 +1248,964 @@ return /******/ (function(modules) { // webpackBootstrap
 	function hasOwnProperty(obj, prop) {
 	  return Object.prototype.hasOwnProperty.call(obj, prop);
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(25)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(8)))
 
 /***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
+/* 8 */
+/***/ function(module, exports) {
+
+	// shim for using process in browser
 
 	"use strict";
 
-	var util = __webpack_require__(19);
-	var LoadedAudio = __webpack_require__(22);
+	var process = module.exports = {};
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
 
-	var AudioManager = function AudioManager() {
-	  var AudioContext = window.AudioContext || window.webkitAudioContext;
+	function cleanUpNextTick() {
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
 
-	  this._ctx = new AudioContext();
-	  this._masterGain = this._ctx.createGain();
-	  this._volume = 1;
-	  this.isMuted = false;
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = setTimeout(cleanUpNextTick);
+	    draining = true;
 
-	  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
-	  if (iOS) {
-	    this._enableiOS();
-	  }
+	    var len = queue.length;
+	    while (len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            if (currentQueue) {
+	                currentQueue[queueIndex].run();
+	            }
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    clearTimeout(timeout);
+	}
+
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        setTimeout(drainQueue, 0);
+	    }
 	};
 
-	AudioManager.prototype._enableiOS = function () {
-	  var self = this;
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = "browser";
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ""; // empty string to avoid regexp issues
+	process.versions = {};
 
-	  var touch = (function (_touch) {
-	    var _touchWrapper = function touch() {
-	      return _touch.apply(this, arguments);
-	    };
+	function noop() {}
 
-	    _touchWrapper.toString = function () {
-	      return _touch.toString();
-	    };
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
 
-	    return _touchWrapper;
-	  })(function () {
-	    var buffer = self._ctx.createBuffer(1, 1, 22050);
-	    var source = self._ctx.createBufferSource();
-	    source.buffer = buffer;
-	    source.connect(self._ctx.destination);
-	    source.start(0);
-
-	    window.removeEventListener("touchstart", touch, false);
-	  });
-
-	  window.addEventListener("touchstart", touch, false);
+	process.binding = function (name) {
+	    throw new Error("process.binding is not supported");
 	};
 
-	AudioManager.prototype.mute = function () {
-	  this.isMuted = true;
-	  this._updateMute();
+	process.cwd = function () {
+	    return "/";
+	};
+	process.chdir = function (dir) {
+	    throw new Error("process.chdir is not supported");
+	};
+	process.umask = function () {
+	    return 0;
 	};
 
-	AudioManager.prototype.unmute = function () {
-	  this.isMuted = false;
-	  this._updateMute();
+/***/ },
+/* 9 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	module.exports = function isBuffer(arg) {
+	  return arg && typeof arg === "object" && typeof arg.copy === "function" && typeof arg.fill === "function" && typeof arg.readUInt8 === "function";
 	};
 
-	AudioManager.prototype.toggleMute = function () {
-	  this.isMuted = !this.isMuted;
-	  this._updateMute();
-	};
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
 
-	AudioManager.prototype._updateMute = function () {
-	  this._masterGain.gain.value = this.isMuted ? 0 : this._volume;
-	};
+	"use strict";
 
-	AudioManager.prototype.setVolume = function (volume) {
-	  this._volume = volume;
-	  this._masterGain.gain.value = volume;
-	};
-
-	AudioManager.prototype.load = function (url, callback) {
-	  var loader = {
-	    done: function done() {},
-	    error: function error() {},
-	    progress: function progress() {}
+	if (typeof Object.create === "function") {
+	  // implementation from standard node.js 'util' module
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    ctor.prototype = Object.create(superCtor.prototype, {
+	      constructor: {
+	        value: ctor,
+	        enumerable: false,
+	        writable: true,
+	        configurable: true
+	      }
+	    });
 	  };
+	} else {
+	  // old school shim for old browsers
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    var TempCtor = function TempCtor() {};
+	    TempCtor.prototype = superCtor.prototype;
+	    ctor.prototype = new TempCtor();
+	    ctor.prototype.constructor = ctor;
+	  };
+	}
 
-	  if (callback && util.isFunction(callback)) {
-	    loader.done = callback;
-	  } else {
-	    if (callback.done) {
-	      loader.done = callback.done;
-	    }
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
 
-	    if (callback.error) {
-	      loader.error = callback.error;
-	    }
+	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-	    if (callback.progress) {
-	      loader.progress = callback.progress;
+	// resolves . and .. elements in a path array with directory names there
+	// must be no slashes, empty elements, or device names (c:\) in the array
+	// (so also no leading and trailing slashes - it does not distinguish
+	// relative and absolute paths)
+	"use strict";
+
+	function normalizeArray(parts, allowAboveRoot) {
+	  // if the path tries to go above the root, `up` ends up > 0
+	  var up = 0;
+	  for (var i = parts.length - 1; i >= 0; i--) {
+	    var last = parts[i];
+	    if (last === ".") {
+	      parts.splice(i, 1);
+	    } else if (last === "..") {
+	      parts.splice(i, 1);
+	      up++;
+	    } else if (up) {
+	      parts.splice(i, 1);
+	      up--;
 	    }
 	  }
 
-	  var self = this;
+	  // if the path is allowed to go above the root, restore leading ..s
+	  if (allowAboveRoot) {
+	    for (; up--; up) {
+	      parts.unshift("..");
+	    }
+	  }
 
+	  return parts;
+	}
+
+	// Split a filename into [root, dir, basename, ext], unix version
+	// 'root' is just a slash, or nothing.
+	var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+	var splitPath = function splitPath(filename) {
+	  return splitPathRe.exec(filename).slice(1);
+	};
+
+	// path.resolve([from ...], to)
+	// posix version
+	exports.resolve = function () {
+	  var resolvedPath = "",
+	      resolvedAbsolute = false;
+
+	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+	    var path = i >= 0 ? arguments[i] : process.cwd();
+
+	    // Skip empty and invalid entries
+	    if (typeof path !== "string") {
+	      throw new TypeError("Arguments to path.resolve must be strings");
+	    } else if (!path) {
+	      continue;
+	    }
+
+	    resolvedPath = path + "/" + resolvedPath;
+	    resolvedAbsolute = path.charAt(0) === "/";
+	  }
+
+	  // At this point the path should be resolved to a full absolute path, but
+	  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+	  // Normalize the path
+	  resolvedPath = normalizeArray(filter(resolvedPath.split("/"), function (p) {
+	    return !!p;
+	  }), !resolvedAbsolute).join("/");
+
+	  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
+	};
+
+	// path.normalize(path)
+	// posix version
+	exports.normalize = function (path) {
+	  var isAbsolute = exports.isAbsolute(path),
+	      trailingSlash = substr(path, -1) === "/";
+
+	  // Normalize the path
+	  path = normalizeArray(filter(path.split("/"), function (p) {
+	    return !!p;
+	  }), !isAbsolute).join("/");
+
+	  if (!path && !isAbsolute) {
+	    path = ".";
+	  }
+	  if (path && trailingSlash) {
+	    path += "/";
+	  }
+
+	  return (isAbsolute ? "/" : "") + path;
+	};
+
+	// posix version
+	exports.isAbsolute = function (path) {
+	  return path.charAt(0) === "/";
+	};
+
+	// posix version
+	exports.join = function () {
+	  var paths = Array.prototype.slice.call(arguments, 0);
+	  return exports.normalize(filter(paths, function (p, index) {
+	    if (typeof p !== "string") {
+	      throw new TypeError("Arguments to path.join must be strings");
+	    }
+	    return p;
+	  }).join("/"));
+	};
+
+	// path.relative(from, to)
+	// posix version
+	exports.relative = function (from, to) {
+	  from = exports.resolve(from).substr(1);
+	  to = exports.resolve(to).substr(1);
+
+	  function trim(arr) {
+	    var start = 0;
+	    for (; start < arr.length; start++) {
+	      if (arr[start] !== "") break;
+	    }
+
+	    var end = arr.length - 1;
+	    for (; end >= 0; end--) {
+	      if (arr[end] !== "") break;
+	    }
+
+	    if (start > end) {
+	      return [];
+	    }return arr.slice(start, end - start + 1);
+	  }
+
+	  var fromParts = trim(from.split("/"));
+	  var toParts = trim(to.split("/"));
+
+	  var length = Math.min(fromParts.length, toParts.length);
+	  var samePartsLength = length;
+	  for (var i = 0; i < length; i++) {
+	    if (fromParts[i] !== toParts[i]) {
+	      samePartsLength = i;
+	      break;
+	    }
+	  }
+
+	  var outputParts = [];
+	  for (var i = samePartsLength; i < fromParts.length; i++) {
+	    outputParts.push("..");
+	  }
+
+	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+	  return outputParts.join("/");
+	};
+
+	exports.sep = "/";
+	exports.delimiter = ":";
+
+	exports.dirname = function (path) {
+	  var result = splitPath(path),
+	      root = result[0],
+	      dir = result[1];
+
+	  if (!root && !dir) {
+	    // No dirname whatsoever
+	    return ".";
+	  }
+
+	  if (dir) {
+	    // It has a dirname, strip trailing slash
+	    dir = dir.substr(0, dir.length - 1);
+	  }
+
+	  return root + dir;
+	};
+
+	exports.basename = function (path, ext) {
+	  var f = splitPath(path)[2];
+	  // TODO: make this comparison case-insensitive on windows?
+	  if (ext && f.substr(-1 * ext.length) === ext) {
+	    f = f.substr(0, f.length - ext.length);
+	  }
+	  return f;
+	};
+
+	exports.extname = function (path) {
+	  return splitPath(path)[3];
+	};
+
+	function filter(xs, f) {
+	  if (xs.filter) {
+	    return xs.filter(f);
+	  }var res = [];
+	  for (var i = 0; i < xs.length; i++) {
+	    if (f(xs[i], i, xs)) res.push(xs[i]);
+	  }
+	  return res;
+	}
+
+	// String.prototype.substr - negative index don't work in IE8
+	var substr = "ab".substr(-1) === "b" ? function (str, start, len) {
+	  return str.substr(start, len);
+	} : function (str, start, len) {
+	  if (start < 0) start = str.length + start;
+	  return str.substr(start, len);
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	module.exports = function (url, loader) {
 	  var request = new XMLHttpRequest();
+
 	  request.open("GET", url, true);
-	  request.responseType = "arraybuffer";
+	  request.responseType = "text";
 
 	  request.addEventListener("progress", function (e) {
-	    loader.progress(e);
+	    var percent = e.loaded / e.total;
+	    loader.progress(percent);
 	  });
 
 	  request.onload = function () {
-	    self.decodeAudioData(request.response, function (source) {
-	      loader.done(source);
-	    });
+	    if (request.status !== 200) {
+	      return loader.error(url);
+	    }
+
+	    var data = JSON.parse(this.response);
+	    loader.done(data);
 	  };
 	  request.send();
 	};
 
-	AudioManager.prototype.decodeAudioData = function (data, callback) {
-	  var self = this;
-
-	  this._ctx.decodeAudioData(data, function (result) {
-	    var audio = new LoadedAudio(self._ctx, result, self._masterGain);
-
-	    callback(audio);
-	  });
-	};
-
-	module.exports = AudioManager;
-
 /***/ },
-/* 21 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var util = __webpack_require__(19);
-	var DirtyManager = __webpack_require__(23);
+	var imageType = __webpack_require__(14);
+	var path = __webpack_require__(11);
+
+	module.exports = function (url, loader) {
+	  var URL = window.URL || window.webkitURL;
+	  var extension = path.extname(url);
+
+	  if (URL && "createObjectURL" in URL && "Uint8Array" in window && "Blob" in window) {
+	    var request = new XMLHttpRequest();
+
+	    request.open("GET", url, true);
+	    request.responseType = "arraybuffer";
+
+	    request.addEventListener("progress", function (e) {
+	      var percent = e.loaded / e.total;
+	      loader.progress(percent);
+	    });
+
+	    request.onload = function () {
+	      if (request.status !== 200) {
+	        return loader.error(url);
+	      }
+
+	      var data = new Uint8Array(this.response);
+	      var type;
+
+	      if (extension === ".svg" || extension === ".svgz") {
+	        type = "image/svg+xml";
+	      } else {
+	        type = imageType(data).mime;
+	      }
+
+	      var blob = new Blob([data], { type: type });
+	      var image = new Image();
+	      image.src = URL.createObjectURL(blob);
+	      loader.done(image);
+	    };
+	    request.send();
+
+	    return;
+	  }
+
+	  var image = new Image();
+	  image.onload = function () {
+	    loader.done(image);
+	  };
+	  image.onerror = function () {
+	    loader.error(url);
+	  };
+	  image.src = url;
+	};
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var fileType = __webpack_require__(15);
+
+	module.exports = function (buf) {
+		var imageExts = ["jpg", "png", "gif", "webp", "tif", "bmp", "jxr", "psd"];
+
+		var ret = fileType(buf);
+
+		return imageExts.indexOf(ret && ret.ext) !== -1 ? ret : null;
+	};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	"use strict";
+	module.exports = function (buf) {
+		if (!(buf && buf.length > 1)) {
+			return null;
+		}
+
+		if (buf[0] === 255 && buf[1] === 216 && buf[2] === 255) {
+			return {
+				ext: "jpg",
+				mime: "image/jpeg"
+			};
+		}
+
+		if (buf[0] === 137 && buf[1] === 80 && buf[2] === 78 && buf[3] === 71) {
+			return {
+				ext: "png",
+				mime: "image/png"
+			};
+		}
+
+		if (buf[0] === 71 && buf[1] === 73 && buf[2] === 70) {
+			return {
+				ext: "gif",
+				mime: "image/gif"
+			};
+		}
+
+		if (buf[8] === 87 && buf[9] === 69 && buf[10] === 66 && buf[11] === 80) {
+			return {
+				ext: "webp",
+				mime: "image/webp"
+			};
+		}
+
+		// needs to be before `tif` check
+		if ((buf[0] === 73 && buf[1] === 73 && buf[2] === 42 && buf[3] === 0 || buf[0] === 77 && buf[1] === 77 && buf[2] === 0 && buf[3] === 42) && buf[8] === 67 && buf[9] === 82) {
+			return {
+				ext: "cr2",
+				mime: "image/x-canon-cr2"
+			};
+		}
+
+		if (buf[0] === 73 && buf[1] === 73 && buf[2] === 42 && buf[3] === 0 || buf[0] === 77 && buf[1] === 77 && buf[2] === 0 && buf[3] === 42) {
+			return {
+				ext: "tif",
+				mime: "image/tiff"
+			};
+		}
+
+		if (buf[0] === 66 && buf[1] === 77) {
+			return {
+				ext: "bmp",
+				mime: "image/bmp"
+			};
+		}
+
+		if (buf[0] === 73 && buf[1] === 73 && buf[2] === 188) {
+			return {
+				ext: "jxr",
+				mime: "image/vnd.ms-photo"
+			};
+		}
+
+		if (buf[0] === 56 && buf[1] === 66 && buf[2] === 80 && buf[3] === 83) {
+			return {
+				ext: "psd",
+				mime: "image/vnd.adobe.photoshop"
+			};
+		}
+
+		// needs to be before `zip` check
+		if (buf[0] === 80 && buf[1] === 75 && buf[2] === 3 && buf[3] === 4 && buf[30] === 109 && buf[31] === 105 && buf[32] === 109 && buf[33] === 101 && buf[34] === 116 && buf[35] === 121 && buf[36] === 112 && buf[37] === 101 && buf[38] === 97 && buf[39] === 112 && buf[40] === 112 && buf[41] === 108 && buf[42] === 105 && buf[43] === 99 && buf[44] === 97 && buf[45] === 116 && buf[46] === 105 && buf[47] === 111 && buf[48] === 110 && buf[49] === 47 && buf[50] === 101 && buf[51] === 112 && buf[52] === 117 && buf[53] === 98 && buf[54] === 43 && buf[55] === 122 && buf[56] === 105 && buf[57] === 112) {
+			return {
+				ext: "epub",
+				mime: "application/epub+zip"
+			};
+		}
+
+		// needs to be before `zip` check
+		// assumes signed .xpi from addons.mozilla.org
+		if (buf[0] === 80 && buf[1] === 75 && buf[2] === 3 && buf[3] === 4 && buf[30] === 77 && buf[31] === 69 && buf[32] === 84 && buf[33] === 65 && buf[34] === 45 && buf[35] === 73 && buf[36] === 78 && buf[37] === 70 && buf[38] === 47 && buf[39] === 109 && buf[40] === 111 && buf[41] === 122 && buf[42] === 105 && buf[43] === 108 && buf[44] === 108 && buf[45] === 97 && buf[46] === 46 && buf[47] === 114 && buf[48] === 115 && buf[49] === 97) {
+			return {
+				ext: "xpi",
+				mime: "application/x-xpinstall"
+			};
+		}
+
+		if (buf[0] === 80 && buf[1] === 75 && (buf[2] === 3 || buf[2] === 5 || buf[2] === 7) && (buf[3] === 4 || buf[3] === 6 || buf[3] === 8)) {
+			return {
+				ext: "zip",
+				mime: "application/zip"
+			};
+		}
+
+		if (buf[257] === 117 && buf[258] === 115 && buf[259] === 116 && buf[260] === 97 && buf[261] === 114) {
+			return {
+				ext: "tar",
+				mime: "application/x-tar"
+			};
+		}
+
+		if (buf[0] === 82 && buf[1] === 97 && buf[2] === 114 && buf[3] === 33 && buf[4] === 26 && buf[5] === 7 && (buf[6] === 0 || buf[6] === 1)) {
+			return {
+				ext: "rar",
+				mime: "application/x-rar-compressed"
+			};
+		}
+
+		if (buf[0] === 31 && buf[1] === 139 && buf[2] === 8) {
+			return {
+				ext: "gz",
+				mime: "application/gzip"
+			};
+		}
+
+		if (buf[0] === 66 && buf[1] === 90 && buf[2] === 104) {
+			return {
+				ext: "bz2",
+				mime: "application/x-bzip2"
+			};
+		}
+
+		if (buf[0] === 55 && buf[1] === 122 && buf[2] === 188 && buf[3] === 175 && buf[4] === 39 && buf[5] === 28) {
+			return {
+				ext: "7z",
+				mime: "application/x-7z-compressed"
+			};
+		}
+
+		if (buf[0] === 120 && buf[1] === 1) {
+			return {
+				ext: "dmg",
+				mime: "application/x-apple-diskimage"
+			};
+		}
+
+		if (buf[0] === 0 && buf[1] === 0 && buf[2] === 0 && (buf[3] === 24 || buf[3] === 32) && buf[4] === 102 && buf[5] === 116 && buf[6] === 121 && buf[7] === 112 || buf[0] === 51 && buf[1] === 103 && buf[2] === 112 && buf[3] === 53 || buf[0] === 0 && buf[1] === 0 && buf[2] === 0 && buf[3] === 28 && buf[4] === 102 && buf[5] === 116 && buf[6] === 121 && buf[7] === 112 && buf[8] === 109 && buf[9] === 112 && buf[10] === 52 && buf[11] === 50 && buf[16] === 109 && buf[17] === 112 && buf[18] === 52 && buf[19] === 49 && buf[20] === 109 && buf[21] === 112 && buf[22] === 52 && buf[23] === 50 && buf[24] === 105 && buf[25] === 115 && buf[26] === 111 && buf[27] === 109 || buf[0] === 0 && buf[1] === 0 && buf[2] === 0 && buf[3] === 28 && buf[4] === 102 && buf[5] === 116 && buf[6] === 121 && buf[7] === 112 && buf[8] === 105 && buf[9] === 115 && buf[10] === 111 && buf[11] === 109 || buf[0] === 0 && buf[1] === 0 && buf[2] === 0 && buf[3] === 28 && buf[4] === 102 && buf[5] === 116 && buf[6] === 121 && buf[7] === 112 && buf[8] === 109 && buf[9] === 112 && buf[10] === 52 && buf[11] === 50 && buf[12] === 0 && buf[13] === 0 && buf[14] === 0 && buf[15] === 0) {
+			return {
+				ext: "mp4",
+				mime: "video/mp4"
+			};
+		}
+
+		if (buf[0] === 0 && buf[1] === 0 && buf[2] === 0 && buf[3] === 28 && buf[4] === 102 && buf[5] === 116 && buf[6] === 121 && buf[7] === 112 && buf[8] === 77 && buf[9] === 52 && buf[10] === 86) {
+			return {
+				ext: "m4v",
+				mime: "video/x-m4v"
+			};
+		}
+
+		if (buf[0] === 77 && buf[1] === 84 && buf[2] === 104 && buf[3] === 100) {
+			return {
+				ext: "mid",
+				mime: "audio/midi"
+			};
+		}
+
+		// needs to be before the `webm` check
+		if (buf[31] === 109 && buf[32] === 97 && buf[33] === 116 && buf[34] === 114 && buf[35] === 111 && buf[36] === 115 && buf[37] === 107 && buf[38] === 97) {
+			return {
+				ext: "mkv",
+				mime: "video/x-matroska"
+			};
+		}
+
+		if (buf[0] === 26 && buf[1] === 69 && buf[2] === 223 && buf[3] === 163) {
+			return {
+				ext: "webm",
+				mime: "video/webm"
+			};
+		}
+
+		if (buf[0] === 0 && buf[1] === 0 && buf[2] === 0 && buf[3] === 20 && buf[4] === 102 && buf[5] === 116 && buf[6] === 121 && buf[7] === 112) {
+			return {
+				ext: "mov",
+				mime: "video/quicktime"
+			};
+		}
+
+		if (buf[0] === 82 && buf[1] === 73 && buf[2] === 70 && buf[3] === 70 && buf[8] === 65 && buf[9] === 86 && buf[10] === 73) {
+			return {
+				ext: "avi",
+				mime: "video/x-msvideo"
+			};
+		}
+
+		if (buf[0] === 48 && buf[1] === 38 && buf[2] === 178 && buf[3] === 117 && buf[4] === 142 && buf[5] === 102 && buf[6] === 207 && buf[7] === 17 && buf[8] === 166 && buf[9] === 217) {
+			return {
+				ext: "wmv",
+				mime: "video/x-ms-wmv"
+			};
+		}
+
+		if (buf[0] === 0 && buf[1] === 0 && buf[2] === 1 && buf[3].toString(16)[0] === "b") {
+			return {
+				ext: "mpg",
+				mime: "video/mpeg"
+			};
+		}
+
+		if (buf[0] === 73 && buf[1] === 68 && buf[2] === 51 || buf[0] === 255 && buf[1] === 251) {
+			return {
+				ext: "mp3",
+				mime: "audio/mpeg"
+			};
+		}
+
+		if (buf[4] === 102 && buf[5] === 116 && buf[6] === 121 && buf[7] === 112 && buf[8] === 77 && buf[9] === 52 && buf[10] === 65 || buf[0] === 77 && buf[1] === 52 && buf[2] === 65 && buf[3] === 32) {
+			return {
+				ext: "m4a",
+				mime: "audio/m4a"
+			};
+		}
+
+		// needs to be before `ogg` check
+		if (buf[28] === 79 && buf[29] === 112 && buf[30] === 117 && buf[31] === 115 && buf[32] === 72 && buf[33] === 101 && buf[34] === 97 && buf[35] === 100) {
+			return {
+				ext: "opus",
+				mime: "audio/opus"
+			};
+		}
+
+		if (buf[0] === 79 && buf[1] === 103 && buf[2] === 103 && buf[3] === 83) {
+			return {
+				ext: "ogg",
+				mime: "audio/ogg"
+			};
+		}
+
+		if (buf[0] === 102 && buf[1] === 76 && buf[2] === 97 && buf[3] === 67) {
+			return {
+				ext: "flac",
+				mime: "audio/x-flac"
+			};
+		}
+
+		if (buf[0] === 82 && buf[1] === 73 && buf[2] === 70 && buf[3] === 70 && buf[8] === 87 && buf[9] === 65 && buf[10] === 86 && buf[11] === 69) {
+			return {
+				ext: "wav",
+				mime: "audio/x-wav"
+			};
+		}
+
+		if (buf[0] === 35 && buf[1] === 33 && buf[2] === 65 && buf[3] === 77 && buf[4] === 82 && buf[5] === 10) {
+			return {
+				ext: "amr",
+				mime: "audio/amr"
+			};
+		}
+
+		if (buf[0] === 37 && buf[1] === 80 && buf[2] === 68 && buf[3] === 70) {
+			return {
+				ext: "pdf",
+				mime: "application/pdf"
+			};
+		}
+
+		if (buf[0] === 77 && buf[1] === 90) {
+			return {
+				ext: "exe",
+				mime: "application/x-msdownload"
+			};
+		}
+
+		if ((buf[0] === 67 || buf[0] === 70) && buf[1] === 87 && buf[2] === 83) {
+			return {
+				ext: "swf",
+				mime: "application/x-shockwave-flash"
+			};
+		}
+
+		if (buf[0] === 123 && buf[1] === 92 && buf[2] === 114 && buf[3] === 116 && buf[4] === 102) {
+			return {
+				ext: "rtf",
+				mime: "application/rtf"
+			};
+		}
+
+		if (buf[0] === 119 && buf[1] === 79 && buf[2] === 70 && buf[3] === 70 && (buf[4] === 0 && buf[5] === 1 && buf[6] === 0 && buf[7] === 0 || buf[4] === 79 && buf[5] === 84 && buf[6] === 84 && buf[7] === 79)) {
+			return {
+				ext: "woff",
+				mime: "application/font-woff"
+			};
+		}
+
+		if (buf[0] === 119 && buf[1] === 79 && buf[2] === 70 && buf[3] === 50 && (buf[4] === 0 && buf[5] === 1 && buf[6] === 0 && buf[7] === 0 || buf[4] === 79 && buf[5] === 84 && buf[6] === 84 && buf[7] === 79)) {
+			return {
+				ext: "woff2",
+				mime: "application/font-woff"
+			};
+		}
+
+		if (buf[34] === 76 && buf[35] === 80 && (buf[8] === 0 && buf[9] === 0 && buf[10] === 1 || buf[8] === 1 && buf[9] === 0 && buf[10] === 2 || buf[8] === 2 && buf[9] === 0 && buf[10] === 2)) {
+			return {
+				ext: "eot",
+				mime: "application/octet-stream"
+			};
+		}
+
+		if (buf[0] === 0 && buf[1] === 1 && buf[2] === 0 && buf[3] === 0 && buf[4] === 0) {
+			return {
+				ext: "ttf",
+				mime: "application/font-sfnt"
+			};
+		}
+
+		if (buf[0] === 79 && buf[1] === 84 && buf[2] === 84 && buf[3] === 79 && buf[4] === 0) {
+			return {
+				ext: "otf",
+				mime: "application/font-sfnt"
+			};
+		}
+
+		if (buf[0] === 0 && buf[1] === 0 && buf[2] === 1 && buf[3] === 0) {
+			return {
+				ext: "ico",
+				mime: "image/x-icon"
+			};
+		}
+
+		if (buf[0] === 70 && buf[1] === 76 && buf[2] === 86 && buf[3] === 1) {
+			return {
+				ext: "flv",
+				mime: "video/x-flv"
+			};
+		}
+
+		if (buf[0] === 37 && buf[1] === 33) {
+			return {
+				ext: "ps",
+				mime: "application/postscript"
+			};
+		}
+
+		if (buf[0] === 253 && buf[1] === 55 && buf[2] === 122 && buf[3] === 88 && buf[4] === 90 && buf[5] === 0) {
+			return {
+				ext: "xz",
+				mime: "application/x-xz"
+			};
+		}
+
+		if (buf[0] === 83 && buf[1] === 81 && buf[2] === 76 && buf[3] === 105) {
+			return {
+				ext: "sqlite",
+				mime: "application/x-sqlite3"
+			};
+		}
+
+		if (buf[0] === 78 && buf[1] === 69 && buf[2] === 83 && buf[3] === 26) {
+			return {
+				ext: "nes",
+				mime: "application/x-nintendo-nes-rom"
+			};
+		}
+
+		if (buf[0] === 67 && buf[1] === 114 && buf[2] === 50 && buf[3] === 52) {
+			return {
+				ext: "crx",
+				mime: "application/x-google-chrome-extension"
+			};
+		}
+
+		if (buf[0] === 77 && buf[1] === 83 && buf[2] === 67 && buf[3] === 70 || buf[0] === 73 && buf[1] === 83 && buf[2] === 99 && buf[3] === 40) {
+			return {
+				ext: "cab",
+				mime: "application/vnd.ms-cab-compressed"
+			};
+		}
+
+		// needs to be before `ar` check
+		if (buf[0] === 33 && buf[1] === 60 && buf[2] === 97 && buf[3] === 114 && buf[4] === 99 && buf[5] === 104 && buf[6] === 62 && buf[7] === 10 && buf[8] === 100 && buf[9] === 101 && buf[10] === 98 && buf[11] === 105 && buf[12] === 97 && buf[13] === 110 && buf[14] === 45 && buf[15] === 98 && buf[16] === 105 && buf[17] === 110 && buf[18] === 97 && buf[19] === 114 && buf[20] === 121) {
+			return {
+				ext: "deb",
+				mime: "application/x-deb"
+			};
+		}
+
+		if (buf[0] === 33 && buf[1] === 60 && buf[2] === 97 && buf[3] === 114 && buf[4] === 99 && buf[5] === 104 && buf[6] === 62) {
+			return {
+				ext: "ar",
+				mime: "application/x-unix-archive"
+			};
+		}
+
+		if (buf[0] === 237 && buf[1] === 171 && buf[2] === 238 && buf[3] === 219) {
+			return {
+				ext: "rpm",
+				mime: "application/x-rpm"
+			};
+		}
+
+		if (buf[0] === 31 && buf[1] === 160 || buf[0] === 31 && buf[1] === 157) {
+			return {
+				ext: "Z",
+				mime: "application/x-compress"
+			};
+		}
+
+		if (buf[0] === 76 && buf[1] === 90 && buf[2] === 73 && buf[3] === 80) {
+			return {
+				ext: "lz",
+				mime: "application/x-lzip"
+			};
+		}
+
+		if (buf[0] === 208 && buf[1] === 207 && buf[2] === 17 && buf[3] === 224 && buf[4] === 161 && buf[5] === 177 && buf[6] === 26 && buf[7] === 225) {
+			return {
+				ext: "msi",
+				mime: "application/x-msi"
+			};
+		}
+
+		return null;
+	};
+
+/***/ },
+/* 16 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	module.exports = function (url, loader) {
+	  var request = new XMLHttpRequest();
+
+	  request.open("GET", url, true);
+	  request.responseType = "text";
+
+	  request.addEventListener("progress", function (e) {
+	    var percent = e.loaded / e.total;
+	    loader.progress(percent);
+	  });
+
+	  request.onload = function () {
+	    if (request.status !== 200) {
+	      return loader.error(url);
+	    }
+
+	    var data = this.response;
+	    loader.done(data);
+	  };
+	  request.send();
+	};
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	module.exports = function (manager) {
+	  return function (url, loader) {
+	    manager.load(url, {
+	      done: function done(data) {
+	        loader.done(data);
+	      },
+
+	      progress: function progress(e) {
+	        var percent = e.loaded / e.total;
+	        loader.progress(percent);
+	      }
+	    });
+	  };
+	};
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = __webpack_require__(19);
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var util = __webpack_require__(7);
+	var DirtyManager = __webpack_require__(20);
 
 	var ObjectPool = [];
 
@@ -2726,7 +2392,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var i = 0; i < this._perfNames.length; i++) {
 	      var name = this._perfNames[i];
 	      var value = this._perfValues[name];
-	      this.monitor(name, value.value.toFixed(3) + " sec");
+	      this.monitor(name, value.value.toFixed(3) + " ms");
 	    }
 	  }
 	};
@@ -3076,12 +2742,193 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Debugger;
 
 /***/ },
+/* 20 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var DirtyManager = function DirtyManager(canvas, ctx) {
+	  this.ctx = ctx;
+	  this.canvas = canvas;
+
+	  this.top = canvas.height;
+	  this.left = canvas.width;
+	  this.bottom = 0;
+	  this.right = 0;
+
+	  this.isDirty = false;
+	};
+
+	DirtyManager.prototype.addRect = function (left, top, width, height) {
+	  var right = left + width;
+	  var bottom = top + height;
+
+	  this.top = top < this.top ? top : this.top;
+	  this.left = left < this.left ? left : this.left;
+	  this.bottom = bottom > this.bottom ? bottom : this.bottom;
+	  this.right = right > this.right ? right : this.right;
+
+	  this.isDirty = true;
+	};
+
+	DirtyManager.prototype.clear = function () {
+	  if (!this.isDirty) {
+	    return;
+	  }
+
+	  this.ctx.clearRect(this.left, this.top, this.right - this.left, this.bottom - this.top);
+
+	  this.left = this.canvas.width;
+	  this.top = this.canvas.height;
+	  this.right = 0;
+	  this.bottom = 0;
+
+	  this.isDirty = false;
+	};
+
+	module.exports = DirtyManager;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	module.exports = __webpack_require__(22);
+
+/***/ },
 /* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var PlayingAudio = __webpack_require__(27);
+	var util = __webpack_require__(7);
+	var LoadedAudio = __webpack_require__(23);
+
+	var AudioManager = function AudioManager() {
+	  var AudioContext = window.AudioContext || window.webkitAudioContext;
+
+	  this._ctx = new AudioContext();
+	  this._masterGain = this._ctx.createGain();
+	  this._volume = 1;
+	  this.isMuted = false;
+
+	  var iOS = /(iPad|iPhone|iPod)/g.test(navigator.userAgent);
+	  if (iOS) {
+	    this._enableiOS();
+	  }
+	};
+
+	AudioManager.prototype._enableiOS = function () {
+	  var self = this;
+
+	  var touch = (function (_touch) {
+	    var _touchWrapper = function touch() {
+	      return _touch.apply(this, arguments);
+	    };
+
+	    _touchWrapper.toString = function () {
+	      return _touch.toString();
+	    };
+
+	    return _touchWrapper;
+	  })(function () {
+	    var buffer = self._ctx.createBuffer(1, 1, 22050);
+	    var source = self._ctx.createBufferSource();
+	    source.buffer = buffer;
+	    source.connect(self._ctx.destination);
+	    source.start(0);
+
+	    window.removeEventListener("touchstart", touch, false);
+	  });
+
+	  window.addEventListener("touchstart", touch, false);
+	};
+
+	AudioManager.prototype.mute = function () {
+	  this.isMuted = true;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.unmute = function () {
+	  this.isMuted = false;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype.toggleMute = function () {
+	  this.isMuted = !this.isMuted;
+	  this._updateMute();
+	};
+
+	AudioManager.prototype._updateMute = function () {
+	  this._masterGain.gain.value = this.isMuted ? 0 : this._volume;
+	};
+
+	AudioManager.prototype.setVolume = function (volume) {
+	  this._volume = volume;
+	  this._masterGain.gain.value = volume;
+	};
+
+	AudioManager.prototype.load = function (url, callback) {
+	  var loader = {
+	    done: function done() {},
+	    error: function error() {},
+	    progress: function progress() {}
+	  };
+
+	  if (callback && util.isFunction(callback)) {
+	    loader.done = callback;
+	  } else {
+	    if (callback.done) {
+	      loader.done = callback.done;
+	    }
+
+	    if (callback.error) {
+	      loader.error = callback.error;
+	    }
+
+	    if (callback.progress) {
+	      loader.progress = callback.progress;
+	    }
+	  }
+
+	  var self = this;
+
+	  var request = new XMLHttpRequest();
+	  request.open("GET", url, true);
+	  request.responseType = "arraybuffer";
+
+	  request.addEventListener("progress", function (e) {
+	    loader.progress(e);
+	  });
+
+	  request.onload = function () {
+	    self.decodeAudioData(request.response, function (source) {
+	      loader.done(source);
+	    });
+	  };
+	  request.send();
+	};
+
+	AudioManager.prototype.decodeAudioData = function (data, callback) {
+	  var self = this;
+
+	  this._ctx.decodeAudioData(data, function (result) {
+	    var audio = new LoadedAudio(self._ctx, result, self._masterGain);
+
+	    callback(audio);
+	  });
+	};
+
+	module.exports = AudioManager;
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var PlayingAudio = __webpack_require__(24);
 
 	var LoadedAudio = function LoadedAudio(ctx, buffer, masterGain) {
 	  this._ctx = ctx;
@@ -3141,164 +2988,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = LoadedAudio;
 
 /***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var DirtyManager = function DirtyManager(canvas, ctx) {
-	  this.ctx = ctx;
-	  this.canvas = canvas;
-
-	  this.top = canvas.height;
-	  this.left = canvas.width;
-	  this.bottom = 0;
-	  this.right = 0;
-
-	  this.isDirty = false;
-	};
-
-	DirtyManager.prototype.addRect = function (left, top, width, height) {
-	  var right = left + width;
-	  var bottom = top + height;
-
-	  this.top = top < this.top ? top : this.top;
-	  this.left = left < this.left ? left : this.left;
-	  this.bottom = bottom > this.bottom ? bottom : this.bottom;
-	  this.right = right > this.right ? right : this.right;
-
-	  this.isDirty = true;
-	};
-
-	DirtyManager.prototype.clear = function () {
-	  if (!this.isDirty) {
-	    return;
-	  }
-
-	  this.ctx.clearRect(this.left, this.top, this.right - this.left, this.bottom - this.top);
-
-	  this.left = this.canvas.width;
-	  this.top = this.canvas.height;
-	  this.right = 0;
-	  this.bottom = 0;
-
-	  this.isDirty = false;
-	};
-
-	module.exports = DirtyManager;
-
-/***/ },
 /* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	module.exports = function isBuffer(arg) {
-	  return arg && typeof arg === "object" && typeof arg.copy === "function" && typeof arg.fill === "function" && typeof arg.readUInt8 === "function";
-	};
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-
-	"use strict";
-
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    draining = true;
-	    var currentQueue;
-	    var len = queue.length;
-	    while (len) {
-	        currentQueue = queue;
-	        queue = [];
-	        var i = -1;
-	        while (++i < len) {
-	            currentQueue[i]();
-	        }
-	        len = queue.length;
-	    }
-	    draining = false;
-	}
-	process.nextTick = function (fun) {
-	    queue.push(fun);
-	    if (!draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-
-	process.title = "browser";
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ""; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error("process.binding is not supported");
-	};
-
-	// TODO(shtylman)
-	process.cwd = function () {
-	    return "/";
-	};
-	process.chdir = function (dir) {
-	    throw new Error("process.chdir is not supported");
-	};
-	process.umask = function () {
-	    return 0;
-	};
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	if (typeof Object.create === "function") {
-	  // implementation from standard node.js 'util' module
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    ctor.prototype = Object.create(superCtor.prototype, {
-	      constructor: {
-	        value: ctor,
-	        enumerable: false,
-	        writable: true,
-	        configurable: true
-	      }
-	    });
-	  };
-	} else {
-	  // old school shim for old browsers
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor;
-	    var TempCtor = function TempCtor() {};
-	    TempCtor.prototype = superCtor.prototype;
-	    ctor.prototype = new TempCtor();
-	    ctor.prototype.constructor = ctor;
-	  };
-	}
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	"use strict";
 
@@ -3320,6 +3011,794 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = PlayingAudio;
+
+/***/ },
+/* 25 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	module.exports = (function () {
+	  return window.performance || Date;
+	})();
+
+/***/ },
+/* 26 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var renderOrderSort = function renderOrderSort(a, b) {
+	  return a.renderOrder < b.renderOrder;
+	};
+
+	var updateOrderSort = function updateOrderSort(a, b) {
+	  return a.updateOrder < b.updateOrder;
+	};
+
+	var StateManager = function StateManager() {
+	  this.states = {};
+	  this.renderOrder = [];
+	  this.updateOrder = [];
+
+	  this._preventEvent = false;
+	};
+
+	StateManager.prototype.add = function (name, state) {
+	  this.states[name] = this._newStateHolder(name, state);
+	  this.refreshOrder();
+	  return state;
+	};
+
+	StateManager.prototype.enable = function (name) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    if (!holder.enabled) {
+	      if (holder.state.enable) {
+	        holder.state.enable();
+	      }
+	      holder.enabled = true;
+	      holder.changed = true;
+
+	      if (holder.paused) {
+	        this.unpause(name);
+	      }
+	    }
+	  }
+	};
+
+	StateManager.prototype.disable = function (name) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    if (holder.enabled) {
+	      if (holder.state.disable) {
+	        holder.state.disable();
+	      }
+	      holder.changed = true;
+	      holder.enabled = false;
+	    }
+	  }
+	};
+
+	StateManager.prototype.hide = function (name) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    if (holder.enabled) {
+	      holder.changed = true;
+	      holder.render = false;
+	    }
+	  }
+	};
+
+	StateManager.prototype.show = function (name) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    if (holder.enabled) {
+	      holder.changed = true;
+	      holder.render = true;
+	    }
+	  }
+	};
+
+	StateManager.prototype.pause = function (name) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    if (holder.state.pause) {
+	      holder.state.pause();
+	    }
+
+	    holder.changed = true;
+	    holder.paused = true;
+	  }
+	};
+
+	StateManager.prototype.unpause = function (name) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    if (holder.state.unpause) {
+	      holder.state.unpause();
+	    }
+
+	    holder.changed = true;
+	    holder.paused = false;
+	  }
+	};
+
+	StateManager.prototype.protect = function (name) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    holder.protect = true;
+	  }
+	};
+
+	StateManager.prototype.unprotect = function (name) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    holder.protect = false;
+	  }
+	};
+
+	StateManager.prototype.refreshOrder = function () {
+	  this.renderOrder.length = 0;
+	  this.updateOrder.length = 0;
+
+	  for (var name in this.states) {
+	    var holder = this.states[name];
+	    if (holder) {
+	      this.renderOrder.push(holder);
+	      this.updateOrder.push(holder);
+	    }
+	  }
+
+	  this.renderOrder.sort(renderOrderSort);
+	  this.updateOrder.sort(updateOrderSort);
+	};
+
+	StateManager.prototype._newStateHolder = function (name, state) {
+	  var holder = {};
+	  holder.name = name;
+	  holder.state = state;
+
+	  holder.protect = false;
+
+	  holder.enabled = true;
+	  holder.paused = false;
+
+	  holder.render = true;
+
+	  holder.initialized = false;
+	  holder.updated = false;
+	  holder.changed = true;
+
+	  holder.updateOrder = 0;
+	  holder.renderOrder = 0;
+
+	  return holder;
+	};
+
+	StateManager.prototype.setUpdateOrder = function (name, order) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    holder.updateOrder = order;
+	    this.refreshOrder();
+	  }
+	};
+
+	StateManager.prototype.setRenderOrder = function (name, order) {
+	  var holder = this.getHolder(name);
+	  if (holder) {
+	    holder.renderOrder = order;
+	    this.refreshOrder();
+	  }
+	};
+
+	StateManager.prototype.destroy = function (name) {
+	  var state = this.getHolder(name);
+	  if (state && !state.protect) {
+	    if (state.state.close) {
+	      state.state.close();
+	    }
+	    delete this.states[name];
+	    this.refreshOrder();
+	  }
+	};
+
+	StateManager.prototype.destroyAll = function () {
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+	    if (!state.protect) {
+	      if (state.state.close) {
+	        state.state.close();
+	      }
+	      delete this.states[state.name];
+	    }
+	  }
+
+	  this.refreshOrder();
+	};
+
+	StateManager.prototype.getHolder = function (name) {
+	  return this.states[name];
+	};
+
+	StateManager.prototype.get = function (name) {
+	  return this.states[name].state;
+	};
+
+	StateManager.prototype.update = function (time) {
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+
+	    if (state) {
+	      state.changed = false;
+
+	      if (state.enabled) {
+	        if (!state.initialized && state.state.init) {
+	          state.initialized = true;
+	          state.state.init();
+	        }
+
+	        if (state.state.update && !state.paused) {
+	          state.state.update(time);
+	          state.updated = true;
+	        }
+	      }
+	    }
+	  }
+	};
+
+	StateManager.prototype.exitUpdate = function (time) {
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+
+	    if (state && state.enabled && state.state.exitUpdate && !state.paused) {
+	      state.state.exitUpdate(time);
+	    }
+	  }
+	};
+
+	StateManager.prototype.render = function () {
+	  for (var i = 0, len = this.renderOrder.length; i < len; i++) {
+	    var state = this.renderOrder[i];
+	    if (state && state.enabled && (state.updated || !state.state.update) && state.render && state.state.render) {
+	      state.state.render();
+	    }
+	  }
+	};
+	StateManager.prototype.mousemove = function (value) {
+	  this._preventEvent = false;
+
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+	    if (state && state.enabled && !state.changed && state.state.mousemove && !state.paused) {
+	      state.state.mousemove(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
+	    }
+	  }
+	};
+
+	StateManager.prototype.mouseup = function (value) {
+	  this._preventEvent = false;
+
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+	    if (state && state.enabled && !state.changed && state.state.mouseup && !state.paused) {
+	      state.state.mouseup(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
+	    }
+	  }
+	};
+
+	StateManager.prototype.mousedown = function (value) {
+	  this._preventEvent = false;
+
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+	    if (state && state.enabled && !state.changed && state.state.mousedown && !state.paused) {
+	      state.state.mousedown(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
+	    }
+	  }
+	};
+
+	StateManager.prototype.keyup = function (value) {
+	  this._preventEvent = false;
+
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+	    if (state && state.enabled && !state.changed && state.state.keyup && !state.paused) {
+	      state.state.keyup(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
+	    }
+	  }
+	};
+
+	StateManager.prototype.keydown = function (value) {
+	  this._preventEvent = false;
+
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+	    if (state && state.enabled && !state.changed && state.state.keydown && !state.paused) {
+	      state.state.keydown(value);
+	    }
+
+	    if (this._preventEvent) {
+	      break;
+	    }
+	  }
+	};
+
+	StateManager.prototype.resize = function () {
+	  for (var i = 0, len = this.updateOrder.length; i < len; i++) {
+	    var state = this.updateOrder[i];
+	    if (state && state.enabled && state.state.resize) {
+	      state.state.resize();
+	    }
+	  }
+	};
+
+	module.exports = StateManager;
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var keys = __webpack_require__(28);
+
+	var invKeys = {};
+	for (var keyName in keys) {
+	  invKeys[keys[keyName]] = keyName;
+	}
+
+	var Input = function Input(app) {
+	  this._container = app.container;
+	  this._keys = {};
+
+	  this.canControlKeys = true;
+
+	  this.mouse = {
+	    isDown: false,
+	    isLeftDown: false,
+	    isMiddleDown: false,
+	    isRightDown: false,
+	    x: null,
+	    y: null,
+	    dx: 0,
+	    dy: 0
+	  };
+
+	  this._addEvents(app);
+	};
+
+	Input.prototype.resetKeys = function () {
+	  this._keys = {};
+	};
+
+	Input.prototype.isKeyDown = function (key) {
+	  if (key == null) {
+	    return false;
+	  }
+
+	  if (this.canControlKeys) {
+	    var code = typeof key === "number" ? key : keys[key.toLowerCase()];
+	    return this._keys[code];
+	  }
+	};
+
+	Input.prototype._addEvents = function (app) {
+	  var self = this;
+
+	  var mouseEvent = {
+	    x: null,
+	    y: null,
+	    button: null,
+	    isTouch: false,
+	    event: null,
+	    stateStopEvent: function stateStopEvent() {
+	      app.states._preventEvent = true;
+	    }
+	  };
+
+	  var keyboardEvent = {
+	    key: null,
+	    name: null,
+	    event: null,
+	    stateStopEvent: function stateStopEvent() {
+	      app.states._preventEvent = true;
+	    }
+	  };
+
+	  self._container.addEventListener("mousemove", function (e) {
+	    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
+	    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
+
+	    if (self.mouse.x != null && self.mouse.x != null) {
+	      self.mouse.dx = x - self.mouse.x;
+	      self.mouse.dy = y - self.mouse.y;
+	    }
+
+	    self.mouse.x = x;
+	    self.mouse.y = y;
+	    self.mouse.isActive = true;
+
+	    mouseEvent.x = x;
+	    mouseEvent.y = y;
+	    mouseEvent.button = null;
+	    mouseEvent.event = e;
+	    mouseEvent.isTouch = false;
+
+	    app.states.mousemove(mouseEvent);
+	  });
+
+	  self._container.addEventListener("mouseup", function (e) {
+	    e.preventDefault();
+
+	    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
+	    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
+
+	    switch (e.button) {
+	      case 0:
+	        self.mouse.isLeftDown = false;
+	        break;
+	      case 1:
+	        self.mouse.isMiddleDown = false;
+	        break;
+	      case 2:
+	        self.mouse.isRightDown = false;
+	        break;
+	    }
+
+	    self.mouse.isDown = self.mouse.isLeftDown || self.mouse.isRightDown || self.mouse.isMiddleDown;
+
+	    mouseEvent.x = x;
+	    mouseEvent.y = y;
+	    mouseEvent.button = e.button;
+	    mouseEvent.event = e;
+	    mouseEvent.isTouch = false;
+
+	    app.states.mouseup(mouseEvent);
+	  }, false);
+
+	  self._container.addEventListener("mouseleave", function () {
+	    self.mouse.isActive = false;
+
+	    self.mouse.isDown = false;
+	    self.mouse.isLeftDown = false;
+	    self.mouse.isRightDown = false;
+	    self.mouse.isMiddleDown = false;
+	  });
+
+	  self._container.addEventListener("mouseenter", function () {
+	    self.mouse.isActive = true;
+	  });
+
+	  self._container.addEventListener("mousedown", function (e) {
+	    e.preventDefault();
+
+	    var x = (e.offsetX === undefined ? e.layerX - self._container.offsetLeft : e.offsetX) / app.scaleX;
+	    var y = (e.offsetY === undefined ? e.layerY - self._container.offsetTop : e.offsetY) / app.scaleY;
+
+	    self.mouse.x = x;
+	    self.mouse.y = y;
+	    self.mouse.isDown = true;
+	    self.mouse.isActive = true;
+
+	    switch (e.button) {
+	      case 0:
+	        self.mouse.isLeftDown = true;
+	        break;
+	      case 1:
+	        self.mouse.isMiddleDown = true;
+	        break;
+	      case 2:
+	        self.mouse.isRightDown = true;
+	        break;
+	    }
+
+	    mouseEvent.x = x;
+	    mouseEvent.y = y;
+	    mouseEvent.button = e.button;
+	    mouseEvent.event = e;
+	    mouseEvent.isTouch = false;
+
+	    app.states.mousedown(mouseEvent);
+	  }, false);
+
+	  self._container.addEventListener("touchstart", function (e) {
+	    e.preventDefault();
+
+	    for (var i = 0; i < e.touches.length; i++) {
+	      var touch = e.touches[i];
+
+	      var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
+	      var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
+
+	      self.mouse.x = x;
+	      self.mouse.y = y;
+	      self.mouse.isDown = true;
+	      self.mouse.isLeftDown = true;
+	      self.mouse.isActive = true;
+
+	      mouseEvent.x = x;
+	      mouseEvent.y = y;
+	      mouseEvent.button = 1;
+	      mouseEvent.event = e;
+	      mouseEvent.isTouch = true;
+
+	      app.states.mousedown(mouseEvent);
+	    }
+	  });
+
+	  self._container.addEventListener("touchmove", function (e) {
+	    e.preventDefault();
+
+	    for (var i = 0; i < e.touches.length; i++) {
+	      var touch = e.touches[i];
+
+	      var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
+	      var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
+
+	      if (self.mouse.x != null && self.mouse.x != null) {
+	        self.mouse.dx = x - self.mouse.x;
+	        self.mouse.dy = y - self.mouse.y;
+	      }
+
+	      self.mouse.x = x;
+	      self.mouse.y = y;
+	      self.mouse.isDown = true;
+	      self.mouse.isLeftDown = true;
+	      self.mouse.isActive = true;
+
+	      mouseEvent.x = x;
+	      mouseEvent.y = y;
+	      mouseEvent.event = e;
+	      mouseEvent.isTouch = true;
+
+	      app.states.mousemove(mouseEvent);
+	    }
+	  });
+
+	  self._container.addEventListener("touchend", function (e) {
+	    e.preventDefault();
+
+	    var touch = e.changedTouches[0];
+
+	    var x = (touch.pageX - self._container.offsetLeft) / app.scaleX;
+	    var y = (touch.pageY - self._container.offsetTop) / app.scaleY;
+
+	    self.mouse.x = x;
+	    self.mouse.y = y;
+	    self.mouse.isActive = false;
+	    self.mouse.isDown = false;
+	    self.mouse.isLeftDown = false;
+	    self.mouse.isRightDown = false;
+	    self.mouse.isMiddleDown = false;
+
+	    mouseEvent.x = x;
+	    mouseEvent.y = y;
+	    mouseEvent.event = e;
+	    mouseEvent.isTouch = true;
+
+	    app.states.mouseup(mouseEvent);
+	  });
+
+	  self._container.addEventListener("contextmenu", function (e) {
+	    e.preventDefault();
+	  });
+
+	  document.addEventListener("keydown", function (e) {
+	    self._keys[e.keyCode] = true;
+
+	    keyboardEvent.key = e.which;
+	    keyboardEvent.name = invKeys[e.which];
+	    keyboardEvent.event = e;
+
+	    app.states.keydown(keyboardEvent);
+	  });
+
+	  document.addEventListener("keyup", function (e) {
+	    self._keys[e.keyCode] = false;
+
+	    keyboardEvent.key = e.which;
+	    keyboardEvent.name = invKeys[e.which];
+	    keyboardEvent.event = e;
+
+	    app.states.keyup(keyboardEvent);
+	  });
+	};
+
+	module.exports = Input;
+
+/***/ },
+/* 28 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	module.exports = {
+	  backspace: 8,
+	  tab: 9,
+	  enter: 13,
+	  pause: 19,
+	  caps: 20,
+	  esc: 27,
+	  space: 32,
+	  page_up: 33,
+	  page_down: 34,
+	  end: 35,
+	  home: 36,
+	  left: 37,
+	  up: 38,
+	  right: 39,
+	  down: 40,
+	  insert: 45,
+	  "delete": 46,
+	  "0": 48,
+	  "1": 49,
+	  "2": 50,
+	  "3": 51,
+	  "4": 52,
+	  "5": 53,
+	  "6": 54,
+	  "7": 55,
+	  "8": 56,
+	  "9": 57,
+	  a: 65,
+	  b: 66,
+	  c: 67,
+	  d: 68,
+	  e: 69,
+	  f: 70,
+	  g: 71,
+	  h: 72,
+	  i: 73,
+	  j: 74,
+	  k: 75,
+	  l: 76,
+	  m: 77,
+	  n: 78,
+	  o: 79,
+	  p: 80,
+	  q: 81,
+	  r: 82,
+	  s: 83,
+	  t: 84,
+	  u: 85,
+	  v: 86,
+	  w: 87,
+	  x: 88,
+	  y: 89,
+	  z: 90,
+	  numpad_0: 96,
+	  numpad_1: 97,
+	  numpad_2: 98,
+	  numpad_3: 99,
+	  numpad_4: 100,
+	  numpad_5: 101,
+	  numpad_6: 102,
+	  numpad_7: 103,
+	  numpad_8: 104,
+	  numpad_9: 105,
+	  multiply: 106,
+	  add: 107,
+	  substract: 109,
+	  decimal: 110,
+	  divide: 111,
+	  f1: 112,
+	  f2: 113,
+	  f3: 114,
+	  f4: 115,
+	  f5: 116,
+	  f6: 117,
+	  f7: 118,
+	  f8: 119,
+	  f9: 120,
+	  f10: 121,
+	  f11: 122,
+	  f12: 123,
+	  shift: 16,
+	  ctrl: 17,
+	  alt: 18,
+	  plus: 187,
+	  comma: 188,
+	  minus: 189,
+	  period: 190
+	};
+
+/***/ },
+/* 29 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var Loading = function Loading(app) {
+	  this.app = app;
+
+	  this.barWidth = 0;
+	};
+
+	Loading.prototype.render = function (time, video) {
+	  video.clear();
+
+	  var color1 = "#b9ff71";
+	  var color2 = "#8ac250";
+	  var color3 = "#648e38";
+
+	  var width = Math.min(video.width * 2 / 3, 300);
+	  var height = 20;
+
+	  var y = (video.height - height) / 2;
+	  var x = (video.width - width) / 2;
+
+	  var currentWidth = width * this.app.assets.progress;
+	  this.barWidth = this.barWidth + (currentWidth - this.barWidth) * time * 10;
+
+	  video.ctx.fillStyle = color2;
+	  video.ctx.fillRect(0, 0, video.width, video.height);
+
+	  video.ctx.font = "400 40px sans-serif";
+	  video.ctx.textAlign = "center";
+	  video.ctx.textBaseline = "bottom";
+
+	  video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+	  video.ctx.fillText("Potion.js", video.width / 2, y + 2);
+
+	  video.ctx.fillStyle = "#d1ffa1";
+	  video.ctx.fillText("Potion.js", video.width / 2, y);
+
+	  video.ctx.strokeStyle = video.ctx.fillStyle = color3;
+	  video.ctx.fillRect(x, y + 15, width, height);
+
+	  video.ctx.lineWidth = 2;
+	  video.ctx.beginPath();
+	  video.ctx.rect(x - 5, y + 10, width + 10, height + 10);
+	  video.ctx.closePath();
+	  video.ctx.stroke();
+
+	  video.ctx.strokeStyle = video.ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+	  video.ctx.fillRect(x, y + 15, this.barWidth, height + 2);
+
+	  video.ctx.lineWidth = 2;
+	  video.ctx.beginPath();
+
+	  video.ctx.moveTo(x + this.barWidth, y + 12);
+	  video.ctx.lineTo(x - 5, y + 12);
+	  video.ctx.lineTo(x - 5, y + 10 + height + 12);
+	  video.ctx.lineTo(x + this.barWidth, y + 10 + height + 12);
+
+	  video.ctx.stroke();
+	  video.ctx.closePath();
+
+	  video.ctx.strokeStyle = video.ctx.fillStyle = color1;
+	  video.ctx.fillRect(x, y + 15, this.barWidth, height);
+
+	  video.ctx.lineWidth = 2;
+	  video.ctx.beginPath();
+
+	  video.ctx.moveTo(x + this.barWidth, y + 10);
+	  video.ctx.lineTo(x - 5, y + 10);
+	  video.ctx.lineTo(x - 5, y + 10 + height + 10);
+	  video.ctx.lineTo(x + this.barWidth, y + 10 + height + 10);
+
+	  video.ctx.stroke();
+	  video.ctx.closePath();
+	};
+
+	module.exports = Loading;
 
 /***/ }
 /******/ ])
