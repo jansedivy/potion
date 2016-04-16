@@ -1,5 +1,9 @@
+var imageType = require('image-type');
+var path = require('path');
+
 module.exports = function(url, loader) {
   var URL = window.URL || window.webkitURL;
+  var extension = path.extname(url);
 
   if (URL && "createObjectURL" in URL && "Uint8Array" in window && "Blob" in window) {
     var request = new XMLHttpRequest();
@@ -17,8 +21,16 @@ module.exports = function(url, loader) {
         return loader.error(url);
       }
 
-      var data = this.response;
-      var blob = new Blob([new Uint8Array(data)], { type: 'image/png' });
+      var data = new Uint8Array(this.response);
+      var type;
+
+      if (extension === '.svg' || extension === '.svgz') {
+        type = 'image/svg+xml'
+      } else {
+        type = imageType(data).mime;
+      }
+
+      var blob = new Blob([data], { type: type });
       var image = new Image();
       image.src = URL.createObjectURL(blob);
       loader.done(image);
